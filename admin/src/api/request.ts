@@ -16,11 +16,11 @@ const instance: AxiosInstance = axios.create({
 
 let isRefreshing = false;
 let refreshQueue: Array<(token: string) => void> = [];
-let routerPromise: Promise<typeof import('@/router/index').default> | null = null;
+let routerPromise: Promise<typeof import('@/router/index').router> | null = null;
 
 function getRouter() {
   if (!routerPromise) {
-    routerPromise = import('@/router/index').then((m) => m.default);
+    routerPromise = import('@/router/index').then((m) => m.router);
   }
   return routerPromise;
 }
