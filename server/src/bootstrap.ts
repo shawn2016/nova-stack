@@ -1,8 +1,16 @@
 import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
-/** 配置 Swagger 文档（全局管道/拦截器/过滤器由 AppModule APP_* 提供） */
+const ADMIN_DEV_ORIGIN = 'http://localhost:5173';
+const UNI_APP_DEV_ORIGIN = 'http://localhost:5174';
+
+/** 配置 Swagger 文档与 CORS（全局管道/拦截器/过滤器由 AppModule APP_* 提供） */
 export async function configureApp(app: INestApplication) {
+  app.enableCors({
+    origin: [ADMIN_DEV_ORIGIN, UNI_APP_DEV_ORIGIN],
+    credentials: true,
+  });
+
   const config = new DocumentBuilder()
     .setTitle('Nova Stack API')
     .setDescription('Nova Stack 后端 API 文档')

@@ -1,18 +1,61 @@
-import { Body, Controller, HttpException, Post } from '@nestjs/common';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Get, HttpCode, Post, Req } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import type { Request } from 'express';
 import { Public } from './decorators/public.decorator';
+import { CurrentUser, AuthUser } from './decorators/current-user.decorator';
 import { LoginDto } from './dto/login.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { AuthService } from './auth.service';
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
+  constructor(private readonly authService: AuthService) {}
+
   @Public()
   @Post('login')
-  @ApiOperation({ summary: '登录（占位）' })
-  login(@Body() _body: LoginDto) {
-    throw new HttpException(
-      { code: 501, message: 'Not implemented', data: null },
-      501,
-    );
+  @HttpCode(200)
+  @ApiOperation({ summary: 'B 端管理员登录' })
+  login(@Body() body: LoginDto) {
+    return this.authService.login(body);
+  }
+
+  @Post('logout')
+  @HttpCode(200)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'B 端管理员登出' })
+  logout(@Req() req: Request) {
+    const token = this.extractBearerToken(req);
+    return this.authService.logout(token);
+  }
+
+  @Public()
+  @Post('refresh')
+  @HttpCode(200)
+  @ApiOperation({ summary: '刷新 accessToken' })
+  refresh(@Body() body: RefreshTokenDto) {
+    return this.authService.refresh(body.refreshToken);
+  }
+
+  @Get('me')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '当前管理员信息' })
+  me(@CurrentUser() user: AuthUser) {
+    return this.authService.getMe(user.userId);
+  }
+
+  @Get('me/menus')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: '当前管理员菜单树' })
+  menus(@CurrentUser() user: AuthUser) {
+    return this.authService.getMenus(user.userId);
+  }
+
+  private extractBearerToken(req: Request): string {
+    const header = req.headers.authorization;
+    if (!header?.startsWith('Bearer ')) {
+      return '';
+    }
+    return header.slice(7);
   }
 }
