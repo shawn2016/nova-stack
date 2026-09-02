@@ -6,7 +6,7 @@
 
 - [x] 2.1 创建实体与 migration：sys_user、sys_role、sys_permission、sys_menu、sys_user_role、sys_role_permission、member_user — 验证：表结构与设计文档一致
 - [x] 2.2 实现 seed（admin/admin123 + RBAC 基础 + 测试会员） — 验证：`pnpm seed` 成功
-- [ ] 2.3 生产 JWT_SECRET fail-fast — 验证：弱密钥 production 启动失败
+- [x] 2.3 生产 JWT_SECRET fail-fast — 验证：弱密钥 production 启动失败
 
 ## 3. Server — B 端 Auth API
 

@@ -34,8 +34,8 @@ base-ref: 37a316aa84a8aad66bd01b620b083d2b9f739e5e
 
 ## Task 3: JwtService + Redis 黑名单
 
-- [ ] 3.1 共享 JwtService（sign/verify/blacklist） — 验证：单元测试
-- [ ] 3.2 生产 JWT fail-fast — 验证：弱密钥 production 失败
+- [x] 3.1 共享 JwtService（sign/verify/blacklist） — 验证：单元测试
+- [x] 3.2 生产 JWT fail-fast — 验证：弱密钥 production 失败
 
 ## Task 4: B 端 Auth + RBAC API
 
