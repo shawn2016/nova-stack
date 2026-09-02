@@ -29,8 +29,8 @@ base-ref: 37a316aa84a8aad66bd01b620b083d2b9f739e5e
 
 ## Task 2: 数据库 Entity + Migration + Seed
 
-- [ ] 2.1 创建 7 个 TypeORM Entity — 验证：与 design.md 表结构一致
-- [ ] 2.2 migration/sync + seed 脚本 — 验证：`pnpm seed` 成功
+- [x] 2.1 创建 7 个 TypeORM Entity — 验证：与 design.md 表结构一致
+- [x] 2.2 migration/sync + seed 脚本 — 验证：`pnpm seed` 成功
 
 ## Task 3: JwtService + Redis 黑名单
 
