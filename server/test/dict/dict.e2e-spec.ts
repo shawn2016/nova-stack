@@ -5,7 +5,6 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { ErrorCode } from '@nova/shared-types';
 import { createE2eApp, E2eAppContext } from '../auth/e2e-app.helper';
-import { seedDictPermissions } from './seed-dict-permissions';
 
 describe('Dict API (e2e)', () => {
   let ctx: E2eAppContext;
@@ -30,7 +29,6 @@ describe('Dict API (e2e)', () => {
   beforeAll(async () => {
     ctx = await createE2eApp();
     app = ctx.app;
-    await seedDictPermissions(ctx.dataSource);
     adminToken = await loginAdmin();
     memberToken = await loginMember();
   }, 30000);
@@ -58,16 +56,16 @@ describe('Dict API (e2e)', () => {
         .post('/dict/types')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
-          name: '用户状态',
-          code: 'user_status',
+          name: 'E2E 测试类型',
+          code: 'e2e_test_type',
           status: 1,
           remark: 'e2e test',
         })
         .expect(201);
 
       expect(res.body.code).toBe(ErrorCode.SUCCESS);
-      expect(res.body.data.name).toBe('用户状态');
-      expect(res.body.data.code).toBe('user_status');
+      expect(res.body.data.name).toBe('E2E 测试类型');
+      expect(res.body.data.code).toBe('e2e_test_type');
       expect(res.body.data.status).toBe(1);
       createdTypeId = res.body.data.id;
     });
@@ -89,10 +87,10 @@ describe('Dict API (e2e)', () => {
       const res = await request(app.getHttpServer())
         .put(`/dict/types/${createdTypeId}`)
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ name: '用户状态（已更新）', status: 0 })
+        .send({ name: 'E2E 测试类型（已更新）', status: 0 })
         .expect(200);
 
-      expect(res.body.data.name).toBe('用户状态（已更新）');
+      expect(res.body.data.name).toBe('E2E 测试类型（已更新）');
       expect(res.body.data.status).toBe(0);
     });
 
@@ -120,10 +118,15 @@ describe('Dict API (e2e)', () => {
 
     beforeAll(async () => {
       const res = await request(app.getHttpServer())
-        .post('/dict/types')
+        .get('/dict/types')
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ name: '文章状态', code: 'article_status', status: 1 });
-      typeId = res.body.data.id;
+        .expect(200);
+
+      const articleType = res.body.data.list.find(
+        (item: { code: string }) => item.code === 'article_status',
+      );
+      expect(articleType).toBeDefined();
+      typeId = articleType.id;
     });
 
     it('POST /dict/data 应创建字典项', async () => {
@@ -132,15 +135,15 @@ describe('Dict API (e2e)', () => {
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           typeId,
-          label: '草稿',
-          value: 'draft',
-          sort: 1,
+          label: 'E2E 测试项',
+          value: 'e2e_custom',
+          sort: 10,
           status: 1,
         })
         .expect(201);
 
-      expect(res.body.data.label).toBe('草稿');
-      expect(res.body.data.value).toBe('draft');
+      expect(res.body.data.label).toBe('E2E 测试项');
+      expect(res.body.data.value).toBe('e2e_custom');
       createdDataId = res.body.data.id;
     });
 
@@ -164,9 +167,9 @@ describe('Dict API (e2e)', () => {
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           typeId,
-          label: '已发布',
-          value: 'published',
-          sort: 2,
+          label: '额外项',
+          value: 'e2e_extra',
+          sort: 20,
           status: 1,
         });
 
@@ -177,7 +180,7 @@ describe('Dict API (e2e)', () => {
         .expect(200);
 
       expect(res.body.code).toBe(ErrorCode.SUCCESS);
-      expect(res.body.data.list.length).toBeGreaterThanOrEqual(2);
+      expect(res.body.data.list.length).toBeGreaterThanOrEqual(3);
       expect(res.body.data.list[0]).toHaveProperty('typeId');
     });
 
@@ -185,10 +188,10 @@ describe('Dict API (e2e)', () => {
       const res = await request(app.getHttpServer())
         .put(`/dict/data/${createdDataId}`)
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ label: '草稿（已更新）', sort: 0 })
+        .send({ label: 'E2E 测试项（已更新）', sort: 0 })
         .expect(200);
 
-      expect(res.body.data.label).toBe('草稿（已更新）');
+      expect(res.body.data.label).toBe('E2E 测试项（已更新）');
       expect(res.body.data.sort).toBe(0);
     });
 

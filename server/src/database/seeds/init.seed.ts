@@ -3,6 +3,8 @@ import { DataSource, Repository } from 'typeorm';
 import {
   ArticleEntity,
   MemberUserEntity,
+  SysDictDataEntity,
+  SysDictTypeEntity,
   SysMenuEntity,
   SysPermissionEntity,
   SysRoleEntity,
@@ -51,6 +53,14 @@ const PERMISSION_SEEDS: PermissionSeed[] = [
   { name: '文章编辑', code: 'content:article:update', type: 'api' },
   { name: '文章删除', code: 'content:article:delete', type: 'api' },
   { name: '文章发布', code: 'content:article:publish', type: 'api' },
+  { name: '字典类型列表', code: 'system:dict:type:list', type: 'api' },
+  { name: '字典类型新增', code: 'system:dict:type:create', type: 'api' },
+  { name: '字典类型编辑', code: 'system:dict:type:update', type: 'api' },
+  { name: '字典类型删除', code: 'system:dict:type:delete', type: 'api' },
+  { name: '字典数据列表', code: 'system:dict:data:list', type: 'api' },
+  { name: '字典数据新增', code: 'system:dict:data:create', type: 'api' },
+  { name: '字典数据编辑', code: 'system:dict:data:update', type: 'api' },
+  { name: '字典数据删除', code: 'system:dict:data:delete', type: 'api' },
 ];
 
 const MENU_SEEDS: MenuSeed[] = [
@@ -89,6 +99,15 @@ const MENU_SEEDS: MenuSeed[] = [
         type: 'menu',
         permissionCode: 'system:menu:list',
         sort: 3,
+      },
+      {
+        name: '字典管理',
+        path: '/system/dict',
+        component: 'views/system/dict/index',
+        icon: 'ri:book-2-line',
+        type: 'menu',
+        permissionCode: 'system:dict:type:list',
+        sort: 4,
       },
     ],
   },
@@ -198,6 +217,84 @@ const DEV_ARTICLE_SEEDS: ArticleSeed[] = [
   },
 ];
 
+interface DictTypeSeed {
+  name: string;
+  code: string;
+  status: number;
+  remark?: string | null;
+}
+
+interface DictDataSeed {
+  typeCode: string;
+  label: string;
+  value: string;
+  sort: number;
+  status: number;
+}
+
+const DEV_DICT_TYPE_SEEDS: DictTypeSeed[] = [
+  { name: '用户状态', code: 'user_status', status: 1, remark: '用户启用/禁用' },
+  { name: '文章状态', code: 'article_status', status: 1, remark: '文章发布状态' },
+];
+
+const DEV_DICT_DATA_SEEDS: DictDataSeed[] = [
+  { typeCode: 'user_status', label: '启用', value: '1', sort: 1, status: 1 },
+  { typeCode: 'user_status', label: '禁用', value: '0', sort: 2, status: 1 },
+  { typeCode: 'article_status', label: '草稿', value: 'draft', sort: 1, status: 1 },
+  { typeCode: 'article_status', label: '已发布', value: 'published', sort: 2, status: 1 },
+];
+
+async function upsertDevDicts(
+  typeRepo: Repository<SysDictTypeEntity>,
+  dataRepo: Repository<SysDictDataEntity>,
+): Promise<void> {
+  const typeByCode = new Map<string, SysDictTypeEntity>();
+
+  for (const seed of DEV_DICT_TYPE_SEEDS) {
+    let dictType = await typeRepo.findOne({ where: { code: seed.code } });
+    if (!dictType) {
+      dictType = typeRepo.create({
+        name: seed.name,
+        code: seed.code,
+        status: seed.status,
+        remark: seed.remark ?? null,
+      });
+    } else {
+      dictType.name = seed.name;
+      dictType.status = seed.status;
+      dictType.remark = seed.remark ?? null;
+    }
+    dictType = await typeRepo.save(dictType);
+    typeByCode.set(seed.code, dictType);
+  }
+
+  for (const seed of DEV_DICT_DATA_SEEDS) {
+    const dictType = typeByCode.get(seed.typeCode);
+    if (!dictType) {
+      continue;
+    }
+
+    let dictData = await dataRepo.findOne({
+      where: { typeId: dictType.id, value: seed.value },
+    });
+    if (!dictData) {
+      dictData = dataRepo.create({
+        typeId: dictType.id,
+        label: seed.label,
+        value: seed.value,
+        sort: seed.sort,
+        status: seed.status,
+        remark: null,
+      });
+    } else {
+      dictData.label = seed.label;
+      dictData.sort = seed.sort;
+      dictData.status = seed.status;
+    }
+    await dataRepo.save(dictData);
+  }
+}
+
 async function upsertDevArticles(
   repo: Repository<ArticleEntity>,
   authorId: string,
@@ -236,6 +333,8 @@ export async function runInitSeed(dataSource: DataSource): Promise<void> {
   const rolePermissionRepo = dataSource.getRepository(SysRolePermissionEntity);
   const memberRepo = dataSource.getRepository(MemberUserEntity);
   const articleRepo = dataSource.getRepository(ArticleEntity);
+  const dictTypeRepo = dataSource.getRepository(SysDictTypeEntity);
+  const dictDataRepo = dataSource.getRepository(SysDictDataEntity);
 
   let superAdminRole = await roleRepo.findOne({
     where: { code: SUPER_ADMIN_ROLE_CODE },
@@ -316,5 +415,6 @@ export async function runInitSeed(dataSource: DataSource): Promise<void> {
     }
 
     await upsertDevArticles(articleRepo, adminUser.id);
+    await upsertDevDicts(dictTypeRepo, dictDataRepo);
   }
 }
