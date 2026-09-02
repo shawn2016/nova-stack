@@ -1,0 +1,16 @@
+{
+  "change": "admin-profile-and-oss",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "b465f1b116f98f2264bd48b032408d4ffe8935148a7b4e6dd1a2cb4335e41c04",
+  "files": [
+    { "path": "openspec/changes/admin-profile-and-oss/proposal.md", "sha256": "bd48d47bd6848206fca3bed61dcde65984e13205f00e767634e33de88870850d" },
+    { "path": "openspec/changes/admin-profile-and-oss/design.md", "sha256": "239090a43ae04385ba25af776ebbfa4c1d2327945b8ca3ed0989c221f84ca3e8" },
+    { "path": "openspec/changes/admin-profile-and-oss/tasks.md", "sha256": "6c9c893c1d105c0641326ca43d588df33dd1b0b0531f0d2a18bb34563e835e9d" },
+    { "path": "openspec/changes/admin-profile-and-oss/specs/admin-profile-ui/spec.md", "sha256": "aafac210613cb84644f2a413d49ab11269f59c8e4b56933de38249defec1ef41" },
+    { "path": "openspec/changes/admin-profile-and-oss/specs/auth-api/spec.md", "sha256": "e9100d85d5fd775050d32e0cedeb7d0d66b5124e96966bd76c51d028dbc40234" },
+    { "path": "openspec/changes/admin-profile-and-oss/specs/file-upload-api/spec.md", "sha256": "a6283c62fcf6252688412e4a0a7448078921ccb7d1618e7e602d9ac2dc86042d" }
+  ]
+}
