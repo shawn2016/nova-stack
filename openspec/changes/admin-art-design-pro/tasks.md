@@ -28,6 +28,6 @@
 
 ## 6. 收尾
 
-- [ ] 6.1 移除 Arco、UnoCSS — 验证：package.json 干净
-- [ ] 6.2 `pnpm --filter @nova/admin build` + server e2e — 验证：通过
-- [ ] 6.3 smoke：登录 → 用户/角色/菜单任一 CRUD → 文章发布 — 验证：清单通过
+- [x] 6.1 移除 Arco、UnoCSS — 验证：package.json 干净
+- [x] 6.2 `pnpm --filter @nova/admin build` + server e2e — 验证：通过
+- [x] 6.3 smoke：登录 → 用户/角色/菜单任一 CRUD → 文章发布 — 验证：清单通过

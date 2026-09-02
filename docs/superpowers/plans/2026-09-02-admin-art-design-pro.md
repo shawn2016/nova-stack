@@ -57,6 +57,6 @@ base-ref: aed24ad460b750420efbb6f91ab1b562d84d7bb0
 
 ## Task 6: 集成验证
 
-- [ ] 6.1 server test + e2e、admin build — 验证：全绿
-- [ ] 6.2 openspec validate admin-art-design-pro --strict — 验证：通过
-- [ ] 6.3 smoke：登录 → 用户 CRUD → 角色赋权 → 文章发布 — 验证：清单
+- [x] 6.1 server test + e2e、admin build — 验证：全绿
+- [x] 6.2 openspec validate admin-art-design-pro --strict — 验证：通过
+- [x] 6.3 smoke：登录 → 用户 CRUD → 角色赋权 → 文章发布 — 验证：清单
