@@ -188,33 +188,36 @@ export async function runInitSeed(dataSource: DataSource): Promise<void> {
     }
   }
 
-  let adminUser = await userRepo.findOne({ where: { username: ADMIN_USERNAME } });
-  if (!adminUser) {
-    adminUser = await userRepo.save(
-      userRepo.create({
-        username: ADMIN_USERNAME,
-        passwordHash: await bcrypt.hash('admin123', 10),
-        nickname: '超级管理员',
-        avatar: null,
-        status: 1,
-      }),
-    );
-  }
-
-  const adminRoleLink = await userRoleRepo.findOne({
-    where: { userId: adminUser.id, roleId: superAdminRole.id },
-  });
-  if (!adminRoleLink) {
-    await userRoleRepo.save(
-      userRoleRepo.create({
-        userId: adminUser.id,
-        roleId: superAdminRole.id,
-      }),
-    );
-  }
-
   const nodeEnv = process.env.NODE_ENV ?? 'development';
-  if (nodeEnv !== 'production') {
+  const isProduction = nodeEnv === 'production';
+
+  // 默认 admin/admin123 与开发会员仅在非 production 写入，避免生产环境硬编码凭据
+  if (!isProduction) {
+    let adminUser = await userRepo.findOne({ where: { username: ADMIN_USERNAME } });
+    if (!adminUser) {
+      adminUser = await userRepo.save(
+        userRepo.create({
+          username: ADMIN_USERNAME,
+          passwordHash: await bcrypt.hash('admin123', 10),
+          nickname: '超级管理员',
+          avatar: null,
+          status: 1,
+        }),
+      );
+    }
+
+    const adminRoleLink = await userRoleRepo.findOne({
+      where: { userId: adminUser.id, roleId: superAdminRole.id },
+    });
+    if (!adminRoleLink) {
+      await userRoleRepo.save(
+        userRoleRepo.create({
+          userId: adminUser.id,
+          roleId: superAdminRole.id,
+        }),
+      );
+    }
+
     let member = await memberRepo.findOne({ where: { phone: DEV_MEMBER_PHONE } });
     if (!member) {
       await memberRepo.save(

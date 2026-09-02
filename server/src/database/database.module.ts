@@ -25,6 +25,7 @@ export class DatabaseModule {
             username: configService.get<string>('database.username'),
             password: configService.get<string>('database.password'),
             database: configService.get<string>('database.database'),
+            // entities 显式注册全部实体；autoLoadEntities 供后续 forFeature 模块增量加载（二者并存无害）
             entities,
             autoLoadEntities: true,
             synchronize: configService.get<string>('app.nodeEnv') !== 'production',

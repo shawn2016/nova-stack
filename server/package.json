@@ -9,7 +9,7 @@
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main",
     "seed": "ts-node src/database/seeds/run-seed.ts",
-    "test": "pnpm exec jest --config ./test/jest-unit.json --runInBand test/database/entities.spec.ts",
+    "test": "pnpm exec jest --config ./test/jest-unit.json --runInBand test/database",
     "test:e2e": "pnpm exec jest --config ./test/jest-e2e.json --runInBand"
   },
   "dependencies": {

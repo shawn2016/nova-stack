@@ -7,6 +7,15 @@ import { runInitSeed } from './init.seed';
 
 loadEnv({ path: resolve(__dirname, '../../../.env') });
 
+/**
+ * Seed 入口（pnpm seed / 根目录 pnpm seed）
+ *
+ * - 始终写入：super_admin 角色、基础 permissions/menus、角色-权限关联
+ * - 仅非 production（NODE_ENV !== 'production'）：
+ *   - 默认管理员 admin/admin123 + super_admin 绑定
+ *   - 开发会员 13800138000/member123
+ * - production 不写入任何默认凭据；请通过运维流程创建首个管理员
+ */
 function buildDataSource(): DataSource {
   return new DataSource({
     type: 'mysql',
@@ -27,13 +36,16 @@ async function main(): Promise<void> {
   }
 
   const dataSource = buildDataSource();
+  const isProduction = (process.env.NODE_ENV ?? 'development') === 'production';
 
   try {
     await dataSource.initialize();
     await runInitSeed(dataSource);
-    console.log('[seed] 初始化完成：admin/admin123、super_admin、系统管理菜单骨架');
-    if ((process.env.NODE_ENV ?? 'development') !== 'production') {
-      console.log('[seed] 开发会员：13800138000/member123');
+    console.log('[seed] RBAC 骨架完成：super_admin、permissions、menus');
+    if (!isProduction) {
+      console.log('[seed] 开发账号：admin/admin123、13800138000/member123');
+    } else {
+      console.log('[seed] production 模式：已跳过默认 admin/会员凭据');
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
