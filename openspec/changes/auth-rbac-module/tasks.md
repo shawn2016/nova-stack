@@ -38,5 +38,5 @@
 
 ## 7. 集成验证
 
-- [ ] 7.1 Admin 与 Member 分别登录 smoke — 验证：双轨互不干扰
-- [ ] 7.2 `openspec validate auth-rbac-module --strict` — 验证：通过
+- [x] 7.1 Admin 与 Member 分别登录 smoke — 验证：双轨互不干扰
+- [x] 7.2 `openspec validate auth-rbac-module --strict` — 验证：通过

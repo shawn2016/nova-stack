@@ -61,4 +61,4 @@ base-ref: 37a316aa84a8aad66bd01b620b083d2b9f739e5e
 
 ## Task 8: 集成验证
 
-- [ ] 8.1 双轨 smoke + openspec validate — 验证：通过
+- [x] 8.1 双轨 smoke + openspec validate — 验证：通过
