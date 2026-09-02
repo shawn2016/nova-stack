@@ -37,7 +37,7 @@ base-ref: 3ac59f98931f87d7eb9fbda5f10c3945eefc2e48
 
 ## Task 3: Seed
 
-- [ ] 3.1 permissions + 菜单 + 示例字典 — 验证：`pnpm seed` + seed 测试
+- [x] 3.1 permissions + 菜单 + 示例字典 — 验证：`pnpm seed` + seed 测试
 
 ## Task 4: Admin 字典 UI
 
