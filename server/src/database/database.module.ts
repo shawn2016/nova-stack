@@ -1,6 +1,7 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { entities } from './entities';
 
 @Module({})
 export class DatabaseModule {
@@ -24,6 +25,7 @@ export class DatabaseModule {
             username: configService.get<string>('database.username'),
             password: configService.get<string>('database.password'),
             database: configService.get<string>('database.database'),
+            entities,
             autoLoadEntities: true,
             synchronize: configService.get<string>('app.nodeEnv') !== 'production',
           }),

@@ -8,6 +8,8 @@
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main",
+    "seed": "ts-node src/database/seeds/run-seed.ts",
+    "test": "pnpm exec jest --config ./test/jest-unit.json --runInBand test/database/entities.spec.ts",
     "test:e2e": "pnpm exec jest --config ./test/jest-e2e.json --runInBand"
   },
   "dependencies": {
@@ -20,8 +22,10 @@
     "@nestjs/swagger": "^11.1.0",
     "@nestjs/typeorm": "^11.0.0",
     "@nova/shared-types": "workspace:*",
+    "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+    "dotenv": "^16.4.7",
     "ioredis": "^5.6.0",
     "mysql2": "^3.14.0",
     "passport": "^0.7.0",
@@ -34,6 +38,7 @@
     "@nestjs/cli": "^11.0.6",
     "@nestjs/schematics": "^11.0.5",
     "@nestjs/testing": "^11.0.12",
+    "@types/bcrypt": "^5.0.2",
     "@types/express": "^5.0.1",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.13.10",
