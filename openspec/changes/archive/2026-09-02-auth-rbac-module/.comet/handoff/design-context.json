@@ -1,0 +1,23 @@
+{
+  "change": "auth-rbac-module",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "b42650447c78198b091916a8645ff2e30ee79bef4383201e81c78e7ea8ec62f0",
+  "files": [
+    { "path": "openspec/changes/auth-rbac-module/proposal.md", "sha256": "e2f8d3c9fa4fe4bcfcde4af0e1a9aa530ddd3d66c9a4e764e891a353cc34ae50" },
+    { "path": "openspec/changes/auth-rbac-module/design.md", "sha256": "9f1fc668aa85dad6ec442cb4f55e3a3a6750c057b613b8abeccf414e86d119f9" },
+    { "path": "openspec/changes/auth-rbac-module/tasks.md", "sha256": "37438c44b29d574cecc020f9739f89e34b7000af4e7348100728bc6bb97b5f62" },
+    { "path": "openspec/changes/auth-rbac-module/specs/admin-auth-ui/spec.md", "sha256": "c9d433c80885bb9fc9577f391131c3993e0c7b97c1ea3821321bcd81326ca225" },
+    { "path": "openspec/changes/auth-rbac-module/specs/admin-scaffold/spec.md", "sha256": "2f9d92c5c758196c5d7470e93966515f485344ae5b95ecf187c6140467745019" },
+    { "path": "openspec/changes/auth-rbac-module/specs/auth-api/spec.md", "sha256": "1c9c610236154281d72e49154e1e03ad61892d18c870000f8d7b4a7af0c8b7d7" },
+    { "path": "openspec/changes/auth-rbac-module/specs/member-auth-api/spec.md", "sha256": "fd8328da2bbb2fc83cfdd68a09d84236f35f525ea1384bfbddf933e79de4f48a" },
+    { "path": "openspec/changes/auth-rbac-module/specs/member-auth-ui/spec.md", "sha256": "4f44d179ec5d589a0e44b77661bb8417ba69f464540339fa859a872c4debbea5" },
+    { "path": "openspec/changes/auth-rbac-module/specs/rbac-api/spec.md", "sha256": "297a208dac7d477b35b59c45f5f4b94bed7dc191761192bc8ac52e82ed3ffc57" },
+    { "path": "openspec/changes/auth-rbac-module/specs/rbac-data-model/spec.md", "sha256": "5a41bc628234e6ebce1a0e86582ad66828f2f128c0f3333b9d9959c601027700" },
+    { "path": "openspec/changes/auth-rbac-module/specs/server-scaffold/spec.md", "sha256": "abf977a91e5cbc02069c9b7f43be4a3e8f5f3e018cbe5e3fb4d445a10d0e20b8" },
+    { "path": "openspec/changes/auth-rbac-module/specs/shared-types/spec.md", "sha256": "dd7f809e3b7cfd1765488e89266b2dd4b1888a78764f63fc26d02cc747224767" },
+    { "path": "openspec/changes/auth-rbac-module/specs/uni-app-scaffold/spec.md", "sha256": "99c7c39cc0e0de0829cb0c6530543e31def983f937d17230c886f6f446484218" }
+  ]
+}

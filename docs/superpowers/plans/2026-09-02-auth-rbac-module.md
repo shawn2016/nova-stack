@@ -2,6 +2,7 @@
 change: auth-rbac-module
 design-doc: docs/superpowers/specs/2026-09-02-auth-rbac-module-design.md
 base-ref: 37a316aa84a8aad66bd01b620b083d2b9f739e5e
+archived-with: 2026-09-02-auth-rbac-module
 ---
 
 # auth-rbac-module 实施计划

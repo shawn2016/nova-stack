@@ -2,6 +2,8 @@
 comet_change: auth-rbac-module
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-09-02-auth-rbac-module
+status: final
 ---
 
 # auth-rbac-module 深度技术设计

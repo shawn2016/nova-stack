@@ -1,0 +1,9 @@
+{
+  "openspec_proposal": "openspec/changes/auth-rbac-module/proposal.md",
+  "openspec_design": "openspec/changes/auth-rbac-module/design.md",
+  "openspec_tasks": "openspec/changes/auth-rbac-module/tasks.md",
+  "openspec_delta_spec": "openspec/changes/auth-rbac-module/specs/admin-auth-ui/spec.md",
+  "handoff_context": "openspec/changes/archive/2026-09-02-auth-rbac-module/.comet/handoff/design-context.json",
+  "handoff_markdown": "openspec/changes/archive/2026-09-02-auth-rbac-module/.comet/handoff/design-context.md",
+  "archive_directory": "openspec/changes/archive/2026-09-02-auth-rbac-module"
+}
