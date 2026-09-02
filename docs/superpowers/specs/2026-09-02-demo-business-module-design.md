@@ -2,6 +2,8 @@
 comet_change: demo-business-module
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-09-02-demo-business-module
+status: final
 ---
 
 # demo-business-module 深度技术设计

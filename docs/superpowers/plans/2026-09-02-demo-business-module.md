@@ -2,6 +2,7 @@
 change: demo-business-module
 design-doc: docs/superpowers/specs/2026-09-02-demo-business-module-design.md
 base-ref: f3689d35569485906068c341c0d8ace7d0fc0a9c
+archived-with: 2026-09-02-demo-business-module
 ---
 
 # demo-business-module 实施计划
