@@ -1,0 +1,5 @@
+packages:
+  - 'admin'
+  - 'uni-app'
+  - 'server'
+  - 'packages/*'

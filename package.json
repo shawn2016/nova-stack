@@ -1,0 +1,21 @@
+{
+  "name": "nova-stack",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"pnpm --filter @nova/server dev\" \"pnpm --filter @nova/admin dev\"",
+    "dev:all": "concurrently \"pnpm --filter @nova/server dev\" \"pnpm --filter @nova/admin dev\" \"pnpm --filter @nova/uni-app dev:h5\"",
+    "lint": "eslint .",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.17.0",
+    "concurrently": "^9.1.2",
+    "eslint": "^9.17.0",
+    "prettier": "^3.4.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
