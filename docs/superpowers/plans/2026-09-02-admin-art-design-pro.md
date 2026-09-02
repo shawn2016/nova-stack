@@ -32,11 +32,11 @@ base-ref: aed24ad460b750420efbb6f91ab1b562d84d7bb0
 
 ## Task 2: Server RBAC CRUD API
 
-- [ ] 2.1 shared-types：User/Role/Menu 管理 DTO — 验证：三端编译
-- [ ] 2.2 `GET/POST/PUT/DELETE /users` + `PUT /users/:id/roles` — 验证：e2e + 403
-- [ ] 2.3 `GET/POST/PUT/DELETE /roles` + `PUT /roles/:id/permissions` — 验证：e2e
-- [ ] 2.4 `GET/POST/PUT/DELETE /menus` — 验证：e2e；变更反映于 `/auth/me/menus`
-- [ ] 2.5 扩展 `AdminAuthGuard` `/users` — 验证：member token 403
+- [x] 2.1 shared-types：User/Role/Menu 管理 DTO — 验证：三端编译
+- [x] 2.2 `GET/POST/PUT/DELETE /users` + `PUT /users/:id/roles` — 验证：e2e + 403
+- [x] 2.3 `GET/POST/PUT/DELETE /roles` + `PUT /roles/:id/permissions` — 验证：e2e
+- [x] 2.4 `GET/POST/PUT/DELETE /menus` — 验证：e2e；变更反映于 `/auth/me/menus`
+- [x] 2.5 扩展 `AdminAuthGuard` `/users` — 验证：member token 403
 
 ## Task 3: Admin 鉴权与动态路由
 

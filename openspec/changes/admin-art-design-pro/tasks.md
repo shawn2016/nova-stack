@@ -5,10 +5,10 @@
 
 ## 2. Server — RBAC CRUD API
 
-- [ ] 2.1 `GET/POST/PUT/DELETE /users` + 权限 — 验证：e2e
-- [ ] 2.2 `GET/POST/PUT/DELETE /roles` + 角色-权限分配 — 验证：e2e
-- [ ] 2.3 `GET/POST/PUT/DELETE /menus` — 验证：e2e；变更反映于 `/auth/me/menus`
-- [ ] 2.4 shared-types 补充管理 DTO — 验证：编译通过
+- [x] 2.1 `GET/POST/PUT/DELETE /users` + 权限 — 验证：e2e
+- [x] 2.2 `GET/POST/PUT/DELETE /roles` + 角色-权限分配 — 验证：e2e
+- [x] 2.3 `GET/POST/PUT/DELETE /menus` — 验证：e2e；变更反映于 `/auth/me/menus`
+- [x] 2.4 shared-types 补充管理 DTO — 验证：编译通过
 
 ## 3. Admin — 鉴权与动态路由
 
