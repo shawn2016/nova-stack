@@ -39,9 +39,9 @@ base-ref: 72ccaff7527cde290399960a1f1f99c4a78dcc98
 
 ## Task 3: Admin 个人中心
 
-- [ ] 3.1 `api/auth` + `api/upload` — 验证：类型编译
-- [ ] 3.2 精简 user-center 页 + 头像上传 + 改密 — 验证：dev smoke
-- [ ] 3.3 ArtUserMenu 真实头像 + vite 代理 — 验证：上传后顶栏更新
+- [x] 3.1 `api/auth` + `api/upload` — 验证：类型编译
+- [x] 3.2 精简 user-center 页 + 头像上传 + 改密 — 验证：dev smoke
+- [x] 3.3 ArtUserMenu 真实头像 + vite 代理 — 验证：上传后顶栏更新
 
 ## Task 4: 集成验证
 
