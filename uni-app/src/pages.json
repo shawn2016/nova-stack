@@ -25,6 +25,20 @@
       "style": {
         "navigationBarTitleText": "会员注册"
       }
+    },
+    {
+      "path": "pages/articles/list",
+      "style": {
+        "navigationBarTitleText": "文章列表",
+        "enablePullDownRefresh": true,
+        "onReachBottomDistance": 100
+      }
+    },
+    {
+      "path": "pages/articles/detail",
+      "style": {
+        "navigationBarTitleText": "文章详情"
+      }
     }
   ],
   "globalStyle": {
