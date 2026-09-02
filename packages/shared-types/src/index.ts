@@ -50,3 +50,19 @@ export type {
   CreateArticleDto,
   UpdateArticleDto,
 } from './article.js';
+
+export type {
+  AssignRolePermissionsDto,
+  AssignUserRolesDto,
+  CreateMenuDto,
+  CreateRoleDto,
+  CreateUserDto,
+  SysMenuListItem,
+  SysRoleDetail,
+  SysRoleListItem,
+  SysUserDetail,
+  SysUserListItem,
+  UpdateMenuDto,
+  UpdateRoleDto,
+  UpdateUserDto,
+} from './rbac.js';
