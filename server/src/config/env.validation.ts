@@ -13,6 +13,26 @@ enum Environment {
   Test = 'test',
 }
 
+const WEAK_JWT_SECRETS = new Set(['', 'change-me-in-production']);
+
+function assertProductionJwtSecret(
+  nodeEnv: Environment,
+  jwtSecret: string,
+): void {
+  if (nodeEnv !== Environment.Production) {
+    return;
+  }
+
+  if (
+    WEAK_JWT_SECRETS.has(jwtSecret) ||
+    jwtSecret.length < 32
+  ) {
+    throw new Error(
+      'JWT_SECRET must be set to a strong secret (at least 32 characters) in production',
+    );
+  }
+}
+
 class EnvironmentVariables {
   @IsEnum(Environment)
   @IsOptional()
@@ -77,6 +97,8 @@ export function validate(config: Record<string, unknown>) {
   if (errors.length > 0) {
     throw new Error(errors.toString());
   }
+
+  assertProductionJwtSecret(validatedConfig.NODE_ENV, validatedConfig.JWT_SECRET);
 
   return validatedConfig;
 }

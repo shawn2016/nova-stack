@@ -11,6 +11,7 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { DatabaseModule } from './database/database.module';
 import { RedisModule } from './redis/redis.module';
+import { JwtModule } from './common/jwt/jwt.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { HealthModule } from './modules/health/health.module';
@@ -27,6 +28,7 @@ import { RolesGuard } from './modules/rbac/guards/roles.guard';
     }),
     DatabaseModule.forRoot(),
     RedisModule,
+    JwtModule,
     HealthModule,
     AuthModule,
     RbacModule,
