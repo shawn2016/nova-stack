@@ -1,0 +1,18 @@
+{
+  "change": "init-monorepo-scaffold",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "7158cb01633fcbadf14c7021e4fdf5642db764e8dc482fe9faa83e15c2136ea4",
+  "files": [
+    { "path": "openspec/changes/init-monorepo-scaffold/proposal.md", "sha256": "37c3ce252f0042bef00687dcbfdbf8c38765b14b764086ba102d475465c822d2" },
+    { "path": "openspec/changes/init-monorepo-scaffold/design.md", "sha256": "c9ea42f1630c2525c4fee95c33f0780632b613376b3579d2a53fc5a76e1fca7b" },
+    { "path": "openspec/changes/init-monorepo-scaffold/tasks.md", "sha256": "41828e26f9ae557548561c99d964eff118533a8143307ed52526ddfa9067a019" },
+    { "path": "openspec/changes/init-monorepo-scaffold/specs/admin-scaffold/spec.md", "sha256": "1465cd49874bdc4f63b3ea0e57741da9d438a061308250b48528e91ae22b218a" },
+    { "path": "openspec/changes/init-monorepo-scaffold/specs/monorepo-workspace/spec.md", "sha256": "20733c2c23a4e2481f79a7400c9c2a51f8f52fd9fce3b56cf8d360cce9cfc26d" },
+    { "path": "openspec/changes/init-monorepo-scaffold/specs/server-scaffold/spec.md", "sha256": "420f5c4703019708bfe064fce4c2922956fcbeafc7ffd8aaa29e41dff0b88c27" },
+    { "path": "openspec/changes/init-monorepo-scaffold/specs/shared-types/spec.md", "sha256": "be4313c8f76f0576a53526a027bb92c95576342f5ef45feb416e1a836129f9d2" },
+    { "path": "openspec/changes/init-monorepo-scaffold/specs/uni-app-scaffold/spec.md", "sha256": "570c1b13b82ecc877aebf34d04682e0fb69a3be4faf64d1322b5fb0a77955a55" }
+  ]
+}

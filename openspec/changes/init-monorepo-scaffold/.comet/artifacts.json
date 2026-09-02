@@ -1,0 +1,8 @@
+{
+  "openspec_proposal": "openspec/changes/init-monorepo-scaffold/proposal.md",
+  "openspec_design": "openspec/changes/init-monorepo-scaffold/design.md",
+  "openspec_tasks": "openspec/changes/init-monorepo-scaffold/tasks.md",
+  "openspec_delta_spec": "openspec/changes/init-monorepo-scaffold/specs/admin-scaffold/spec.md",
+  "handoff_context": "openspec/changes/init-monorepo-scaffold/.comet/handoff/design-context.json",
+  "handoff_markdown": "openspec/changes/init-monorepo-scaffold/.comet/handoff/design-context.md"
+}
