@@ -10,12 +10,12 @@
 
 ## 3. Server — B 端 Auth API
 
-- [ ] 3.1 `POST /auth/login|logout|refresh`（sys_user） — 验证：admin e2e
-- [ ] 3.2 Redis JWT 黑名单 — 验证：登出后 401
-- [ ] 3.3 `GET /auth/me` + `GET /auth/me/menus` — 验证：返回菜单树
-- [ ] 3.4 `@RequirePermission()` + PermissionGuard — 验证：403
-- [ ] 3.5 Role/Menu CRUD API 骨架 — 验证：Swagger 可见
-- [ ] 3.6 启用 CORS — 验证：admin 跨域 OK
+- [x] 3.1 `POST /auth/login|logout|refresh`（sys_user） — 验证：admin e2e
+- [x] 3.2 Redis JWT 黑名单 — 验证：登出后 401
+- [x] 3.3 `GET /auth/me` + `GET /auth/me/menus` — 验证：返回菜单树
+- [x] 3.4 `@RequirePermission()` + PermissionGuard — 验证：403
+- [x] 3.5 Role/Menu CRUD API 骨架 — 验证：Swagger 可见
+- [x] 3.6 启用 CORS — 验证：admin 跨域 OK
 
 ## 4. Server — C 端 Member Auth API
 

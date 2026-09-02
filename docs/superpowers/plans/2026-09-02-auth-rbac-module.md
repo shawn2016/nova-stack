@@ -39,10 +39,10 @@ base-ref: 37a316aa84a8aad66bd01b620b083d2b9f739e5e
 
 ## Task 4: B 端 Auth + RBAC API
 
-- [ ] 4.1 POST /auth/login|logout|refresh — 验证：e2e
-- [ ] 4.2 GET /auth/me + /auth/me/menus — 验证：e2e 菜单树
-- [ ] 4.3 PermissionGuard + Role/Menu CRUD 骨架 — 验证：403 e2e
-- [ ] 4.4 enableCors — 验证：跨域
+- [x] 4.1 POST /auth/login|logout|refresh — 验证：e2e
+- [x] 4.2 GET /auth/me + /auth/me/menus — 验证：e2e 菜单树
+- [x] 4.3 PermissionGuard + Role/Menu CRUD 骨架 — 验证：403 e2e
+- [x] 4.4 enableCors — 验证：跨域
 
 ## Task 5: C 端 Member Auth API
 
