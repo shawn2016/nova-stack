@@ -12,9 +12,9 @@
 
 ## 3. Admin — 鉴权与动态路由
 
-- [ ] 3.1 模板登录页 + Token 刷新 — 验证：`admin/admin123` 登录
-- [ ] 3.2 `GET /auth/me/menus` 驱动侧栏与 `menusToRoutes` — 验证：不同角色菜单不同
-- [ ] 3.3 `v-permission` 适配 Element Plus — 验证：无权限按钮隐藏
+- [x] 3.1 模板登录页 + Token 刷新 — 验证：`admin/admin123` 登录
+- [x] 3.2 `GET /auth/me/menus` 驱动侧栏与 `menusToRoutes` — 验证：不同角色菜单不同
+- [x] 3.3 `v-permission` 适配 Element Plus — 验证：无权限按钮隐藏
 
 ## 4. Admin — 系统管理（真实 CRUD）
 

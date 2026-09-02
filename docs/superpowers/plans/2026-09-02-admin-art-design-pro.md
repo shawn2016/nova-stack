@@ -40,10 +40,10 @@ base-ref: aed24ad460b750420efbb6f91ab1b562d84d7bb0
 
 ## Task 3: Admin 鉴权与动态路由
 
-- [ ] 3.1 迁移 `api/request.ts`、`api/auth.ts`、user store — 验证：登录/刷新
-- [ ] 3.2 模板 Layout + `menusToRoutes` 对接 `GET /auth/me/menus` — 验证：侧栏动态渲染
-- [ ] 3.3 `v-permission` 适配 Element Plus — 验证：无权限按钮隐藏
-- [ ] 3.4 统一 seed menu component 路径 + 静态 hidden 路由（文章 create/edit）— 验证：路由可达
+- [x] 3.1 迁移 `api/request.ts`、`api/auth.ts`、user store — 验证：登录/刷新
+- [x] 3.2 模板 Layout + `menusToRoutes` 对接 `GET /auth/me/menus` — 验证：侧栏动态渲染
+- [x] 3.3 `v-permission` 适配 Element Plus — 验证：无权限按钮隐藏
+- [x] 3.4 统一 seed menu component 路径 + 静态 hidden 路由（文章 create/edit）— 验证：路由可达
 
 ## Task 4: Admin 系统管理 UI
 
