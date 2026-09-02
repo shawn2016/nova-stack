@@ -82,4 +82,24 @@ export async function initE2eSchema(dataSource: DataSource): Promise<void> {
       updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+  await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS article (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title VARCHAR(200) NOT NULL,
+      summary VARCHAR(500) NOT NULL DEFAULT '',
+      content TEXT NOT NULL,
+      cover_url VARCHAR(512),
+      status TINYINT NOT NULL DEFAULT 0,
+      author_id BIGINT NOT NULL,
+      published_at DATETIME,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await dataSource.query(`
+    CREATE INDEX IF NOT EXISTS idx_article_status_published_at
+    ON article (status, published_at)
+  `);
 }

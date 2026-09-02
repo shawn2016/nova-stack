@@ -1,3 +1,4 @@
+import { ArticleEntity } from './article.entity';
 import { MemberUserEntity } from './member-user.entity';
 import { SysMenuEntity } from './sys-menu.entity';
 import { SysPermissionEntity } from './sys-permission.entity';
@@ -6,6 +7,7 @@ import { SysRolePermissionEntity } from './sys-role-permission.entity';
 import { SysUserEntity } from './sys-user.entity';
 import { SysUserRoleEntity } from './sys-user-role.entity';
 
+export { ArticleEntity } from './article.entity';
 export { MemberUserEntity } from './member-user.entity';
 export { SysMenuEntity } from './sys-menu.entity';
 export { SysPermissionEntity } from './sys-permission.entity';
@@ -23,4 +25,5 @@ export const entities = [
   SysUserRoleEntity,
   SysRolePermissionEntity,
   MemberUserEntity,
+  ArticleEntity,
 ];

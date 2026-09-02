@@ -1,5 +1,6 @@
 import { DataSource, EntityMetadata } from 'typeorm';
 import {
+  ArticleEntity,
   MemberUserEntity,
   SysMenuEntity,
   SysPermissionEntity,
@@ -51,12 +52,13 @@ describe('RBAC database entities', () => {
     }
   });
 
-  it('loads all 7 entities with expected table names', () => {
+  it('loads all 8 entities with expected table names', () => {
     const tableNames = dataSource.entityMetadatas
       .map((meta) => meta.tableName)
       .sort();
 
     expect(tableNames).toEqual([
+      'article',
       'member_user',
       'sys_menu',
       'sys_permission',
@@ -118,6 +120,27 @@ describe('RBAC database entities', () => {
 
     expect(meta.tableName).toBe('member_user');
     expect(hasUniqueConstraint(meta, 'phone')).toBe(true);
+    expect(meta.relations).toHaveLength(0);
+  });
+
+  it('maps article columns and status+publishedAt index', () => {
+    const meta = dataSource.getMetadata(ArticleEntity);
+
+    expect(meta.tableName).toBe('article');
+    expect(meta.findColumnWithPropertyName('title')?.length).toBe('200');
+    expect(meta.findColumnWithPropertyName('summary')?.length).toBe('500');
+    expect(meta.findColumnWithPropertyName('content')?.type).toBe('text');
+    expect(meta.findColumnWithPropertyName('coverUrl')?.databaseName).toBe('cover_url');
+    expect(meta.findColumnWithPropertyName('status')?.type).toBe('tinyint');
+    expect(meta.findColumnWithPropertyName('authorId')?.databaseName).toBe('author_id');
+    expect(meta.findColumnWithPropertyName('publishedAt')?.databaseName).toBe('published_at');
+    expect(
+      meta.indices.some(
+        (index) =>
+          index.columns.map((c) => c.propertyName).sort().join(',') ===
+          'publishedAt,status',
+      ),
+    ).toBe(true);
     expect(meta.relations).toHaveLength(0);
   });
 });

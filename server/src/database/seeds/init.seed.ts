@@ -1,6 +1,7 @@
 import * as bcrypt from 'bcrypt';
 import { DataSource, Repository } from 'typeorm';
 import {
+  ArticleEntity,
   MemberUserEntity,
   SysMenuEntity,
   SysPermissionEntity,
@@ -44,6 +45,12 @@ const PERMISSION_SEEDS: PermissionSeed[] = [
   { name: '菜单新增', code: 'system:menu:create', type: 'api' },
   { name: '菜单编辑', code: 'system:menu:update', type: 'api' },
   { name: '菜单删除', code: 'system:menu:delete', type: 'api' },
+  { name: '文章列表', code: 'content:article:list', type: 'api' },
+  { name: '文章查看', code: 'content:article:view', type: 'api' },
+  { name: '文章新增', code: 'content:article:create', type: 'api' },
+  { name: '文章编辑', code: 'content:article:update', type: 'api' },
+  { name: '文章删除', code: 'content:article:delete', type: 'api' },
+  { name: '文章发布', code: 'content:article:publish', type: 'api' },
 ];
 
 const MENU_SEEDS: MenuSeed[] = [
@@ -82,6 +89,26 @@ const MENU_SEEDS: MenuSeed[] = [
         type: 'menu',
         permissionCode: 'system:menu:list',
         sort: 3,
+      },
+    ],
+  },
+  {
+    name: '内容管理',
+    path: '/content',
+    component: null,
+    icon: 'Document',
+    type: 'directory',
+    permissionCode: null,
+    sort: 2,
+    children: [
+      {
+        name: '文章管理',
+        path: '/content/articles',
+        component: 'views/content/articles/index',
+        icon: 'Notebook',
+        type: 'menu',
+        permissionCode: 'content:article:list',
+        sort: 1,
       },
     ],
   },
@@ -143,6 +170,62 @@ async function upsertMenuTree(
   }
 }
 
+interface ArticleSeed {
+  title: string;
+  summary: string;
+  content: string;
+  coverUrl: string | null;
+  status: number;
+  publishedAt: Date | null;
+}
+
+const DEV_ARTICLE_SEEDS: ArticleSeed[] = [
+  {
+    title: '欢迎使用 Nova Stack',
+    summary: '这是一篇已发布的示例文章',
+    content: '欢迎使用 Nova Stack 内容管理模块。',
+    coverUrl: null,
+    status: 1,
+    publishedAt: new Date('2026-01-01T00:00:00.000Z'),
+  },
+  {
+    title: '草稿示例文章',
+    summary: '这是一篇草稿状态的示例文章',
+    content: '该文章尚未发布，仅供开发环境测试。',
+    coverUrl: null,
+    status: 0,
+    publishedAt: null,
+  },
+];
+
+async function upsertDevArticles(
+  repo: Repository<ArticleEntity>,
+  authorId: string,
+): Promise<void> {
+  for (const seed of DEV_ARTICLE_SEEDS) {
+    let article = await repo.findOne({ where: { title: seed.title } });
+    if (!article) {
+      article = repo.create({
+        title: seed.title,
+        summary: seed.summary,
+        content: seed.content,
+        coverUrl: seed.coverUrl,
+        status: seed.status,
+        authorId,
+        publishedAt: seed.publishedAt,
+      });
+    } else {
+      article.summary = seed.summary;
+      article.content = seed.content;
+      article.coverUrl = seed.coverUrl;
+      article.status = seed.status;
+      article.authorId = authorId;
+      article.publishedAt = seed.publishedAt;
+    }
+    await repo.save(article);
+  }
+}
+
 /** 初始化 RBAC 与开发会员 seed 数据（幂等） */
 export async function runInitSeed(dataSource: DataSource): Promise<void> {
   const roleRepo = dataSource.getRepository(SysRoleEntity);
@@ -152,6 +235,7 @@ export async function runInitSeed(dataSource: DataSource): Promise<void> {
   const userRoleRepo = dataSource.getRepository(SysUserRoleEntity);
   const rolePermissionRepo = dataSource.getRepository(SysRolePermissionEntity);
   const memberRepo = dataSource.getRepository(MemberUserEntity);
+  const articleRepo = dataSource.getRepository(ArticleEntity);
 
   let superAdminRole = await roleRepo.findOne({
     where: { code: SUPER_ADMIN_ROLE_CODE },
@@ -230,5 +314,7 @@ export async function runInitSeed(dataSource: DataSource): Promise<void> {
         }),
       );
     }
+
+    await upsertDevArticles(articleRepo, adminUser.id);
   }
 }

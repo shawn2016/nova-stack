@@ -2,6 +2,7 @@ import { DataSource, ObjectLiteral, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { runInitSeed } from '../../src/database/seeds/init.seed';
 import {
+  ArticleEntity,
   MemberUserEntity,
   SysMenuEntity,
   SysPermissionEntity,
@@ -27,6 +28,7 @@ interface SeedStores {
   userRoles: SysUserRoleEntity[];
   rolePermissions: SysRolePermissionEntity[];
   members: MemberUserEntity[];
+  articles: ArticleEntity[];
 }
 
 function matchesWhere<T extends ObjectLiteral>(
@@ -78,6 +80,7 @@ function createMockDataSource(stores: SeedStores): DataSource {
   const userRoleRepo = createInMemoryRepo(stores.userRoles);
   const rolePermissionRepo = createInMemoryRepo(stores.rolePermissions);
   const memberRepo = createInMemoryRepo(stores.members);
+  const articleRepo = createInMemoryRepo(stores.articles);
 
   return {
     getRepository: jest.fn((entity) => {
@@ -96,6 +99,8 @@ function createMockDataSource(stores: SeedStores): DataSource {
           return rolePermissionRepo;
         case MemberUserEntity:
           return memberRepo;
+        case ArticleEntity:
+          return articleRepo;
         default:
           throw new Error(`Unexpected entity: ${String(entity)}`);
       }
@@ -112,6 +117,7 @@ function emptyStores(): SeedStores {
     userRoles: [],
     rolePermissions: [],
     members: [],
+    articles: [],
   };
 }
 
@@ -153,11 +159,16 @@ describe('runInitSeed', () => {
 
     await runInitSeed(dataSource);
 
-    expect(stores.permissions.length).toBe(12);
+    expect(stores.permissions.length).toBe(18);
     expect(stores.permissions.some((p) => p.code === 'system:user:list')).toBe(true);
+    expect(stores.permissions.some((p) => p.code === 'content:article:list')).toBe(true);
     expect(stores.menus.some((m) => m.name === '系统管理')).toBe(true);
     expect(stores.menus.some((m) => m.name === '用户管理')).toBe(true);
-    expect(stores.rolePermissions.length).toBe(12);
+    expect(stores.menus.some((m) => m.name === '内容管理')).toBe(true);
+    expect(stores.menus.some((m) => m.name === '文章管理' && m.path === '/content/articles')).toBe(
+      true,
+    );
+    expect(stores.rolePermissions.length).toBe(18);
   });
 
   it('does not duplicate role-permission links on second run', async () => {
@@ -168,8 +179,31 @@ describe('runInitSeed', () => {
     await runInitSeed(dataSource);
     await runInitSeed(dataSource);
 
-    expect(stores.permissions.length).toBe(12);
-    expect(stores.rolePermissions.length).toBe(12);
+    expect(stores.permissions.length).toBe(18);
+    expect(stores.rolePermissions.length).toBe(18);
+  });
+
+  it('seeds dev sample articles in non-production', async () => {
+    process.env.NODE_ENV = 'development';
+    const stores = emptyStores();
+    const dataSource = createMockDataSource(stores);
+
+    await runInitSeed(dataSource);
+
+    expect(stores.articles).toHaveLength(2);
+    expect(stores.articles.some((a) => a.status === 1 && a.publishedAt)).toBe(true);
+    expect(stores.articles.some((a) => a.status === 0 && !a.publishedAt)).toBe(true);
+  });
+
+  it('does not duplicate sample articles on second run', async () => {
+    process.env.NODE_ENV = 'development';
+    const stores = emptyStores();
+    const dataSource = createMockDataSource(stores);
+
+    await runInitSeed(dataSource);
+    await runInitSeed(dataSource);
+
+    expect(stores.articles).toHaveLength(2);
   });
 
   it('skips default admin and dev member seeds in production', async () => {
@@ -182,9 +216,10 @@ describe('runInitSeed', () => {
     expect(stores.users).toHaveLength(0);
     expect(stores.userRoles).toHaveLength(0);
     expect(stores.members).toHaveLength(0);
+    expect(stores.articles).toHaveLength(0);
     expect(bcrypt.hash).not.toHaveBeenCalled();
 
     expect(stores.roles.some((role) => role.code === 'super_admin')).toBe(true);
-    expect(stores.permissions.length).toBe(12);
+    expect(stores.permissions.length).toBe(18);
   });
 });
