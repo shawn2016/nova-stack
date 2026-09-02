@@ -13,6 +13,18 @@
       "style": {
         "navigationBarTitleText": "Nova Stack"
       }
+    },
+    {
+      "path": "pages/login/login",
+      "style": {
+        "navigationBarTitleText": "会员登录"
+      }
+    },
+    {
+      "path": "pages/register/register",
+      "style": {
+        "navigationBarTitleText": "会员注册"
+      }
     }
   ],
   "globalStyle": {
