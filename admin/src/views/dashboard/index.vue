@@ -1,10 +1,11 @@
 <template>
   <a-card title="仪表盘">
     <p class="text-gray-600 mb-4">欢迎使用 Nova 管理后台。</p>
-    <a-space>
+    <a-space wrap>
       <a-button type="primary" :loading="loading" @click="fetchHealth">
         测试 API 连接
       </a-button>
+      <a-button v-permission="'system:user:create'">权限按钮示例</a-button>
       <span v-if="healthStatus" class="text-sm text-green-600">{{ healthStatus }}</span>
     </a-space>
   </a-card>

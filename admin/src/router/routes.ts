@@ -1,5 +1,13 @@
 import type { RouteRecordRaw } from 'vue-router';
 
+declare module 'vue-router' {
+  interface RouteMeta {
+    title?: string;
+    icon?: string;
+    public?: boolean;
+  }
+}
+
 export const routes: RouteRecordRaw[] = [
   {
     path: '/login',
@@ -9,6 +17,7 @@ export const routes: RouteRecordRaw[] = [
   },
   {
     path: '/',
+    name: 'Layout',
     component: () => import('@/layouts/DefaultLayout.vue'),
     redirect: '/dashboard',
     children: [
