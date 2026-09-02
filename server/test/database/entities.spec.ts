@@ -2,6 +2,8 @@ import { DataSource, EntityMetadata } from 'typeorm';
 import {
   ArticleEntity,
   MemberUserEntity,
+  SysDictDataEntity,
+  SysDictTypeEntity,
   SysMenuEntity,
   SysPermissionEntity,
   SysRoleEntity,
@@ -52,7 +54,7 @@ describe('RBAC database entities', () => {
     }
   });
 
-  it('loads all 8 entities with expected table names', () => {
+  it('loads all 10 entities with expected table names', () => {
     const tableNames = dataSource.entityMetadatas
       .map((meta) => meta.tableName)
       .sort();
@@ -60,6 +62,8 @@ describe('RBAC database entities', () => {
     expect(tableNames).toEqual([
       'article',
       'member_user',
+      'sys_dict_data',
+      'sys_dict_type',
       'sys_menu',
       'sys_permission',
       'sys_role',
@@ -120,6 +124,31 @@ describe('RBAC database entities', () => {
 
     expect(meta.tableName).toBe('member_user');
     expect(hasUniqueConstraint(meta, 'phone')).toBe(true);
+    expect(meta.relations).toHaveLength(0);
+  });
+
+  it('maps sys_dict_type with unique code', () => {
+    const meta = dataSource.getMetadata(SysDictTypeEntity);
+
+    expect(meta.tableName).toBe('sys_dict_type');
+    expect(hasUniqueConstraint(meta, 'code')).toBe(true);
+    expect(meta.findColumnWithPropertyName('status')?.type).toBe('tinyint');
+    expect(meta.findColumnWithPropertyName('remark')?.isNullable).toBe(true);
+  });
+
+  it('maps sys_dict_data with composite unique (typeId, value)', () => {
+    const meta = dataSource.getMetadata(SysDictDataEntity);
+
+    expect(meta.tableName).toBe('sys_dict_data');
+    expect(
+      meta.uniques.some(
+        (unique) =>
+          unique.columns.map((c) => c.propertyName).sort().join(',') ===
+          'typeId,value',
+      ),
+    ).toBe(true);
+    expect(meta.findColumnWithPropertyName('typeId')?.databaseName).toBe('type_id');
+    expect(meta.findColumnWithPropertyName('sort')?.default).toBe(0);
     expect(meta.relations).toHaveLength(0);
   });
 

@@ -69,3 +69,13 @@ export type {
   UpdateRoleDto,
   UpdateUserDto,
 } from './rbac.js';
+
+export type {
+  CreateDictDataDto,
+  CreateDictTypeDto,
+  DictDataListItem,
+  DictOption,
+  DictTypeListItem,
+  UpdateDictDataDto,
+  UpdateDictTypeDto,
+} from './dict.js';
