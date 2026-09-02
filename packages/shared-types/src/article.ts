@@ -30,11 +30,10 @@ export interface CreateArticleDto {
   coverUrl?: string;
 }
 
-/** 更新文章请求 */
+/** 更新文章请求（不含 status；发布请用 PATCH /articles/:id/publish） */
 export interface UpdateArticleDto {
   title?: string;
   summary?: string;
   content?: string;
   coverUrl?: string;
-  status?: 0 | 1;
 }

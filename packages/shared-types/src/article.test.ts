@@ -94,12 +94,12 @@ describe('article types', () => {
   it('UpdateArticleDto 全部字段可选', () => {
     const partial: UpdateArticleDto = {
       title: '更新标题',
-      status: 1,
+      summary: '新摘要',
     };
     const empty: UpdateArticleDto = {};
 
     expect(partial.title).toBe('更新标题');
-    expect(partial.status).toBe(1);
+    expect(partial.summary).toBe('新摘要');
     expect(empty.title).toBeUndefined();
   });
 });

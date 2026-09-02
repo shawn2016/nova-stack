@@ -70,15 +70,6 @@ export class ArticleService {
     if (dto.summary !== undefined) article.summary = dto.summary;
     if (dto.content !== undefined) article.content = dto.content;
     if (dto.coverUrl !== undefined) article.coverUrl = dto.coverUrl;
-    if (dto.status !== undefined) {
-      article.status = dto.status;
-      if (dto.status === 1 && !article.publishedAt) {
-        article.publishedAt = new Date();
-      }
-      if (dto.status === 0) {
-        article.publishedAt = null;
-      }
-    }
 
     const saved = await this.articleRepo.save(article);
     return toArticle(saved);

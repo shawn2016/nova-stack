@@ -6,6 +6,7 @@ import { App } from 'supertest/types';
 import { ErrorCode } from '@nova/shared-types';
 import { createE2eApp, E2eAppContext } from '../auth/e2e-app.helper';
 import { seedLimitedUser } from '../auth/seed-limited-user';
+import { seedArticleEditorUser } from './seed-article-editor';
 
 describe('Article API (e2e)', () => {
   let ctx: E2eAppContext;
@@ -33,6 +34,7 @@ describe('Article API (e2e)', () => {
     adminToken = await loginAdmin();
     memberToken = await loginMember();
     await seedLimitedUser(ctx.dataSource);
+    await seedArticleEditorUser(ctx.dataSource);
   }, 30000);
 
   afterAll(async () => {
@@ -141,6 +143,69 @@ describe('Article API (e2e)', () => {
       const res = await request(app.getHttpServer())
         .get('/articles')
         .set('Authorization', `Bearer ${limitedToken}`)
+        .expect(403);
+
+      expect(res.body.code).toBe(ErrorCode.FORBIDDEN);
+    });
+
+    it('无 token 访问 GET /articles 应返回 401', async () => {
+      const res = await request(app.getHttpServer())
+        .get('/articles')
+        .expect(401);
+
+      expect(res.body.code).toBe(ErrorCode.UNAUTHORIZED);
+    });
+
+    it('无 publish 权限的用户 PUT status 不能发布文章', async () => {
+      const loginRes = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({ username: 'editor', password: 'editor123' });
+      const editorToken = loginRes.body.data.tokens.accessToken;
+
+      const createRes = await request(app.getHttpServer())
+        .post('/articles')
+        .set('Authorization', `Bearer ${editorToken}`)
+        .send({
+          title: '编辑员草稿',
+          content: '正文',
+        })
+        .expect(201);
+
+      const articleId = createRes.body.data.id;
+
+      await request(app.getHttpServer())
+        .put(`/articles/${articleId}`)
+        .set('Authorization', `Bearer ${editorToken}`)
+        .send({ title: '尝试附带 status', status: 1 })
+        .expect(200);
+
+      const detailRes = await request(app.getHttpServer())
+        .get(`/articles/${articleId}`)
+        .set('Authorization', `Bearer ${editorToken}`)
+        .expect(200);
+
+      expect(detailRes.body.data.status).toBe(0);
+      expect(detailRes.body.data.publishedAt).toBeFalsy();
+    });
+
+    it('无 publish 权限的用户 PATCH publish 应返回 403', async () => {
+      const loginRes = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({ username: 'editor', password: 'editor123' });
+      const editorToken = loginRes.body.data.tokens.accessToken;
+
+      const createRes = await request(app.getHttpServer())
+        .post('/articles')
+        .set('Authorization', `Bearer ${editorToken}`)
+        .send({
+          title: '编辑员待发布',
+          content: '正文',
+        })
+        .expect(201);
+
+      const res = await request(app.getHttpServer())
+        .patch(`/articles/${createRes.body.data.id}/publish`)
+        .set('Authorization', `Bearer ${editorToken}`)
         .expect(403);
 
       expect(res.body.code).toBe(ErrorCode.FORBIDDEN);
