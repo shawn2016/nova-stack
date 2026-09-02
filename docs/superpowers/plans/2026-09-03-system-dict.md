@@ -31,9 +31,9 @@ base-ref: 3ac59f98931f87d7eb9fbda5f10c3945eefc2e48
 
 ## Task 2: Server 字典 API
 
-- [ ] 2.1 DictType CRUD + 权限 — 验证：e2e 类型增删改查、code 重复 400
-- [ ] 2.2 DictData CRUD + by-type — 验证：e2e 项 CRUD、by-type 仅启用项
-- [ ] 2.3 删除类型约束、Member 403 — 验证：e2e 边界
+- [x] 2.1 DictType CRUD + 权限 — 验证：e2e 类型增删改查、code 重复 400
+- [x] 2.2 DictData CRUD + by-type — 验证：e2e 项 CRUD、by-type 仅启用项
+- [x] 2.3 删除类型约束、Member 403 — 验证：e2e 边界
 
 ## Task 3: Seed
 

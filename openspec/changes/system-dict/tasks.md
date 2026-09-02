@@ -5,9 +5,9 @@
 
 ## 2. Server 字典 API
 
-- [ ] 2.1 DictModule：类型 CRUD + 权限装饰器 — 验证：e2e 类型增删改查
-- [ ] 2.2 字典项 CRUD + by-type 查询 — 验证：e2e 项 CRUD 与 by-type 返回启用项
-- [ ] 2.3 seed：permissions、菜单、示例字典 — 验证：`pnpm seed` + seed 测试通过
+- [x] 2.1 DictModule：类型 CRUD + 权限装饰器 — 验证：e2e 类型增删改查
+- [x] 2.2 字典项 CRUD + by-type 查询 — 验证：e2e 项 CRUD 与 by-type 返回启用项
+- [x] 2.3 删除类型约束、Member 403 — 验证：e2e 边界（seed 留 Task 3）
 
 ## 3. Admin 字典管理 UI
 
