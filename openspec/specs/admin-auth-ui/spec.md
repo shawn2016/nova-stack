@@ -6,7 +6,7 @@ Admin 管理端完整登录鉴权 UI：登录页、Token 管理、动态路由�
 ## Requirements
 
 ### Requirement: 登录页对接
-Admin MUST 提供可用的登录页，提交用户名密码调用 `POST /auth/login`，成功后存储 Token 并跳转 Dashboard。
+Admin MUST 提供可用的登录页（Element Plus 表单），提交用户名密码调用 `POST /auth/login`，成功后存储 Token 并跳转 Dashboard。
 
 #### Scenario: 登录成功跳转
 - **WHEN** 输入正确凭据并提交
@@ -27,11 +27,11 @@ Admin MUST 登录后根据 `GET /auth/me/menus` 动态注册业务路由。
 - **THEN** 侧边栏展示有权菜单，点击可导航
 
 ### Requirement: 按钮权限指令
-Admin MUST 提供 `v-permission` 指令，无权限时隐藏或禁用按钮。
+Admin MUST 提供 `v-permission` 指令（或等价权限组件），无权限时隐藏或禁用按钮；与 art-design-pro 按钮/表格操作列兼容。
 
 #### Scenario: 无权限隐藏按钮
-- **WHEN** 用户无 `system:user:add` 权限
-- **THEN** 对应新增按钮不可见
+- **WHEN** 用户无 `content:article:publish` 权限
+- **THEN** 对应发布按钮不可见
 
 ### Requirement: 路由守卫
 Admin MUST 未登录用户访问受保护路由时重定向至 `/login`。

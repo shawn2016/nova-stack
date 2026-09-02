@@ -1,0 +1,18 @@
+{
+  "change": "admin-art-design-pro",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "5ea183df8e48b1c072eeb0e20461128de89eae1b39a7913bc2c90044e16727d8",
+  "files": [
+    { "path": "openspec/changes/admin-art-design-pro/proposal.md", "sha256": "bc3928a0f635e7016b6d9a0c52f0c4af646131de01cbd8cd0577c3be06c6a05b" },
+    { "path": "openspec/changes/admin-art-design-pro/design.md", "sha256": "6a516e7ac6e6b4cb04b2bf5421c2c8b1e5f672a956db22c7f9874d0130a1dfe1" },
+    { "path": "openspec/changes/admin-art-design-pro/tasks.md", "sha256": "271e5b03224dff2e029327a57bd00b383752ce373d5197a449bac3ce37f8974e" },
+    { "path": "openspec/changes/admin-art-design-pro/specs/admin-auth-ui/spec.md", "sha256": "c13b54ec2f7c2cb684f9d6f2a951bb6a1905bc275a3604f8e5578677fedf5eae" },
+    { "path": "openspec/changes/admin-art-design-pro/specs/admin-scaffold/spec.md", "sha256": "d907c42bbc0c7033d0529f9bf647aa6e1c7deaec157cf6a4ada6426b3e551229" },
+    { "path": "openspec/changes/admin-art-design-pro/specs/admin-system-ui/spec.md", "sha256": "9629870df9f6f44d596696dde9a282c6668b9c4fd9f989237f9a5f44789fee15" },
+    { "path": "openspec/changes/admin-art-design-pro/specs/article-admin-ui/spec.md", "sha256": "55c6e45caee6d14fe6f357c6ce4cb1dd3dda5b9b37b03b769b41854fba11bc8d" },
+    { "path": "openspec/changes/admin-art-design-pro/specs/rbac-api/spec.md", "sha256": "55c40a114f193019d19852ffa48e933a8c49654dac3e5924d38e60da00fda46d" }
+  ]
+}

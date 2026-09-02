@@ -2,6 +2,7 @@
 change: admin-art-design-pro
 design-doc: docs/superpowers/specs/2026-09-02-admin-art-design-pro-design.md
 base-ref: aed24ad460b750420efbb6f91ab1b562d84d7bb0
+archived-with: 2026-09-02-admin-art-design-pro
 ---
 
 # admin-art-design-pro 实施计划

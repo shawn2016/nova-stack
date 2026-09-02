@@ -1,9 +1,4 @@
-# article-admin-ui Specification
-
-## Purpose
-TBD - created by archiving change demo-business-module. Update Purpose after archive.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: 文章列表页
 Admin MUST 提供文章管理列表页（Element Plus 表格），展示标题、状态、发布时间，支持分页与状态筛选。
