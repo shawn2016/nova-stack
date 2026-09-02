@@ -28,5 +28,5 @@
 
 ## 6. 集成验证
 
-- [ ] 6.1 Admin 创建发布 + Member 可见 smoke — 验证：双轨联调
-- [ ] 6.2 `openspec validate demo-business-module --strict` — 验证：通过
+- [x] 6.1 Admin 创建发布 + Member 可见 smoke — 验证：双轨联调
+- [x] 6.2 `openspec validate demo-business-module --strict` — 验证：通过

@@ -46,4 +46,4 @@ base-ref: f3689d35569485906068c341c0d8ace7d0fc0a9c
 
 ## Task 6: 集成验证
 
-- [ ] 6.1 smoke + openspec validate — 验证：通过
+- [x] 6.1 smoke + openspec validate — 验证：通过
