@@ -28,8 +28,8 @@ base-ref: f3689d35569485906068c341c0d8ace7d0fc0a9c
 
 ## Task 2: Entity + Seed 扩展
 
-- [ ] 2.1 ArticleEntity — 验证：与 design 一致
-- [ ] 2.2 RBAC seed 扩展 + dev 示例文章 — 验证：seed 单测
+- [x] 2.1 ArticleEntity — 验证：与 design 一致
+- [x] 2.2 RBAC seed 扩展 + dev 示例文章 — 验证：seed 单测
 
 ## Task 3: Server Article API
 

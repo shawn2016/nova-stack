@@ -4,9 +4,9 @@
 
 ## 2. 数据库与 Seed
 
-- [ ] 2.1 ArticleEntity + migration/sync — 验证：表结构与 design 一致
-- [ ] 2.2 扩展 RBAC seed：文章管理菜单 + 5 权限码 — 验证：Admin 菜单可见
-- [ ] 2.3 示例文章 seed（dev） — 验证：`pnpm seed` 或 seed 单测
+- [x] 2.1 ArticleEntity + migration/sync — 验证：表结构与 design 一致
+- [x] 2.2 扩展 RBAC seed：文章管理菜单 + 5 权限码 — 验证：Admin 菜单可见
+- [x] 2.3 示例文章 seed（dev） — 验证：`pnpm seed` 或 seed 单测
 
 ## 3. Server — Article API
 
