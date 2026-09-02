@@ -5,8 +5,8 @@
 
 ## 2. Server OSS Upload
 
-- [ ] 2.1 Upload 模块 + OSS/本地双模式 — 验证：单元测试 mock OSS
-- [ ] 2.2 `POST /files/upload` Admin 鉴权 — 验证：e2e 上传返回 url；Member token 403
+- [x] 2.1 Upload 模块 + OSS/本地双模式 — 验证：单元测试 mock OSS
+- [x] 2.2 `POST /files/upload` Admin 鉴权 — 验证：e2e 上传返回 url；Member token 403
 
 ## 3. Admin 个人中心
 

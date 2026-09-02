@@ -32,10 +32,10 @@ base-ref: 72ccaff7527cde290399960a1f1f99c4a78dcc98
 
 ## Task 2: Upload 模块
 
-- [ ] 2.1 StorageService 抽象 + LocalStorageService — 验证：unit
-- [ ] 2.2 OssStorageService（OSS_ENABLED 时）— 验证：unit mock
-- [ ] 2.3 `POST /files/upload` + AdminAuthGuard `/files` — 验证：e2e local 模式
-- [ ] 2.4 静态 `/uploads/*` + env 文档 — 验证：上传后可 GET 文件
+- [x] 2.1 StorageService 抽象 + LocalStorageService — 验证：unit
+- [x] 2.2 OssStorageService（OSS_ENABLED 时）— 验证：unit mock
+- [x] 2.3 `POST /files/upload` + AdminAuthGuard `/files` — 验证：e2e local 模式
+- [x] 2.4 静态 `/uploads/*` + env 文档 — 验证：上传后可 GET 文件
 
 ## Task 3: Admin 个人中心
 
