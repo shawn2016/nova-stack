@@ -2,6 +2,7 @@
 change: init-monorepo-scaffold
 design-doc: docs/superpowers/specs/2026-09-02-init-monorepo-scaffold-design.md
 base-ref: 3476f2b92889036d7f5a67d41f90d6b9a0cf5a47
+archived-with: 2026-09-02-init-monorepo-scaffold
 ---
 
 # init-monorepo-scaffold 实施计划

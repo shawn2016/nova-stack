@@ -2,6 +2,8 @@
 comet_change: init-monorepo-scaffold
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-09-02-init-monorepo-scaffold
+status: final
 ---
 
 # init-monorepo-scaffold 深度技术设计
