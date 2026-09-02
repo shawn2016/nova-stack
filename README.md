@@ -49,12 +49,14 @@ cp admin/.env.example admin/.env
 确保 MySQL 与 Redis 已运行，然后：
 
 ```bash
-# 并行启动 server + admin
+# 并行启动 server + admin（predev 会自动构建 @nova/shared-types）
 pnpm dev
 
 # 并行启动 server + admin + uni-app (H5)
 pnpm dev:all
 ```
+
+> `@nova/shared-types` 产物位于 `dist/`（已 gitignore），根级 `predev` 会在 `dev` / `dev:all` 前自动执行 `pnpm --filter @nova/shared-types build`。
 
 ### 4. 代码规范
 
