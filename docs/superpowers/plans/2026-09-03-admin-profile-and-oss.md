@@ -2,6 +2,7 @@
 change: admin-profile-and-oss
 design-doc: docs/superpowers/specs/2026-09-03-admin-profile-and-oss-design.md
 base-ref: 72ccaff7527cde290399960a1f1f99c4a78dcc98
+archived-with: 2026-09-03-admin-profile-and-oss
 ---
 
 # admin-profile-and-oss 实施计划

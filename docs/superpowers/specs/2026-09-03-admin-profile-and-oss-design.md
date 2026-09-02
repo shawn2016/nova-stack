@@ -2,6 +2,8 @@
 comet_change: admin-profile-and-oss
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-09-03-admin-profile-and-oss
+status: final
 ---
 
 # admin-profile-and-oss 深度技术设计
