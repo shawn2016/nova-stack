@@ -41,9 +41,9 @@ base-ref: 3ac59f98931f87d7eb9fbda5f10c3945eefc2e48
 
 ## Task 4: Admin 字典 UI
 
-- [ ] 4.1 `api/dict.ts` + `useDict` — 验证：类型编译
-- [ ] 4.2 字典管理主从页 — 验证：dev smoke CRUD
-- [ ] 4.3 v-permission 与动态菜单 — 验证：菜单可见、按钮受控
+- [x] 4.1 `api/dict.ts` + `useDict` — 验证：类型编译
+- [x] 4.2 字典管理主从页 — 验证：dev smoke CRUD
+- [x] 4.3 v-permission 与动态菜单 — 验证：菜单可见、按钮受控
 
 ## Task 5: 集成验证
 
