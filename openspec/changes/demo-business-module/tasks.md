@@ -10,9 +10,9 @@
 
 ## 3. Server — Article API
 
-- [ ] 3.1 B 端 `/articles` CRUD + publish — 验证：e2e + PermissionGuard 403
-- [ ] 3.2 C 端 `/member/articles` 只读列表/详情 — 验证：member e2e，草稿不可见
-- [ ] 3.3 Admin Token 不可访问 `/member/articles` 混淆测试（可选）— 验证：隔离
+- [x] 3.1 B 端 `/articles` CRUD + publish — 验证：e2e + PermissionGuard 403
+- [x] 3.2 C 端 `/member/articles` 只读列表/详情 — 验证：member e2e，草稿不可见
+- [x] 3.3 Admin Token 不可访问 `/member/articles` 混淆测试（可选）— 验证：隔离
 
 ## 4. Admin UI
 

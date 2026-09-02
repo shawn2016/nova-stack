@@ -33,8 +33,8 @@ base-ref: f3689d35569485906068c341c0d8ace7d0fc0a9c
 
 ## Task 3: Server Article API
 
-- [ ] 3.1 B 端 /articles CRUD + publish — 验证：e2e
-- [ ] 3.2 C 端 /member/articles 只读 — 验证：e2e
+- [x] 3.1 B 端 /articles CRUD + publish — 验证：e2e
+- [x] 3.2 C 端 /member/articles 只读 — 验证：e2e
 
 ## Task 4: Admin 文章管理 UI
 
