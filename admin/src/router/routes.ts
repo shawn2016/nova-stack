@@ -27,6 +27,18 @@ export const routes: RouteRecordRaw[] = [
         component: () => import('@/views/dashboard/index.vue'),
         meta: { title: '仪表盘' },
       },
+      {
+        path: 'content/articles/create',
+        name: 'content-articles-create',
+        component: () => import('@/views/content/articles/form.vue'),
+        meta: { title: '新建文章' },
+      },
+      {
+        path: 'content/articles/:id/edit',
+        name: 'content-articles-edit',
+        component: () => import('@/views/content/articles/form.vue'),
+        meta: { title: '编辑文章' },
+      },
     ],
   },
   {
