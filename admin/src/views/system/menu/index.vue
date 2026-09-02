@@ -48,6 +48,7 @@
 
 <script setup lang="ts">
   import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+  import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
   import { useTableColumns } from '@/hooks/core/useTableColumns'
   import type { SysMenuListItem } from '@nova/shared-types'
   import MenuDialog from './modules/menu-dialog.vue'
@@ -135,6 +136,15 @@
 
   const { columnChecks, columns } = useTableColumns(() => [
     { prop: 'name', label: '菜单名称', minWidth: 160 },
+    {
+      prop: 'icon',
+      label: '图标',
+      width: 72,
+      formatter: (row: MenuTreeItem) =>
+        row.icon
+          ? h('div', { class: 'flex-cc' }, [h(ArtSvgIcon, { icon: row.icon, class: 'text-lg' })])
+          : h('span', { class: 'text-g-400' }, '-'),
+    },
     {
       prop: 'type',
       label: '类型',

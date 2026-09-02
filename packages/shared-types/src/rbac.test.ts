@@ -101,7 +101,7 @@ describe('rbac types', () => {
       name: '系统管理',
       path: '/system',
       component: '',
-      icon: 'Setting',
+      icon: 'ri:settings-3-line',
       type: 'directory',
       permissionCode: '',
       sort: 1,

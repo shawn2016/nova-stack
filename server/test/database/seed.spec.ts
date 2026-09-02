@@ -168,6 +168,8 @@ describe('runInitSeed', () => {
     expect(stores.menus.some((m) => m.name === '文章管理' && m.path === '/content/articles')).toBe(
       true,
     );
+    expect(stores.menus.find((m) => m.name === '系统管理')?.icon).toBe('ri:settings-3-line');
+    expect(stores.menus.find((m) => m.name === '用户管理')?.icon).toBe('ri:user-line');
     expect(stores.rolePermissions.length).toBe(18);
   });
 

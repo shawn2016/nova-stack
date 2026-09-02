@@ -37,7 +37,7 @@
         <ElInput v-model="form.component" placeholder="如 views/system/user/index" />
       </ElFormItem>
       <ElFormItem v-if="form.type !== 'button'" label="图标" prop="icon">
-        <ElInput v-model="form.icon" placeholder="如 ri:user-line" />
+        <MenuIconPicker v-model="form.icon" />
       </ElFormItem>
       <ElFormItem label="权限码" prop="permissionCode">
         <ElInput v-model="form.permissionCode" placeholder="如 system:user:list" />
@@ -64,6 +64,7 @@
   import type { FormInstance, FormRules } from 'element-plus'
   import type { SysMenuListItem } from '@nova/shared-types'
   import { createMenu, updateMenu } from '@/api/system-manage'
+  import MenuIconPicker from './menu-icon-picker.vue'
 
   interface Props {
     visible: boolean
