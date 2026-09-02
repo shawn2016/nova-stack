@@ -47,5 +47,5 @@ base-ref: 3ac59f98931f87d7eb9fbda5f10c3945eefc2e48
 
 ## Task 5: 集成验证
 
-- [ ] 5.1 server test + e2e、admin build — 验证：全绿
-- [ ] 5.2 openspec validate system-dict --strict — 验证：通过
+- [x] 5.1 server test + e2e、admin build — 验证：全绿
+- [x] 5.2 openspec validate system-dict --strict — 验证：通过

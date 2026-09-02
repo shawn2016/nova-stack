@@ -17,5 +17,5 @@
 
 ## 4. 集成验证
 
-- [ ] 4.1 server test + e2e、admin build — 验证：全绿
-- [ ] 4.2 openspec validate system-dict --strict — 验证：通过
+- [x] 4.1 server test + e2e、admin build — 验证：全绿
+- [x] 4.2 openspec validate system-dict --strict — 验证：通过
