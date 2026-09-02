@@ -42,7 +42,7 @@ base-ref: f3689d35569485906068c341c0d8ace7d0fc0a9c
 
 ## Task 5: Uni-app 文章 UI
 
-- [ ] 5.1 列表 + 详情 — 验证：build:h5
+- [x] 5.1 列表 + 详情 — 验证：build:h5
 
 ## Task 6: 集成验证
 
