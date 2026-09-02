@@ -43,3 +43,10 @@ export type {
   RefreshTokenRequest,
   TokenPair,
 } from './auth.js';
+
+export type {
+  Article,
+  ArticleListItem,
+  CreateArticleDto,
+  UpdateArticleDto,
+} from './article.js';
