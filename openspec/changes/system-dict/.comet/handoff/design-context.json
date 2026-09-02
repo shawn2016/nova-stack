@@ -1,0 +1,15 @@
+{
+  "change": "system-dict",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "4ef013737dda1a488e7349775bcae1aeafd880aae60077fa6f5e071e8449f728",
+  "files": [
+    { "path": "openspec/changes/system-dict/proposal.md", "sha256": "5afc0f30be1d4a0374e00ee95d0255856e0a702e76bac3306913baec6f6cd062" },
+    { "path": "openspec/changes/system-dict/design.md", "sha256": "3b5066d83e2fea13c6fc9510f66a809ae834765df2970680baa772cdb380ed55" },
+    { "path": "openspec/changes/system-dict/tasks.md", "sha256": "94caea88598b37437992eca9f34abfe3a96710ec2a1cce68b5ea728740aa8f8d" },
+    { "path": "openspec/changes/system-dict/specs/dict-admin-ui/spec.md", "sha256": "3b66feb0fcbe9f857d91104048fdddf34e36362c0a27fd4da36cb69ecfa8ab46" },
+    { "path": "openspec/changes/system-dict/specs/dict-api/spec.md", "sha256": "6fde8998d1bbbbf2083ce2fcd6789ed751d780337133cbfb58cd491e5701f192" }
+  ]
+}
