@@ -47,9 +47,9 @@ base-ref: aed24ad460b750420efbb6f91ab1b562d84d7bb0
 
 ## Task 4: Admin 系统管理 UI
 
-- [ ] 4.1 用户管理页（列表/创建/编辑/删除/分配角色）— 验证：CRUD smoke
-- [ ] 4.2 角色管理页 + 权限 Checkbox — 验证：赋权后重新登录菜单变化
-- [ ] 4.3 菜单管理页（parentId 下拉）— 验证：CRUD 后动态菜单更新
+- [x] 4.1 用户管理页（列表/创建/编辑/删除/分配角色）— 验证：CRUD smoke
+- [x] 4.2 角色管理页 + 权限 Checkbox — 验证：赋权后重新登录菜单变化
+- [x] 4.3 菜单管理页（parentId 下拉）— 验证：CRUD 后动态菜单更新
 
 ## Task 5: Admin 文章管理 UI
 
