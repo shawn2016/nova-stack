@@ -5,12 +5,12 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { AuthUser } from '../decorators/current-user.decorator';
-import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
+import { AuthUser } from '../../auth/decorators/current-user.decorator';
+import { IS_PUBLIC_KEY } from '../../auth/decorators/public.decorator';
 
-/** B 端路由：拒绝 type=member 的 JWT */
+/** C 端路由：拒绝 type=admin 的 JWT */
 @Injectable()
-export class AdminAuthGuard implements CanActivate {
+export class MemberAuthGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
@@ -30,12 +30,7 @@ export class AdminAuthGuard implements CanActivate {
     }>();
     const path = request.path ?? request.url ?? '';
 
-    const isAdminRoute =
-      path.startsWith('/auth') ||
-      path.startsWith('/roles') ||
-      path.startsWith('/menus');
-
-    if (!isAdminRoute) {
+    if (!path.startsWith('/member/')) {
       return true;
     }
 
@@ -45,8 +40,8 @@ export class AdminAuthGuard implements CanActivate {
       return true;
     }
 
-    if (user.type !== 'admin') {
-      throw new ForbiddenException('Admin access required');
+    if (user.type !== 'member') {
+      throw new ForbiddenException('Member access required');
     }
 
     return true;

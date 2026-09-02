@@ -15,6 +15,7 @@ import { JwtModule } from './common/jwt/jwt.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { HealthModule } from './modules/health/health.module';
+import { MemberAuthModule } from './modules/member-auth/member-auth.module';
 import { RbacModule } from './modules/rbac/rbac.module';
 import { RolesGuard } from './modules/rbac/guards/roles.guard';
 
@@ -31,6 +32,7 @@ import { RolesGuard } from './modules/rbac/guards/roles.guard';
     JwtModule,
     HealthModule,
     AuthModule,
+    MemberAuthModule,
     RbacModule,
   ],
   providers: [
