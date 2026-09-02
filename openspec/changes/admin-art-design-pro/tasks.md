@@ -24,7 +24,7 @@
 
 ## 5. Admin — 内容管理
 
-- [ ] 5.1 文章列表 + 表单（Element Plus）— 验证：CRUD + 发布
+- [x] 5.1 文章列表 + 表单（Element Plus）— 验证：CRUD + 发布
 
 ## 6. 收尾
 

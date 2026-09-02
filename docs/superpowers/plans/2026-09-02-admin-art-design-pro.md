@@ -53,7 +53,7 @@ base-ref: aed24ad460b750420efbb6f91ab1b562d84d7bb0
 
 ## Task 5: Admin 文章管理 UI
 
-- [ ] 5.1 文章列表 + 表单 Element Plus — 验证：CRUD + publish + v-permission
+- [x] 5.1 文章列表 + 表单 Element Plus — 验证：CRUD + publish + v-permission
 
 ## Task 6: 集成验证
 
