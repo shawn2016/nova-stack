@@ -46,8 +46,8 @@ base-ref: 37a316aa84a8aad66bd01b620b083d2b9f739e5e
 
 ## Task 5: C 端 Member Auth API
 
-- [ ] 5.1 POST /member/auth/login|register|logout|refresh — 验证：e2e
-- [ ] 5.2 Member/Admin Token 隔离 Guard — 验证：member 访问 /auth/me → 403
+- [x] 5.1 POST /member/auth/login|register|logout|refresh — 验证：e2e
+- [x] 5.2 Member/Admin Token 隔离 Guard — 验证：member 访问 /auth/me → 403
 
 ## Task 6: Admin UI
 

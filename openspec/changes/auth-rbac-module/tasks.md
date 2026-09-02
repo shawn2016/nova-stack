@@ -19,9 +19,9 @@
 
 ## 4. Server — C 端 Member Auth API
 
-- [ ] 4.1 `POST /member/auth/login|register|logout|refresh`（member_user） — 验证：member e2e
-- [ ] 4.2 AdminGuard 拒绝 member Token 访问 B 端接口 — 验证：403
-- [ ] 4.3 JWT payload type 区分 admin/member — 验证：解码正确
+- [x] 4.1 `POST /member/auth/login|register|logout|refresh`（member_user） — 验证：member e2e
+- [x] 4.2 AdminGuard 拒绝 member Token 访问 B 端接口 — 验证：403
+- [x] 4.3 JWT payload type 区分 admin/member — 验证：解码正确
 
 ## 5. Admin B 端 UI
 
