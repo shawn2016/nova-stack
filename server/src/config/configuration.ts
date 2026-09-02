@@ -24,3 +24,15 @@ export const jwtConfig = registerAs('jwt', () => ({
   expiresIn: process.env.JWT_EXPIRES_IN ?? '7d',
   accessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN ?? '2h',
 }));
+
+export const uploadConfig = registerAs('upload', () => ({
+  ossEnabled: process.env.OSS_ENABLED === 'true',
+  ossRegion: process.env.OSS_REGION ?? 'oss-cn-hangzhou',
+  ossBucket: process.env.OSS_BUCKET ?? '',
+  ossAccessKeyId: process.env.OSS_ACCESS_KEY_ID ?? '',
+  ossAccessKeySecret: process.env.OSS_ACCESS_KEY_SECRET ?? '',
+  ossPublicBaseUrl: process.env.OSS_PUBLIC_BASE_URL ?? '',
+  appPublicUrl: process.env.APP_PUBLIC_URL ?? 'http://localhost:3000',
+  uploadMaxSize: parseInt(process.env.UPLOAD_MAX_SIZE ?? '5242880', 10),
+  uploadsDir: process.env.UPLOADS_DIR ?? `${process.cwd()}/uploads`,
+}));

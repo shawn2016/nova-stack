@@ -6,7 +6,8 @@
   "testMatch": [
     "<rootDir>/database/**/*.spec.ts",
     "<rootDir>/common/**/*.spec.ts",
-    "<rootDir>/config/**/*.spec.ts"
+    "<rootDir>/config/**/*.spec.ts",
+    "<rootDir>/upload/**/*.spec.ts"
   ],
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"

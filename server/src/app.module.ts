@@ -5,6 +5,7 @@ import appConfig, {
   databaseConfig,
   jwtConfig,
   redisConfig,
+  uploadConfig,
 } from './config/configuration';
 import { validate } from './config/env.validation';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
@@ -17,6 +18,7 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { HealthModule } from './modules/health/health.module';
 import { MemberAuthModule } from './modules/member-auth/member-auth.module';
 import { ArticleModule } from './modules/article/article.module';
+import { UploadModule } from './modules/upload/upload.module';
 import { RbacModule } from './modules/rbac/rbac.module';
 import { RolesGuard } from './modules/rbac/guards/roles.guard';
 
@@ -24,7 +26,7 @@ import { RolesGuard } from './modules/rbac/guards/roles.guard';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, databaseConfig, jwtConfig, redisConfig],
+      load: [appConfig, databaseConfig, jwtConfig, redisConfig, uploadConfig],
       validate,
       envFilePath: ['.env'],
     }),
@@ -36,6 +38,7 @@ import { RolesGuard } from './modules/rbac/guards/roles.guard';
     MemberAuthModule,
     RbacModule,
     ArticleModule,
+    UploadModule,
   ],
   providers: [
     {

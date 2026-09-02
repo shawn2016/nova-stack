@@ -1,5 +1,7 @@
 import { INestApplication } from '@nestjs/common';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { join } from 'path';
 
 const ADMIN_DEV_ORIGIN = 'http://localhost:5173';
 const UNI_APP_DEV_ORIGIN = 'http://localhost:5174';
@@ -20,4 +22,9 @@ export async function configureApp(app: INestApplication) {
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
+
+  const uploadsDir = process.env.UPLOADS_DIR ?? join(process.cwd(), 'uploads');
+  (app as NestExpressApplication).useStaticAssets(uploadsDir, {
+    prefix: '/uploads',
+  });
 }

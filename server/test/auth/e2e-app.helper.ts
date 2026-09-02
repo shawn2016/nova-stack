@@ -44,6 +44,9 @@ export async function createE2eApp(): Promise<E2eAppContext> {
   process.env.JWT_EXPIRES_IN = '7d';
   process.env.JWT_ACCESS_EXPIRES_IN = '2h';
   process.env.PORT = '0';
+  process.env.OSS_ENABLED = 'false';
+  process.env.APP_PUBLIC_URL = 'http://localhost:3000';
+  process.env.UPLOAD_MAX_SIZE = '5242880';
 
   const mockRedis = createMockRedis();
 
