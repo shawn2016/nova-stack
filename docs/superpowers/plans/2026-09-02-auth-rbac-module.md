@@ -51,8 +51,8 @@ base-ref: 37a316aa84a8aad66bd01b620b083d2b9f739e5e
 
 ## Task 6: Admin UI
 
-- [ ] 6.1 登录对接 + Axios refresh 队列 — 验证：admin 登录
-- [ ] 6.2 动态路由 + v-permission + 路由守卫 — 验证：菜单/按钮
+- [x] 6.1 登录对接 + Axios refresh 队列 — 验证：admin 登录
+- [x] 6.2 动态路由 + v-permission + 路由守卫 — 验证：菜单/按钮
 
 ## Task 7: Uni-app C 端 UI
 

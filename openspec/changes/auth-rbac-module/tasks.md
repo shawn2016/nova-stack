@@ -25,10 +25,10 @@
 
 ## 5. Admin B 端 UI
 
-- [ ] 5.1 登录页对接 `/auth/login` — 验证：admin 可登录
-- [ ] 5.2 Axios Token + refresh — 验证：401 自动刷新
-- [ ] 5.3 动态路由 + v-permission — 验证：菜单与按钮权限
-- [ ] 5.4 路由守卫 — 验证：未登录跳转 login
+- [x] 5.1 登录页对接 `/auth/login` — 验证：admin 可登录
+- [x] 5.2 Axios Token + refresh — 验证：401 自动刷新
+- [x] 5.3 动态路由 + v-permission — 验证：菜单与按钮权限
+- [x] 5.4 路由守卫 — 验证：未登录跳转 login
 
 ## 6. Uni-app C 端 UI
 
