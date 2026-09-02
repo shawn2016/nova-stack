@@ -56,8 +56,8 @@ base-ref: 37a316aa84a8aad66bd01b620b083d2b9f739e5e
 
 ## Task 7: Uni-app C 端 UI
 
-- [ ] 7.1 登录/注册页 + member store — 验证：H5 登录
-- [ ] 7.2 request Token 注入 — 验证：带 Token 请求
+- [x] 7.1 登录/注册页 + member store — 验证：H5 登录
+- [x] 7.2 request Token 注入 — 验证：带 Token 请求
 
 ## Task 8: 集成验证
 

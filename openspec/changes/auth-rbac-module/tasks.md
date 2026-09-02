@@ -32,9 +32,9 @@
 
 ## 6. Uni-app C 端 UI
 
-- [ ] 6.1 会员登录/注册页 — 验证：H5 登录成功
-- [ ] 6.2 Member Token 注入 — 验证：带 Token 请求
-- [ ] 6.3 不请求 B 端菜单 API — 验证：无 `/auth/me/menus` 调用
+- [x] 6.1 会员登录/注册页 — 验证：H5 登录成功
+- [x] 6.2 Member Token 注入 — 验证：带 Token 请求
+- [x] 6.3 不请求 B 端菜单 API — 验证：无 `/auth/me/menus` 调用
 
 ## 7. 集成验证
 
