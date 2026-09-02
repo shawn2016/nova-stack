@@ -59,6 +59,10 @@ export const useAuth = () => {
    * @returns 是否有权限
    */
   const hasAuth = (auth: string): boolean => {
+    if (userStore.hasPermission(auth)) {
+      return true
+    }
+
     // 前端模式
     if (isFrontendMode.value) {
       return frontendAuthList.includes(auth)

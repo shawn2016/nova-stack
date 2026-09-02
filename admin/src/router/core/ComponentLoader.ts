@@ -25,11 +25,14 @@ export class ComponentLoader {
       return this.createEmptyComponent()
     }
 
-    // 构建可能的路径
-    const fullPath = `../../views${componentPath}.vue`
-    const fullPathWithIndex = `../../views${componentPath}/index.vue`
+    const normalized = componentPath
+      .replace(/^views\//, '')
+      .replace(/^\//, '')
+      .replace(/\/index$/, '')
 
-    // 先尝试直接路径，再尝试添加/index的路径
+    const fullPath = `../../views/${normalized}.vue`
+    const fullPathWithIndex = `../../views/${normalized}/index.vue`
+
     const module = this.modules[fullPath] || this.modules[fullPathWithIndex]
 
     if (!module) {

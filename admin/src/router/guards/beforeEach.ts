@@ -48,7 +48,8 @@ import { staticRoutes } from '../routes/staticRoutes'
 import { loadingService } from '@/utils/ui'
 import { useCommon } from '@/hooks/core/useCommon'
 import { useWorktabStore } from '@/store/modules/worktab'
-import { fetchGetUserInfo } from '@/api/auth'
+import { getMe } from '@/api/auth'
+import { appendHiddenRoutes, trackHiddenRouteRemovers } from '../permission'
 import { ApiStatus } from '@/utils/http/status'
 import { isHttpError } from '@/utils/http/error'
 import { RouteRegistry, MenuProcessor, IframeRouteManager, RoutePermissionValidator } from '../core'
@@ -277,8 +278,11 @@ async function handleDynamicRoutes(
       throw new Error('获取菜单列表失败，请重新登录')
     }
 
+    const routesWithHidden = appendHiddenRoutes(menuList)
+
     // 4. 注册动态路由
-    routeRegistry?.register(menuList)
+    routeRegistry?.register(routesWithHidden)
+    trackHiddenRouteRemovers(routeRegistry?.getRemoveRouteFns() || [])
 
     // 5. 保存菜单数据到 store
     const menuStore = useMenuStore()
@@ -369,9 +373,9 @@ async function handleDynamicRoutes(
  */
 async function fetchUserInfo(): Promise<void> {
   const userStore = useUserStore()
-  const data = await fetchGetUserInfo()
+  const data = await getMe()
   userStore.setUserInfo(data)
-  // 检查并清理工作台标签页（如果是不同用户登录）
+  userStore.setRoutesLoaded(true)
   userStore.checkAndClearWorktabs()
 }
 
@@ -410,9 +414,20 @@ function handleRootPathRedirect(to: RouteLocationNormalized, next: NavigationGua
   return false
 }
 
-/**
- * 判断是否为未授权错误（401）
- */
-function isUnauthorizedError(error: unknown): boolean {
-  return isHttpError(error) && error.code === ApiStatus.unauthorized
-}
+  /**
+   * 判断是否为未授权错误（401）
+   */
+  function isUnauthorizedError(error: unknown): boolean {
+    if (isHttpError(error) && error.code === ApiStatus.unauthorized) {
+      return true
+    }
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'response' in error &&
+      (error as { response?: { status?: number } }).response?.status === 401
+    ) {
+      return true
+    }
+    return false
+  }

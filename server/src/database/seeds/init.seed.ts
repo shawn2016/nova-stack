@@ -66,7 +66,7 @@ const MENU_SEEDS: MenuSeed[] = [
       {
         name: '用户管理',
         path: '/system/user',
-        component: 'system/user/index',
+        component: 'views/system/user/index',
         icon: 'User',
         type: 'menu',
         permissionCode: 'system:user:list',
@@ -75,7 +75,7 @@ const MENU_SEEDS: MenuSeed[] = [
       {
         name: '角色管理',
         path: '/system/role',
-        component: 'system/role/index',
+        component: 'views/system/role/index',
         icon: 'UserFilled',
         type: 'menu',
         permissionCode: 'system:role:list',
@@ -84,7 +84,7 @@ const MENU_SEEDS: MenuSeed[] = [
       {
         name: '菜单管理',
         path: '/system/menu',
-        component: 'system/menu/index',
+        component: 'views/system/menu/index',
         icon: 'Menu',
         type: 'menu',
         permissionCode: 'system:menu:list',

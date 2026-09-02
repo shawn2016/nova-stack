@@ -30,6 +30,26 @@ export default ({ mode }: { mode: string }) => {
         '/api': {
           target: VITE_API_PROXY_URL,
           changeOrigin: true
+        },
+        '/auth': {
+          target: VITE_API_PROXY_URL,
+          changeOrigin: true
+        },
+        '/users': {
+          target: VITE_API_PROXY_URL,
+          changeOrigin: true
+        },
+        '/roles': {
+          target: VITE_API_PROXY_URL,
+          changeOrigin: true
+        },
+        '/menus': {
+          target: VITE_API_PROXY_URL,
+          changeOrigin: true
+        },
+        '/articles': {
+          target: VITE_API_PROXY_URL,
+          changeOrigin: true
         }
       },
       host: true

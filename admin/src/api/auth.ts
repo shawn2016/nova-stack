@@ -1,29 +1,60 @@
-import request from '@/utils/http'
+import type {
+  AdminInfo,
+  AdminLoginRequest,
+  AdminLoginResponse,
+  AdminMeResponse,
+  MenuNode,
+  TokenPair,
+} from '@nova/shared-types';
+import { request } from './request';
 
-/**
- * 登录
- * @param params 登录参数
- * @returns 登录响应
- */
-export function fetchLogin(params: Api.Auth.LoginParams) {
-  return request.post<Api.Auth.LoginResponse>({
-    url: '/api/auth/login',
-    params
-    // showSuccessMessage: true // 显示成功消息
-    // showErrorMessage: false // 不显示错误消息
-  })
+export function login(data: AdminLoginRequest) {
+  return request<AdminLoginResponse>({
+    url: '/auth/login',
+    method: 'POST',
+    data,
+  });
 }
 
-/**
- * 获取用户信息
- * @returns 用户信息
- */
-export function fetchGetUserInfo() {
-  return request.get<Api.Auth.UserInfo>({
-    url: '/api/user/info'
-    // 自定义请求头
-    // headers: {
-    //   'X-Custom-Header': 'your-custom-value'
-    // }
-  })
+export function logout() {
+  return request<void>({
+    url: '/auth/logout',
+    method: 'POST',
+  });
+}
+
+export function refreshToken(refreshTokenValue: string) {
+  return request<TokenPair>({
+    url: '/auth/refresh',
+    method: 'POST',
+    data: { refreshToken: refreshTokenValue },
+  });
+}
+
+export function getMe() {
+  return request<AdminMeResponse>({
+    url: '/auth/me',
+    method: 'GET',
+  });
+}
+
+export function getMenus() {
+  return request<MenuNode[]>({
+    url: '/auth/me/menus',
+    method: 'GET',
+  });
+}
+
+/** 兼容模板旧命名 */
+export function fetchLogin(params: { userName: string; password: string }) {
+  return login({ username: params.userName, password: params.password }).then((data) => ({
+    token: data.tokens.accessToken,
+    refreshToken: data.tokens.refreshToken,
+    user: data.user,
+  }));
+}
+
+/** 兼容模板旧命名 */
+export function fetchGetUserInfo(): Promise<AdminInfo> {
+  return getMe();
 }
