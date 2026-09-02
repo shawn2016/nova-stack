@@ -24,7 +24,7 @@ base-ref: f3689d35569485906068c341c0d8ace7d0fc0a9c
 
 ## Task 1: shared-types Article 类型
 
-- [ ] 1.1 新增 Article、ArticleListItem、Create/Update DTO — 验证：build 通过
+- [x] 1.1 新增 Article、ArticleListItem、Create/Update DTO — 验证：build 通过
 
 ## Task 2: Entity + Seed 扩展
 

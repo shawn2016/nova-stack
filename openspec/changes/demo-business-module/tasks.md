@@ -1,6 +1,6 @@
 ## 1. 共享类型
 
-- [ ] 1.1 新增 Article、ArticleListItem、CreateArticleDto 等类型 — 验证：三端编译通过
+- [x] 1.1 新增 Article、ArticleListItem、CreateArticleDto 等类型 — 验证：三端编译通过
 
 ## 2. 数据库与 Seed
 
