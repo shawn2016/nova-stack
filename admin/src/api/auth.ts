@@ -3,8 +3,10 @@ import type {
   AdminLoginRequest,
   AdminLoginResponse,
   AdminMeResponse,
+  ChangePasswordDto,
   MenuNode,
   TokenPair,
+  UpdateProfileDto,
 } from '@nova/shared-types';
 import { request } from './request';
 
@@ -35,6 +37,22 @@ export function getMe() {
   return request<AdminMeResponse>({
     url: '/auth/me',
     method: 'GET',
+  });
+}
+
+export function updateProfile(data: UpdateProfileDto) {
+  return request<AdminInfo>({
+    url: '/auth/me',
+    method: 'PUT',
+    data,
+  });
+}
+
+export function changePassword(data: ChangePasswordDto) {
+  return request<{ success: true }>({
+    url: '/auth/me/password',
+    method: 'PUT',
+    data,
   });
 }
 

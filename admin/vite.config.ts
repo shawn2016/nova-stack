@@ -50,6 +50,14 @@ export default ({ mode }: { mode: string }) => {
         '/articles': {
           target: VITE_API_PROXY_URL,
           changeOrigin: true
+        },
+        '/files': {
+          target: VITE_API_PROXY_URL,
+          changeOrigin: true
+        },
+        '/uploads': {
+          target: VITE_API_PROXY_URL,
+          changeOrigin: true
         }
       },
       host: true
