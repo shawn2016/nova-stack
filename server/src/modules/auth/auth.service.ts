@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -8,8 +9,10 @@ import * as bcrypt from 'bcrypt';
 import type {
   AdminInfo,
   AdminLoginResponse,
+  ChangePasswordDto,
   MenuNode,
   TokenPair,
+  UpdateProfileDto,
 } from '@nova/shared-types';
 import { In, Repository } from 'typeorm';
 import { JwtService } from '../../common/jwt/jwt.service';
@@ -108,6 +111,50 @@ export class AuthService {
 
     const { roles, permissions } = await this.loadRolesAndPermissions(userId);
     return this.toAdminInfo(user, roles, permissions);
+  }
+
+  async updateProfile(
+    userId: string,
+    dto: UpdateProfileDto,
+  ): Promise<AdminInfo> {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user || user.status !== 1) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    if (dto.nickname !== undefined) {
+      user.nickname = dto.nickname;
+    }
+    if (dto.avatar !== undefined) {
+      user.avatar = dto.avatar;
+    }
+
+    const saved = await this.userRepo.save(user);
+    const { roles, permissions } = await this.loadRolesAndPermissions(userId);
+    return this.toAdminInfo(saved, roles, permissions);
+  }
+
+  async changePassword(
+    userId: string,
+    dto: ChangePasswordDto,
+  ): Promise<{ success: true }> {
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user || user.status !== 1) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const passwordValid = await bcrypt.compare(
+      dto.oldPassword,
+      user.passwordHash,
+    );
+    if (!passwordValid) {
+      throw new BadRequestException('Invalid old password');
+    }
+
+    user.passwordHash = await bcrypt.hash(dto.newPassword, 10);
+    await this.userRepo.save(user);
+
+    return { success: true };
   }
 
   async getMenus(userId: string): Promise<MenuNode[]> {

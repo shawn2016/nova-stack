@@ -110,6 +110,94 @@ describe('Auth API (e2e)', () => {
     });
   });
 
+  describe('PUT /auth/me', () => {
+    it('应更新 nickname 并在 GET /auth/me 中反映', async () => {
+      const loginRes = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({ username: 'admin', password: 'admin123' });
+
+      const accessToken = loginRes.body.data.tokens.accessToken;
+      const originalNickname = loginRes.body.data.user.nickname;
+
+      const updateRes = await request(app.getHttpServer())
+        .put('/auth/me')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ nickname: '新昵称' })
+        .expect(200);
+
+      expect(updateRes.body.data.nickname).toBe('新昵称');
+
+      const meRes = await request(app.getHttpServer())
+        .get('/auth/me')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .expect(200);
+
+      expect(meRes.body.data.nickname).toBe('新昵称');
+
+      await request(app.getHttpServer())
+        .put('/auth/me')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ nickname: originalNickname })
+        .expect(200);
+    });
+  });
+
+  describe('PUT /auth/me/password', () => {
+    it('旧密码正确时应改密成功且新密码可登录', async () => {
+      const loginRes = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({ username: 'admin', password: 'admin123' });
+
+      const accessToken = loginRes.body.data.tokens.accessToken;
+
+      await request(app.getHttpServer())
+        .put('/auth/me/password')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ oldPassword: 'admin123', newPassword: 'newpass123' })
+        .expect(200);
+
+      await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({ username: 'admin', password: 'newpass123' })
+        .expect(200);
+
+      const restoreLogin = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({ username: 'admin', password: 'newpass123' });
+
+      await request(app.getHttpServer())
+        .put('/auth/me/password')
+        .set(
+          'Authorization',
+          `Bearer ${restoreLogin.body.data.tokens.accessToken}`,
+        )
+        .send({ oldPassword: 'newpass123', newPassword: 'admin123' })
+        .expect(200);
+    });
+
+    it('旧密码错误应返回 400', async () => {
+      const loginRes = await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({ username: 'admin', password: 'admin123' });
+
+      const accessToken = loginRes.body.data.tokens.accessToken;
+
+      const res = await request(app.getHttpServer())
+        .put('/auth/me/password')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ oldPassword: 'wrong-old-password', newPassword: 'newpass123' })
+        .expect(400);
+
+      expect(res.body.code).toBe(ErrorCode.BAD_REQUEST);
+      expect(res.body.message).toBe('Invalid old password');
+
+      await request(app.getHttpServer())
+        .post('/auth/login')
+        .send({ username: 'admin', password: 'admin123' })
+        .expect(200);
+    });
+  });
+
   describe('GET /auth/me/menus', () => {
     it('超级管理员应返回完整菜单树', async () => {
       const loginRes = await request(app.getHttpServer())

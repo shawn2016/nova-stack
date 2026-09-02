@@ -81,3 +81,23 @@ export interface RefreshTokenRequest {
 
 /** GET /auth/me 响应（与 AdminInfo 结构一致） */
 export type AdminMeResponse = AdminInfo;
+
+/** 更新当前管理员资料请求 */
+export interface UpdateProfileDto {
+  nickname?: string;
+  avatar?: string;
+}
+
+/** 修改当前管理员密码请求 */
+export interface ChangePasswordDto {
+  oldPassword: string;
+  newPassword: string;
+}
+
+/** 文件上传结果 */
+export interface UploadResult {
+  url: string;
+  key: string;
+  size: number;
+  mimeType: string;
+}

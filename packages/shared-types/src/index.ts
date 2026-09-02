@@ -34,6 +34,7 @@ export type {
   AdminLoginRequest,
   AdminLoginResponse,
   AdminMeResponse,
+  ChangePasswordDto,
   JwtPayload,
   MemberInfo,
   MemberLoginRequest,
@@ -42,6 +43,8 @@ export type {
   MenuNode,
   RefreshTokenRequest,
   TokenPair,
+  UpdateProfileDto,
+  UploadResult,
 } from './auth.js';
 
 export type {

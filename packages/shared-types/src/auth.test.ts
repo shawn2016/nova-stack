@@ -4,6 +4,7 @@ import {
   AdminLoginRequest,
   AdminLoginResponse,
   AdminMeResponse,
+  ChangePasswordDto,
   JwtPayload,
   MemberInfo,
   MemberLoginRequest,
@@ -12,6 +13,8 @@ import {
   MenuNode,
   RefreshTokenRequest,
   TokenPair,
+  UpdateProfileDto,
+  UploadResult,
 } from './index.js';
 
 describe('auth types', () => {
@@ -199,5 +202,45 @@ describe('auth types', () => {
 
     expect(me.roles).toEqual(['super_admin']);
     expect(me.permissions).toEqual(['user:read']);
+  });
+
+  it('UpdateProfileDto 支持可选 nickname 与 avatar', () => {
+    const nicknameOnly: UpdateProfileDto = { nickname: '新昵称' };
+    const avatarOnly: UpdateProfileDto = {
+      avatar: 'https://example.com/avatar.png',
+    };
+    const both: UpdateProfileDto = {
+      nickname: '新昵称',
+      avatar: 'https://example.com/avatar.png',
+    };
+
+    expect(nicknameOnly.nickname).toBe('新昵称');
+    expect(avatarOnly.avatar).toBe('https://example.com/avatar.png');
+    expect(both.nickname).toBe('新昵称');
+    expect(both.avatar).toBe('https://example.com/avatar.png');
+  });
+
+  it('ChangePasswordDto 包含 oldPassword 与 newPassword', () => {
+    const dto: ChangePasswordDto = {
+      oldPassword: 'admin123',
+      newPassword: 'newpass123',
+    };
+
+    expect(dto.oldPassword).toBe('admin123');
+    expect(dto.newPassword).toBe('newpass123');
+  });
+
+  it('UploadResult 包含 url、key、size 与 mimeType', () => {
+    const result: UploadResult = {
+      url: 'https://example.com/uploads/admin/1/abc.png',
+      key: 'admin/1/abc.png',
+      size: 1024,
+      mimeType: 'image/png',
+    };
+
+    expect(result.url).toContain('/uploads/');
+    expect(result.key).toBe('admin/1/abc.png');
+    expect(result.size).toBe(1024);
+    expect(result.mimeType).toBe('image/png');
   });
 });
