@@ -38,7 +38,7 @@ base-ref: f3689d35569485906068c341c0d8ace7d0fc0a9c
 
 ## Task 4: Admin 文章管理 UI
 
-- [ ] 4.1 列表 + 表单 + v-permission — 验证：admin build
+- [x] 4.1 列表 + 表单 + v-permission — 验证：admin build
 
 ## Task 5: Uni-app 文章 UI
 
