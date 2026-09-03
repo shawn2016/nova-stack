@@ -38,7 +38,8 @@ export class AdminAuthGuard implements CanActivate {
       path.startsWith('/articles') ||
       path.startsWith('/files') ||
       path.startsWith('/dict') ||
-      path.startsWith('/config');
+      path.startsWith('/config') ||
+      path.startsWith('/audit');
 
     if (!isAdminRoute) {
       return true;
