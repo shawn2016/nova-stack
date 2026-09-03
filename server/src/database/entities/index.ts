@@ -16,6 +16,7 @@ import { SysNoticeEntity } from './sys-notice.entity';
 import { SysNoticeReadEntity } from './sys-notice-read.entity';
 import { SysMessageEntity } from './sys-message.entity';
 import { SysDeptEntity } from './sys-dept.entity';
+import { SysRoleDeptEntity } from './sys-role-dept.entity';
 
 export { ArticleEntity } from './article.entity';
 export { MemberUserEntity } from './member-user.entity';
@@ -35,6 +36,7 @@ export { SysNoticeEntity } from './sys-notice.entity';
 export { SysNoticeReadEntity } from './sys-notice-read.entity';
 export { SysMessageEntity } from './sys-message.entity';
 export { SysDeptEntity } from './sys-dept.entity';
+export { SysRoleDeptEntity } from './sys-role-dept.entity';
 
 /** 全部 RBAC / Member / Dict 实体，供 TypeORM 与测试加载 */
 export const entities = [
@@ -56,4 +58,5 @@ export const entities = [
   SysNoticeReadEntity,
   SysMessageEntity,
   SysDeptEntity,
+  SysRoleDeptEntity,
 ];

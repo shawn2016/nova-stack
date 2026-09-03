@@ -120,3 +120,17 @@ export type {
   UpdateDeptSettingsDto,
   UpdateDeptStatusDto,
 } from './dept.js';
+
+export type {
+  DataScope,
+  DataScopeFilter,
+} from './data-scope.js';
+
+export {
+  DATA_SCOPE_ALL,
+  DATA_SCOPE_CUSTOM,
+  DATA_SCOPE_DEPT,
+  DATA_SCOPE_DEPT_AND_CHILD,
+  DATA_SCOPE_LABELS,
+  DATA_SCOPE_SELF,
+} from './data-scope.js';

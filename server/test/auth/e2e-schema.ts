@@ -23,6 +23,7 @@ export async function initE2eSchema(dataSource: DataSource): Promise<void> {
       code VARCHAR(64) NOT NULL UNIQUE,
       status TINYINT NOT NULL DEFAULT 1,
       sort INT NOT NULL DEFAULT 0,
+      data_scope TINYINT NOT NULL DEFAULT 1,
       created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
@@ -222,6 +223,14 @@ export async function initE2eSchema(dataSource: DataSource): Promise<void> {
       is_read TINYINT NOT NULL DEFAULT 0,
       read_at DATETIME,
       created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS sys_role_dept (
+      role_id BIGINT NOT NULL,
+      dept_id BIGINT NOT NULL,
+      PRIMARY KEY (role_id, dept_id)
     )
   `);
 

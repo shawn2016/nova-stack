@@ -28,8 +28,8 @@ export class UserController {
   @Get()
   @RequirePermission('system:user:list')
   @ApiOperation({ summary: '用户列表' })
-  list(@Query() query: ListUsersDto) {
-    return this.userService.list(query);
+  list(@Query() query: ListUsersDto, @CurrentUser() user: AuthUser) {
+    return this.userService.list(query, user.userId);
   }
 
   @Get(':id')

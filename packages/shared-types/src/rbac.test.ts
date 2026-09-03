@@ -81,17 +81,20 @@ describe('rbac types', () => {
     expect(user.createdAt).toBeDefined();
   });
 
-  it('SysRoleDetail 包含 permissionCodes', () => {
+  it('SysRoleDetail 包含 permissionCodes 与数据范围', () => {
     const role: SysRoleDetail = {
       id: '1',
       name: '超级管理员',
       code: 'super_admin',
       status: 1,
       sort: 0,
+      dataScope: 1,
       permissionCodes: ['system:user:list'],
+      customDeptIds: [],
     };
 
     expect(role.permissionCodes).toContain('system:user:list');
+    expect(role.dataScope).toBe(1);
   });
 
   it('SysMenuListItem 与 CreateMenuDto 包含完整菜单字段', () => {

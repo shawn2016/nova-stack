@@ -1,3 +1,5 @@
+import type { DataScope } from './data-scope.js';
+
 /** 系统用户列表项 */
 export interface SysUserListItem {
   id: string;
@@ -45,11 +47,13 @@ export interface SysRoleListItem {
   code: string;
   status: 0 | 1;
   sort: number;
+  dataScope: DataScope;
 }
 
 /** 角色详情 */
 export interface SysRoleDetail extends SysRoleListItem {
   permissionCodes: string[];
+  customDeptIds: string[];
 }
 
 /** 创建角色请求 */
@@ -58,6 +62,8 @@ export interface CreateRoleDto {
   code: string;
   status?: 0 | 1;
   sort?: number;
+  dataScope?: DataScope;
+  customDeptIds?: string[];
 }
 
 /** 更新角色请求 */
@@ -66,6 +72,8 @@ export interface UpdateRoleDto {
   code?: string;
   status?: 0 | 1;
   sort?: number;
+  dataScope?: DataScope;
+  customDeptIds?: string[];
 }
 
 /** 分配角色权限请求 */

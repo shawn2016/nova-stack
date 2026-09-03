@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsIn, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsArray, IsIn, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class UpdateRoleDto {
   @ApiPropertyOptional({ maxLength: 64 })
@@ -23,4 +23,14 @@ export class UpdateRoleDto {
   @IsOptional()
   @IsInt()
   sort?: number;
+
+  @ApiPropertyOptional({ enum: [1, 2, 3, 4, 5] })
+  @IsOptional()
+  @IsIn([1, 2, 3, 4, 5])
+  dataScope?: 1 | 2 | 3 | 4 | 5;
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @IsArray()
+  customDeptIds?: string[];
 }
