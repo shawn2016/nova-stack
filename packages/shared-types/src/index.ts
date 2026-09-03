@@ -153,3 +153,19 @@ export type {
   UpdateJobDto,
   UpdateJobStatusDto,
 } from './scheduled-job.js';
+
+export type {
+  CreateSmsChannelDto,
+  CreateSmsTemplateDto,
+  SendSmsDto,
+  SendSmsResult,
+  SmsChannelDetail,
+  SmsChannelListItem,
+  SmsLogListItem,
+  SmsProviderType,
+  SmsStatus,
+  SmsTemplateDetail,
+  SmsTemplateListItem,
+  UpdateSmsChannelDto,
+  UpdateSmsTemplateDto,
+} from './sms.js';

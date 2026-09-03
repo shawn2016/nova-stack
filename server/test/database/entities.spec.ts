@@ -19,6 +19,9 @@ import {
   SysRoleDeptEntity,
   SysJobEntity,
   SysJobLogEntity,
+  SysSmsChannelEntity,
+  SysSmsTemplateEntity,
+  SysSmsLogEntity,
   SysUserEntity,
   SysUserRoleEntity,
   entities,
@@ -65,7 +68,7 @@ describe('RBAC database entities', () => {
     }
   });
 
-  it('loads all 21 entities with expected table names', () => {
+  it('loads all 24 entities with expected table names', () => {
     const tableNames = dataSource.entityMetadatas
       .map((meta) => meta.tableName)
       .sort();
@@ -90,6 +93,9 @@ describe('RBAC database entities', () => {
       'sys_role',
       'sys_role_dept',
       'sys_role_permission',
+      'sys_sms_channel',
+      'sys_sms_log',
+      'sys_sms_template',
       'sys_user',
       'sys_user_role',
     ]);

@@ -14,6 +14,8 @@ import {
   SysRegionEntity,
   SysDeptEntity,
   SysJobEntity,
+  SysSmsChannelEntity,
+  SysSmsTemplateEntity,
   SysRoleEntity,
   SysRolePermissionEntity,
   SysUserEntity,
@@ -102,6 +104,16 @@ const PERMISSION_SEEDS: PermissionSeed[] = [
   { name: '定时任务删除', code: 'infra:job:delete', type: 'api' },
   { name: '定时任务执行', code: 'infra:job:run', type: 'api' },
   { name: '定时任务日志', code: 'infra:job:log:list', type: 'api' },
+  { name: '短信通道列表', code: 'infra:sms:channel:list', type: 'api' },
+  { name: '短信通道新增', code: 'infra:sms:channel:create', type: 'api' },
+  { name: '短信通道编辑', code: 'infra:sms:channel:update', type: 'api' },
+  { name: '短信通道删除', code: 'infra:sms:channel:delete', type: 'api' },
+  { name: '短信模板列表', code: 'infra:sms:template:list', type: 'api' },
+  { name: '短信模板新增', code: 'infra:sms:template:create', type: 'api' },
+  { name: '短信模板编辑', code: 'infra:sms:template:update', type: 'api' },
+  { name: '短信模板删除', code: 'infra:sms:template:delete', type: 'api' },
+  { name: '短信日志列表', code: 'infra:sms:log:list', type: 'api' },
+  { name: '短信测试发送', code: 'infra:sms:send', type: 'api' },
 ];
 
 const MENU_SEEDS: MenuSeed[] = [
@@ -252,6 +264,15 @@ const MENU_SEEDS: MenuSeed[] = [
         type: 'menu',
         permissionCode: 'infra:job:list',
         sort: 1,
+      },
+      {
+        name: '短信管理',
+        path: '/infra/sms',
+        component: 'views/infra/sms/index',
+        icon: 'ri:message-2-line',
+        type: 'menu',
+        permissionCode: 'infra:sms:channel:list',
+        sort: 2,
       },
     ],
   },
@@ -752,6 +773,38 @@ async function upsertDevJobs(repo: Repository<SysJobEntity>): Promise<void> {
   }
 }
 
+async function upsertDevSms(
+  channelRepo: Repository<SysSmsChannelEntity>,
+  templateRepo: Repository<SysSmsTemplateEntity>,
+): Promise<void> {
+  let channel = await channelRepo.findOne({ where: { name: 'Mock 通道' } });
+  if (!channel) {
+    channel = await channelRepo.save(
+      channelRepo.create({
+        name: 'Mock 通道',
+        provider: 'mock',
+        config: '{}',
+        status: 1,
+        remark: 'seed 示例短信通道',
+      }),
+    );
+  }
+
+  const template = await templateRepo.findOne({ where: { code: 'login_code' } });
+  if (!template) {
+    await templateRepo.save(
+      templateRepo.create({
+        code: 'login_code',
+        name: '登录验证码',
+        content: '您的验证码是{code}，5分钟内有效',
+        channelId: channel.id,
+        status: 1,
+        remark: 'seed 示例模板',
+      }),
+    );
+  }
+}
+
 /** 初始化 RBAC 与开发会员 seed 数据（幂等） */
 export async function runInitSeed(dataSource: DataSource): Promise<void> {
   const roleRepo = dataSource.getRepository(SysRoleEntity);
@@ -770,6 +823,8 @@ export async function runInitSeed(dataSource: DataSource): Promise<void> {
   const messageRepo = dataSource.getRepository(SysMessageEntity);
   const deptRepo = dataSource.getRepository(SysDeptEntity);
   const jobRepo = dataSource.getRepository(SysJobEntity);
+  const smsChannelRepo = dataSource.getRepository(SysSmsChannelEntity);
+  const smsTemplateRepo = dataSource.getRepository(SysSmsTemplateEntity);
 
   let superAdminRole = await roleRepo.findOne({
     where: { code: SUPER_ADMIN_ROLE_CODE },
@@ -816,6 +871,7 @@ export async function runInitSeed(dataSource: DataSource): Promise<void> {
   await upsertDevDeptConfigs(configRepo);
   const deptNameToId = await upsertDevDepts(deptRepo);
   await upsertDevJobs(jobRepo);
+  await upsertDevSms(smsChannelRepo, smsTemplateRepo);
 
   const nodeEnv = process.env.NODE_ENV ?? 'development';
   const isProduction = nodeEnv === 'production';
