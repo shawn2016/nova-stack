@@ -5,7 +5,6 @@ import request from 'supertest';
 import { App } from 'supertest/types';
 import { ErrorCode } from '@nova/shared-types';
 import { createE2eApp, E2eAppContext } from '../auth/e2e-app.helper';
-import { seedSiteConfigPermissions } from './seed-site-config-permissions';
 
 describe('Site Config API (e2e)', () => {
   let ctx: E2eAppContext;
@@ -30,7 +29,6 @@ describe('Site Config API (e2e)', () => {
   beforeAll(async () => {
     ctx = await createE2eApp();
     app = ctx.app;
-    await seedSiteConfigPermissions(ctx.dataSource);
     adminToken = await loginAdmin();
     memberToken = await loginMember();
   }, 30000);
@@ -40,9 +38,9 @@ describe('Site Config API (e2e)', () => {
   });
 
   describe('CRUD', () => {
-    let createdId: string;
+    let seededSiteNameId: string;
 
-    it('GET /config/items 应返回配置列表', async () => {
+    it('GET /config/items 应返回配置列表（含 seed 示例）', async () => {
       const res = await request(app.getHttpServer())
         .get('/config/items')
         .set('Authorization', `Bearer ${adminToken}`)
@@ -51,6 +49,10 @@ describe('Site Config API (e2e)', () => {
       expect(res.body.code).toBe(ErrorCode.SUCCESS);
       expect(res.body.data).toHaveProperty('list');
       expect(res.body.data).toHaveProperty('total');
+      expect(res.body.data.total).toBeGreaterThanOrEqual(3);
+      expect(res.body.data.list.some((item: { configKey: string }) => item.configKey === 'site.name')).toBe(
+        true,
+      );
     });
 
     it('POST /config/items 应创建配置项', async () => {
@@ -58,20 +60,19 @@ describe('Site Config API (e2e)', () => {
         .post('/config/items')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
-          configKey: 'site.name',
-          configName: '站点名称',
-          configValue: 'Nova Stack',
+          configKey: 'site.tagline',
+          configName: '站点标语',
+          configValue: 'Build with Nova',
           configGroup: 'site',
           remark: 'e2e test',
         })
         .expect(201);
 
       expect(res.body.code).toBe(ErrorCode.SUCCESS);
-      expect(res.body.data.configKey).toBe('site.name');
-      expect(res.body.data.configName).toBe('站点名称');
-      expect(res.body.data.configValue).toBe('Nova Stack');
+      expect(res.body.data.configKey).toBe('site.tagline');
+      expect(res.body.data.configName).toBe('站点标语');
+      expect(res.body.data.configValue).toBe('Build with Nova');
       expect(res.body.data.configGroup).toBe('site');
-      createdId = res.body.data.id;
     });
 
     it('POST /config/items 重复 configKey 应返回 400', async () => {
@@ -89,8 +90,18 @@ describe('Site Config API (e2e)', () => {
     });
 
     it('PUT /config/items/:id 应更新配置项且 configKey 不可改', async () => {
+      const listRes = await request(app.getHttpServer())
+        .get('/config/items')
+        .query({ keyword: 'site.name' })
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+
+      seededSiteNameId = listRes.body.data.list.find(
+        (item: { configKey: string }) => item.configKey === 'site.name',
+      ).id;
+
       const res = await request(app.getHttpServer())
-        .put(`/config/items/${createdId}`)
+        .put(`/config/items/${seededSiteNameId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           configName: '站点名称（已更新）',
@@ -127,17 +138,6 @@ describe('Site Config API (e2e)', () => {
     });
 
     it('GET /config/items 应支持 keyword 与 group 筛选', async () => {
-      await request(app.getHttpServer())
-        .post('/config/items')
-        .set('Authorization', `Bearer ${adminToken}`)
-        .send({
-          configKey: 'site.logo',
-          configName: '站点 Logo',
-          configValue: '/uploads/logo.png',
-          configGroup: 'site',
-        })
-        .expect(201);
-
       const res = await request(app.getHttpServer())
         .get('/config/items')
         .query({ keyword: 'logo', group: 'site' })
@@ -145,6 +145,9 @@ describe('Site Config API (e2e)', () => {
         .expect(200);
 
       expect(res.body.data.list.length).toBeGreaterThanOrEqual(1);
+      expect(res.body.data.list.some((item: { configKey: string }) => item.configKey === 'site.logo')).toBe(
+        true,
+      );
       expect(res.body.data.list.every((item: { configGroup: string }) => item.configGroup === 'site')).toBe(
         true,
       );
@@ -155,9 +158,9 @@ describe('Site Config API (e2e)', () => {
         .post('/config/items')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
-          configKey: 'site.icp',
-          configName: '备案号',
-          configValue: '京ICP备00000000号',
+          configKey: 'site.temp',
+          configName: '临时配置',
+          configValue: 'to-delete',
         })
         .expect(201);
 

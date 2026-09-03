@@ -4,6 +4,7 @@ import { runInitSeed } from '../../src/database/seeds/init.seed';
 import {
   ArticleEntity,
   MemberUserEntity,
+  SysConfigEntity,
   SysDictDataEntity,
   SysDictTypeEntity,
   SysMenuEntity,
@@ -33,6 +34,7 @@ interface SeedStores {
   articles: ArticleEntity[];
   dictTypes: SysDictTypeEntity[];
   dictData: SysDictDataEntity[];
+  siteConfigs: SysConfigEntity[];
 }
 
 function matchesWhere<T extends ObjectLiteral>(
@@ -87,6 +89,7 @@ function createMockDataSource(stores: SeedStores): DataSource {
   const articleRepo = createInMemoryRepo(stores.articles);
   const dictTypeRepo = createInMemoryRepo(stores.dictTypes);
   const dictDataRepo = createInMemoryRepo(stores.dictData);
+  const siteConfigRepo = createInMemoryRepo(stores.siteConfigs);
 
   return {
     getRepository: jest.fn((entity) => {
@@ -111,6 +114,8 @@ function createMockDataSource(stores: SeedStores): DataSource {
           return dictTypeRepo;
         case SysDictDataEntity:
           return dictDataRepo;
+        case SysConfigEntity:
+          return siteConfigRepo;
         default:
           throw new Error(`Unexpected entity: ${String(entity)}`);
       }
@@ -130,6 +135,7 @@ function emptyStores(): SeedStores {
     articles: [],
     dictTypes: [],
     dictData: [],
+    siteConfigs: [],
   };
 }
 
@@ -171,11 +177,13 @@ describe('runInitSeed', () => {
 
     await runInitSeed(dataSource);
 
-    expect(stores.permissions.length).toBe(26);
+    expect(stores.permissions.length).toBe(30);
     expect(stores.permissions.some((p) => p.code === 'system:user:list')).toBe(true);
     expect(stores.permissions.some((p) => p.code === 'content:article:list')).toBe(true);
     expect(stores.permissions.some((p) => p.code === 'system:dict:type:list')).toBe(true);
     expect(stores.permissions.some((p) => p.code === 'system:dict:data:delete')).toBe(true);
+    expect(stores.permissions.some((p) => p.code === 'system:config:list')).toBe(true);
+    expect(stores.permissions.some((p) => p.code === 'system:config:delete')).toBe(true);
     expect(stores.menus.some((m) => m.name === '系统管理')).toBe(true);
     expect(stores.menus.some((m) => m.name === '用户管理')).toBe(true);
     expect(stores.menus.some((m) => m.name === '字典管理' && m.path === '/system/dict')).toBe(
@@ -184,13 +192,22 @@ describe('runInitSeed', () => {
     expect(stores.menus.find((m) => m.name === '字典管理')?.permissionCode).toBe(
       'system:dict:type:list',
     );
+    expect(
+      stores.menus.some((m) => m.name === '站点配置' && m.path === '/system/site-config'),
+    ).toBe(true);
+    expect(stores.menus.find((m) => m.name === '站点配置')?.permissionCode).toBe(
+      'system:config:list',
+    );
+    expect(stores.menus.find((m) => m.name === '站点配置')?.component).toBe(
+      'views/system/site-config/index',
+    );
     expect(stores.menus.some((m) => m.name === '内容管理')).toBe(true);
     expect(stores.menus.some((m) => m.name === '文章管理' && m.path === '/content/articles')).toBe(
       true,
     );
     expect(stores.menus.find((m) => m.name === '系统管理')?.icon).toBe('ri:settings-3-line');
     expect(stores.menus.find((m) => m.name === '用户管理')?.icon).toBe('ri:user-line');
-    expect(stores.rolePermissions.length).toBe(26);
+    expect(stores.rolePermissions.length).toBe(30);
   });
 
   it('does not duplicate role-permission links on second run', async () => {
@@ -201,8 +218,8 @@ describe('runInitSeed', () => {
     await runInitSeed(dataSource);
     await runInitSeed(dataSource);
 
-    expect(stores.permissions.length).toBe(26);
-    expect(stores.rolePermissions.length).toBe(26);
+    expect(stores.permissions.length).toBe(30);
+    expect(stores.rolePermissions.length).toBe(30);
   });
 
   it('seeds dev sample articles in non-production', async () => {
@@ -277,6 +294,39 @@ describe('runInitSeed', () => {
     expect(stores.dictData).toHaveLength(4);
   });
 
+  it('seeds dev sample site configs in non-production', async () => {
+    process.env.NODE_ENV = 'development';
+    const stores = emptyStores();
+    const dataSource = createMockDataSource(stores);
+
+    await runInitSeed(dataSource);
+
+    expect(stores.siteConfigs).toHaveLength(3);
+    expect(stores.siteConfigs.some((c) => c.configKey === 'site.name')).toBe(true);
+    expect(stores.siteConfigs.find((c) => c.configKey === 'site.name')?.configValue).toBe(
+      'Nova Stack',
+    );
+    expect(stores.siteConfigs.some((c) => c.configKey === 'site.logo')).toBe(true);
+    expect(stores.siteConfigs.find((c) => c.configKey === 'site.logo')?.configValue).toBe(
+      '/uploads/logo.png',
+    );
+    expect(stores.siteConfigs.some((c) => c.configKey === 'site.icp')).toBe(true);
+    expect(stores.siteConfigs.find((c) => c.configKey === 'site.icp')?.configValue).toBe(
+      '京ICP备00000000号',
+    );
+  });
+
+  it('does not duplicate sample site configs on second run', async () => {
+    process.env.NODE_ENV = 'development';
+    const stores = emptyStores();
+    const dataSource = createMockDataSource(stores);
+
+    await runInitSeed(dataSource);
+    await runInitSeed(dataSource);
+
+    expect(stores.siteConfigs).toHaveLength(3);
+  });
+
   it('skips default admin and dev member seeds in production', async () => {
     process.env.NODE_ENV = 'production';
     const stores = emptyStores();
@@ -290,9 +340,10 @@ describe('runInitSeed', () => {
     expect(stores.articles).toHaveLength(0);
     expect(stores.dictTypes).toHaveLength(0);
     expect(stores.dictData).toHaveLength(0);
+    expect(stores.siteConfigs).toHaveLength(0);
     expect(bcrypt.hash).not.toHaveBeenCalled();
 
     expect(stores.roles.some((role) => role.code === 'super_admin')).toBe(true);
-    expect(stores.permissions.length).toBe(26);
+    expect(stores.permissions.length).toBe(30);
   });
 });

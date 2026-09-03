@@ -3,6 +3,7 @@ import { DataSource, Repository } from 'typeorm';
 import {
   ArticleEntity,
   MemberUserEntity,
+  SysConfigEntity,
   SysDictDataEntity,
   SysDictTypeEntity,
   SysMenuEntity,
@@ -61,6 +62,10 @@ const PERMISSION_SEEDS: PermissionSeed[] = [
   { name: '字典数据新增', code: 'system:dict:data:create', type: 'api' },
   { name: '字典数据编辑', code: 'system:dict:data:update', type: 'api' },
   { name: '字典数据删除', code: 'system:dict:data:delete', type: 'api' },
+  { name: '站点配置列表', code: 'system:config:list', type: 'api' },
+  { name: '站点配置新增', code: 'system:config:create', type: 'api' },
+  { name: '站点配置编辑', code: 'system:config:update', type: 'api' },
+  { name: '站点配置删除', code: 'system:config:delete', type: 'api' },
 ];
 
 const MENU_SEEDS: MenuSeed[] = [
@@ -108,6 +113,15 @@ const MENU_SEEDS: MenuSeed[] = [
         type: 'menu',
         permissionCode: 'system:dict:type:list',
         sort: 4,
+      },
+      {
+        name: '站点配置',
+        path: '/system/site-config',
+        component: 'views/system/site-config/index',
+        icon: 'ri:global-line',
+        type: 'menu',
+        permissionCode: 'system:config:list',
+        sort: 5,
       },
     ],
   },
@@ -237,12 +251,65 @@ const DEV_DICT_TYPE_SEEDS: DictTypeSeed[] = [
   { name: '文章状态', code: 'article_status', status: 1, remark: '文章发布状态' },
 ];
 
+interface SiteConfigSeed {
+  configKey: string;
+  configName: string;
+  configValue: string;
+  configGroup?: string | null;
+  remark?: string | null;
+}
+
+const DEV_SITE_CONFIG_SEEDS: SiteConfigSeed[] = [
+  {
+    configKey: 'site.name',
+    configName: '站点名称',
+    configValue: 'Nova Stack',
+    configGroup: 'site',
+  },
+  {
+    configKey: 'site.logo',
+    configName: '站点 Logo',
+    configValue: '/uploads/logo.png',
+    configGroup: 'site',
+  },
+  {
+    configKey: 'site.icp',
+    configName: '备案号',
+    configValue: '京ICP备00000000号',
+    configGroup: 'site',
+    remark: '占位备案号',
+  },
+];
+
 const DEV_DICT_DATA_SEEDS: DictDataSeed[] = [
   { typeCode: 'user_status', label: '启用', value: '1', sort: 1, status: 1 },
   { typeCode: 'user_status', label: '禁用', value: '0', sort: 2, status: 1 },
   { typeCode: 'article_status', label: '草稿', value: 'draft', sort: 1, status: 1 },
   { typeCode: 'article_status', label: '已发布', value: 'published', sort: 2, status: 1 },
 ];
+
+async function upsertDevSiteConfigs(
+  repo: Repository<SysConfigEntity>,
+): Promise<void> {
+  for (const seed of DEV_SITE_CONFIG_SEEDS) {
+    let config = await repo.findOne({ where: { configKey: seed.configKey } });
+    if (!config) {
+      config = repo.create({
+        configKey: seed.configKey,
+        configName: seed.configName,
+        configValue: seed.configValue,
+        configGroup: seed.configGroup ?? null,
+        remark: seed.remark ?? null,
+      });
+    } else {
+      config.configName = seed.configName;
+      config.configValue = seed.configValue;
+      config.configGroup = seed.configGroup ?? null;
+      config.remark = seed.remark ?? null;
+    }
+    await repo.save(config);
+  }
+}
 
 async function upsertDevDicts(
   typeRepo: Repository<SysDictTypeEntity>,
@@ -335,6 +402,7 @@ export async function runInitSeed(dataSource: DataSource): Promise<void> {
   const articleRepo = dataSource.getRepository(ArticleEntity);
   const dictTypeRepo = dataSource.getRepository(SysDictTypeEntity);
   const dictDataRepo = dataSource.getRepository(SysDictDataEntity);
+  const configRepo = dataSource.getRepository(SysConfigEntity);
 
   let superAdminRole = await roleRepo.findOne({
     where: { code: SUPER_ADMIN_ROLE_CODE },
@@ -416,5 +484,6 @@ export async function runInitSeed(dataSource: DataSource): Promise<void> {
 
     await upsertDevArticles(articleRepo, adminUser.id);
     await upsertDevDicts(dictTypeRepo, dictDataRepo);
+    await upsertDevSiteConfigs(configRepo);
   }
 }
