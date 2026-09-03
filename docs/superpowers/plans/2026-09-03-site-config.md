@@ -30,8 +30,8 @@ base-ref: 7a7af2d5732709c6239470e942ac69246865dcc9
 
 ## Task 2: Server 配置 API
 
-- [ ] 2.1 SiteConfigModule CRUD + by-key — 验证：e2e
-- [ ] 2.2 重复 key、Member 403 — 验证：e2e 边界
+- [x] 2.1 SiteConfigModule CRUD + by-key — 验证：e2e
+- [x] 2.2 重复 key、Member 403 — 验证：e2e 边界
 
 ## Task 3: Seed
 

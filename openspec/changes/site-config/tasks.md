@@ -5,8 +5,8 @@
 
 ## 2. Server 配置 API
 
-- [ ] 2.1 SiteConfigModule CRUD + by-key — 验证：e2e CRUD 与读取
-- [ ] 2.2 重复 key、Member 403 — 验证：e2e 边界
+- [x] 2.1 SiteConfigModule CRUD + by-key — 验证：e2e CRUD 与读取
+- [x] 2.2 重复 key、Member 403 — 验证：e2e 边界
 
 ## 3. Seed
 
