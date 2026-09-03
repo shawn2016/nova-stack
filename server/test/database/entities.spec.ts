@@ -5,7 +5,9 @@ import {
   SysConfigEntity,
   SysDictDataEntity,
   SysDictTypeEntity,
+  SysLoginLogEntity,
   SysMenuEntity,
+  SysOperLogEntity,
   SysPermissionEntity,
   SysRoleEntity,
   SysRolePermissionEntity,
@@ -55,7 +57,7 @@ describe('RBAC database entities', () => {
     }
   });
 
-  it('loads all 11 entities with expected table names', () => {
+  it('loads all 13 entities with expected table names', () => {
     const tableNames = dataSource.entityMetadatas
       .map((meta) => meta.tableName)
       .sort();
@@ -66,7 +68,9 @@ describe('RBAC database entities', () => {
       'sys_config',
       'sys_dict_data',
       'sys_dict_type',
+      'sys_login_log',
       'sys_menu',
+      'sys_oper_log',
       'sys_permission',
       'sys_role',
       'sys_role_permission',
@@ -185,6 +189,38 @@ describe('RBAC database entities', () => {
           'publishedAt,status',
       ),
     ).toBe(true);
+    expect(meta.relations).toHaveLength(0);
+  });
+
+  it('maps sys_login_log with nullable userId and userAgent', () => {
+    const meta = dataSource.getMetadata(SysLoginLogEntity);
+
+    expect(meta.tableName).toBe('sys_login_log');
+    expect(meta.findColumnWithPropertyName('username')?.length).toBe('64');
+    expect(meta.findColumnWithPropertyName('userId')?.databaseName).toBe('user_id');
+    expect(meta.findColumnWithPropertyName('userId')?.isNullable).toBe(true);
+    expect(meta.findColumnWithPropertyName('userAgent')?.databaseName).toBe('user_agent');
+    expect(meta.findColumnWithPropertyName('userAgent')?.isNullable).toBe(true);
+    expect(meta.findColumnWithPropertyName('status')?.type).toBe('tinyint');
+    expect(meta.findColumnWithPropertyName('message')?.isNullable).toBe(true);
+    expect(meta.relations).toHaveLength(0);
+  });
+
+  it('maps sys_oper_log with request_summary text and duration_ms', () => {
+    const meta = dataSource.getMetadata(SysOperLogEntity);
+
+    expect(meta.tableName).toBe('sys_oper_log');
+    expect(meta.findColumnWithPropertyName('userId')?.databaseName).toBe('user_id');
+    expect(meta.findColumnWithPropertyName('module')?.length).toBe('32');
+    expect(meta.findColumnWithPropertyName('action')?.length).toBe('32');
+    expect(meta.findColumnWithPropertyName('method')?.length).toBe('8');
+    expect(meta.findColumnWithPropertyName('path')?.length).toBe('255');
+    expect(meta.findColumnWithPropertyName('requestSummary')?.type).toBe('text');
+    expect(meta.findColumnWithPropertyName('requestSummary')?.isNullable).toBe(true);
+    expect(meta.findColumnWithPropertyName('errorMsg')?.databaseName).toBe('error_msg');
+    expect(meta.findColumnWithPropertyName('errorMsg')?.isNullable).toBe(true);
+    expect(meta.findColumnWithPropertyName('durationMs')?.databaseName).toBe('duration_ms');
+    expect(meta.findColumnWithPropertyName('status')?.type).toBe('tinyint');
     expect(meta.relations).toHaveLength(0);
   });
 });

@@ -86,3 +86,10 @@ export type {
   SiteConfigListItem,
   UpdateSiteConfigDto,
 } from './site-config.js';
+
+export type {
+  LoginLogListItem,
+  LoginLogListQuery,
+  OperLogListItem,
+  OperLogListQuery,
+} from './audit-log.js';
