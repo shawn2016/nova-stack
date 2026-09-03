@@ -14,6 +14,8 @@
 - **WHEN** 新开发者阅读根 README 并复制 `.env.example`
 - **THEN** 可了解三端目录分工、技术栈、seed 与启动顺序，端口与 proxy 一致
 
+## ADDED Requirements
+
 ### Requirement: 根级开发脚本
 系统 MUST 提供根级 `build`、`test` 聚合脚本；**`postinstall` MUST 构建 shared-types**；**`dev` MUST 并行启动 shared-types watch**（或等价 watch 方案）。
 

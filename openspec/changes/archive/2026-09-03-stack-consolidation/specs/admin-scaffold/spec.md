@@ -26,6 +26,8 @@
 - **WHEN** server 返回 `code: 0`
 - **THEN** request 层正确 unwrap `data`，不期望 `code: 200`
 
+## ADDED Requirements
+
 ### Requirement: 开发代理
 Admin 开发服务器 MUST 将 **`/api` 前缀**的请求代理至 `VITE_API_PROXY_URL`；后端 MUST 使用 `setGlobalPrefix('api')`；前端 `VITE_API_BASE_URL` MUST 为 `/api`（或含 `/api` 的完整地址）。
 

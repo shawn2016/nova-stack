@@ -2,6 +2,7 @@
 change: stack-consolidation
 design-doc: docs/superpowers/specs/2026-09-03-stack-consolidation-design.md
 base-ref: 5a178f6d58994e27fa76e8a50c7d201127c547e5
+archived-with: 2026-09-03-stack-consolidation
 ---
 
 # stack-consolidation 实施计划

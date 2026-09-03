@@ -2,6 +2,8 @@
 comet_change: stack-consolidation
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-09-03-stack-consolidation
+status: final
 ---
 
 # stack-consolidation 深度技术设计
