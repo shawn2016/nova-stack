@@ -247,4 +247,36 @@ export async function initE2eSchema(dataSource: DataSource): Promise<void> {
       updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+  await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS sys_job (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name VARCHAR(64) NOT NULL,
+      job_group VARCHAR(64) NOT NULL DEFAULT 'default',
+      invoke_target VARCHAR(128) NOT NULL,
+      cron_expression VARCHAR(64) NOT NULL,
+      status TINYINT NOT NULL DEFAULT 1,
+      concurrent TINYINT NOT NULL DEFAULT 0,
+      remark VARCHAR(255),
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS sys_job_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      job_id BIGINT NOT NULL,
+      job_name VARCHAR(64) NOT NULL,
+      job_group VARCHAR(64) NOT NULL,
+      invoke_target VARCHAR(128) NOT NULL,
+      status TINYINT NOT NULL,
+      message VARCHAR(500),
+      exception_info TEXT,
+      start_time DATETIME NOT NULL,
+      end_time DATETIME NOT NULL,
+      duration_ms INT NOT NULL,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
 }

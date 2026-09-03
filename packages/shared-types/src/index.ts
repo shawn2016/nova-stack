@@ -140,3 +140,16 @@ export type {
   OnlineSessionListItem,
   OnlineSessionListResult,
 } from './online-session.js';
+
+export type {
+  CreateJobDto,
+  JobDetail,
+  JobHandlerInfo,
+  JobListItem,
+  JobLogListItem,
+  JobLogStatus,
+  JobStatus,
+  RunJobResult,
+  UpdateJobDto,
+  UpdateJobStatusDto,
+} from './scheduled-job.js';
