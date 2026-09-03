@@ -27,6 +27,7 @@ import {
 } from '../../database/entities';
 import { RedisService } from '../../redis/redis.service';
 import { LoginLogService } from '../audit/login-log.service';
+import { OnlineSessionService } from '../online-session/online-session.service';
 import { LoginDto } from './dto/login.dto';
 
 export interface LoginContext {
@@ -53,6 +54,7 @@ export class AuthService {
     private readonly redisService: RedisService,
     private readonly configService: ConfigService,
     private readonly loginLogService: LoginLogService,
+    private readonly onlineSessionService: OnlineSessionService,
   ) {}
 
   async login(
@@ -99,6 +101,19 @@ export class AuthService {
     const { roles, permissions } = await this.loadRolesAndPermissions(user.id);
     const tokens = await this.issueTokenPair(user.id);
 
+    const accessJti = this.jwtService.extractJti(tokens.accessToken);
+    await this.onlineSessionService.register(
+      accessJti,
+      {
+        userId: toApiId(user.id),
+        username: user.username,
+        ip,
+        userAgent: userAgent ?? null,
+        loginAt: new Date().toISOString(),
+      },
+      tokens.expiresIn,
+    );
+
     return {
       tokens,
       user: this.toAdminInfo(user, roles, permissions),
@@ -113,6 +128,7 @@ export class AuthService {
     const payload = await this.jwtService.verifyToken(accessToken);
     const ttl = Math.max(payload.exp - Math.floor(Date.now() / 1000), 1);
     await this.jwtService.blacklist(payload.jti, ttl);
+    await this.onlineSessionService.remove(payload.jti);
 
     return { success: true };
   }

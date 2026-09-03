@@ -202,7 +202,7 @@ describe('runInitSeed', () => {
 
     await runInitSeed(dataSource);
 
-    expect(stores.permissions.length).toBe(50);
+    expect(stores.permissions.length).toBe(52);
     expect(stores.permissions.some((p) => p.code === 'system:user:list')).toBe(true);
     expect(stores.permissions.some((p) => p.code === 'content:article:list')).toBe(true);
     expect(stores.permissions.some((p) => p.code === 'system:dict:type:list')).toBe(true);
@@ -262,7 +262,7 @@ describe('runInitSeed', () => {
     );
     expect(stores.menus.find((m) => m.name === '系统管理')?.icon).toBe('ri:settings-3-line');
     expect(stores.menus.find((m) => m.name === '用户管理')?.icon).toBe('ri:user-line');
-    expect(stores.rolePermissions.length).toBe(50);
+    expect(stores.rolePermissions.length).toBe(52);
   });
 
   it('does not duplicate role-permission links on second run', async () => {
@@ -273,8 +273,8 @@ describe('runInitSeed', () => {
     await runInitSeed(dataSource);
     await runInitSeed(dataSource);
 
-    expect(stores.permissions.length).toBe(50);
-    expect(stores.rolePermissions.length).toBe(50);
+    expect(stores.permissions.length).toBe(52);
+    expect(stores.rolePermissions.length).toBe(52);
   });
 
   it('seeds dev sample articles in non-production', async () => {
@@ -356,7 +356,7 @@ describe('runInitSeed', () => {
 
     await runInitSeed(dataSource);
 
-    expect(stores.siteConfigs).toHaveLength(6);
+    expect(stores.siteConfigs).toHaveLength(7);
     expect(stores.siteConfigs.some((c) => c.configKey === 'site.name')).toBe(true);
     expect(stores.siteConfigs.find((c) => c.configKey === 'site.name')?.configValue).toBe(
       'Nova Stack',
@@ -382,7 +382,7 @@ describe('runInitSeed', () => {
     await runInitSeed(dataSource);
     await runInitSeed(dataSource);
 
-    expect(stores.siteConfigs).toHaveLength(6);
+    expect(stores.siteConfigs).toHaveLength(7);
   });
 
   it('seeds china regions from flat json', async () => {
@@ -421,11 +421,11 @@ describe('runInitSeed', () => {
     expect(stores.articles).toHaveLength(0);
     expect(stores.dictTypes).toHaveLength(0);
     expect(stores.dictData).toHaveLength(0);
-    expect(stores.siteConfigs).toHaveLength(3);
+    expect(stores.siteConfigs).toHaveLength(4);
     expect(stores.regions.length).toBeGreaterThan(3000);
     expect(bcrypt.hash).not.toHaveBeenCalled();
 
     expect(stores.roles.some((role) => role.code === 'super_admin')).toBe(true);
-    expect(stores.permissions.length).toBe(50);
+    expect(stores.permissions.length).toBe(52);
   });
 });

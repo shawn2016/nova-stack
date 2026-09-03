@@ -24,6 +24,10 @@ function createMockRedis() {
       store.delete(key);
       return 1;
     }),
+    keys: jest.fn(async (pattern: string) => {
+      const regex = new RegExp(`^${pattern.replace(/\*/g, '.*')}$`);
+      return [...store.keys()].filter((key) => regex.test(key));
+    }),
     _store: store,
   };
 }

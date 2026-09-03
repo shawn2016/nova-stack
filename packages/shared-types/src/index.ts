@@ -134,3 +134,9 @@ export {
   DATA_SCOPE_LABELS,
   DATA_SCOPE_SELF,
 } from './data-scope.js';
+
+export type {
+  KickOnlineSessionResult,
+  OnlineSessionListItem,
+  OnlineSessionListResult,
+} from './online-session.js';

@@ -63,6 +63,14 @@ export class JwtService {
     }
   }
 
+  extractJti(token: string): string {
+    const payload = this.nestJwtService.decode(token) as JwtPayload | null;
+    if (!payload?.jti) {
+      throw new UnauthorizedException('Invalid token');
+    }
+    return payload.jti;
+  }
+
   async blacklist(jti: string, ttl: number): Promise<void> {
     const redis = this.requireRedisClient();
     await redis.set(`jwt:blacklist:${jti}`, BLACKLIST_VALUE, 'EX', ttl);
