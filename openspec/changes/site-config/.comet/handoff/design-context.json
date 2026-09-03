@@ -1,0 +1,15 @@
+{
+  "change": "site-config",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "daf0b3ca0915ab3cbc2beb39e32e5e1be043890d0f6a9562c325f7d8a380c7c6",
+  "files": [
+    { "path": "openspec/changes/site-config/proposal.md", "sha256": "83f245dd0c66d6050ad4203c6e27c673b8e0fc6e4c6a723ec90d766266113264" },
+    { "path": "openspec/changes/site-config/design.md", "sha256": "a7bd241ac54a17fc5c9946c72754be4548ebe12c1234baac0e77fe22091d9ed5" },
+    { "path": "openspec/changes/site-config/tasks.md", "sha256": "4076799d60ce879f138683d21f2861b4cffb72f4749a37b70f75da8c5ae5978e" },
+    { "path": "openspec/changes/site-config/specs/site-config-admin-ui/spec.md", "sha256": "107d684cfcc26b7ac6109d2f1cf2679ae4e3a6c47512d76fe6473ce456ec55db" },
+    { "path": "openspec/changes/site-config/specs/site-config-api/spec.md", "sha256": "072f71cc46fa15fa7bd124794ec9309a981bc2b477258ffa8b5e9979fb3a1794" }
+  ]
+}
