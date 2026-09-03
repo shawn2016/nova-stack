@@ -142,4 +142,17 @@ export async function initE2eSchema(dataSource: DataSource): Promise<void> {
       updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+  await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS sys_login_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      username VARCHAR(64) NOT NULL,
+      user_id BIGINT,
+      ip VARCHAR(64) NOT NULL,
+      user_agent VARCHAR(255),
+      status TINYINT NOT NULL,
+      message VARCHAR(255),
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
 }

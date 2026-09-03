@@ -22,6 +22,7 @@ import { UploadModule } from './modules/upload/upload.module';
 import { RbacModule } from './modules/rbac/rbac.module';
 import { DictModule } from './modules/dict/dict.module';
 import { SiteConfigModule } from './modules/site-config/site-config.module';
+import { AuditModule } from './modules/audit/audit.module';
 import { RolesGuard } from './modules/rbac/guards/roles.guard';
 
 @Module({
@@ -43,6 +44,7 @@ import { RolesGuard } from './modules/rbac/guards/roles.guard';
     UploadModule,
     DictModule,
     SiteConfigModule,
+    AuditModule,
   ],
   providers: [
     {

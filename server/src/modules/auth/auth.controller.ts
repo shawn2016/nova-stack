@@ -18,8 +18,11 @@ export class AuthController {
   @Post('login')
   @HttpCode(200)
   @ApiOperation({ summary: 'B 端管理员登录' })
-  login(@Body() body: LoginDto) {
-    return this.authService.login(body);
+  login(@Body() body: LoginDto, @Req() req: Request) {
+    return this.authService.login(body, {
+      ip: req.ip ?? req.socket.remoteAddress ?? '',
+      userAgent: req.headers['user-agent'],
+    });
   }
 
   @Post('logout')

@@ -25,7 +25,13 @@ import {
   SysUserRoleEntity,
 } from '../../database/entities';
 import { RedisService } from '../../redis/redis.service';
+import { LoginLogService } from '../audit/login-log.service';
 import { LoginDto } from './dto/login.dto';
+
+export interface LoginContext {
+  ip: string;
+  userAgent?: string;
+}
 
 @Injectable()
 export class AuthService {
@@ -45,21 +51,49 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly redisService: RedisService,
     private readonly configService: ConfigService,
+    private readonly loginLogService: LoginLogService,
   ) {}
 
-  async login(dto: LoginDto): Promise<AdminLoginResponse> {
+  async login(
+    dto: LoginDto,
+    context: LoginContext = { ip: '' },
+  ): Promise<AdminLoginResponse> {
+    const { ip, userAgent } = context;
     const user = await this.userRepo.findOne({
       where: { username: dto.username },
     });
 
     if (!user || user.status !== 1) {
+      await this.loginLogService.recordLoginAttempt({
+        username: dto.username,
+        ip,
+        userAgent,
+        success: false,
+        message: 'Invalid credentials',
+      });
       throw new UnauthorizedException('Invalid credentials');
     }
 
     const passwordValid = await bcrypt.compare(dto.password, user.passwordHash);
     if (!passwordValid) {
+      await this.loginLogService.recordLoginAttempt({
+        username: dto.username,
+        userId: user.id,
+        ip,
+        userAgent,
+        success: false,
+        message: 'Invalid credentials',
+      });
       throw new UnauthorizedException('Invalid credentials');
     }
+
+    await this.loginLogService.recordLoginAttempt({
+      username: dto.username,
+      userId: user.id,
+      ip,
+      userAgent,
+      success: true,
+    });
 
     const { roles, permissions } = await this.loadRolesAndPermissions(user.id);
     const tokens = await this.issueTokenPair(user.id);
