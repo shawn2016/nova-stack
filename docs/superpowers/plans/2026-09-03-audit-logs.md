@@ -29,8 +29,8 @@ base-ref: a5c68dd9a545af89eed783cee835746a7eec2d5f
 
 ## Task 3: 操作审计与查询 API
 
-- [ ] 3.1 OperLogInterceptor — 验证：e2e 写操作有记录
-- [ ] 3.2 GET /audit/login-logs、/audit/oper-logs — 验证：e2e
+- [x] 3.1 OperLogInterceptor — 验证：e2e 写操作有记录
+- [x] 3.2 GET /audit/login-logs、/audit/oper-logs — 验证：e2e
 
 ## Task 4: Seed
 

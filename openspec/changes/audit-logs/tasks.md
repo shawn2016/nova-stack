@@ -6,7 +6,7 @@
 ## 2. Server 审计写入与查询
 
 - [x] 2.1 登录日志写入（AuthService） — 验证：e2e 登录成功/失败有记录
-- [ ] 2.2 OperLogInterceptor + 查询 API — 验证：e2e 写操作有 log + 列表 API
+- [x] 2.2 OperLogInterceptor + 查询 API — 验证：e2e 写操作有 log + 列表 API
 
 ## 3. Seed
 
