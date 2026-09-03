@@ -13,6 +13,7 @@ import {
   SysPermissionEntity,
   SysRegionEntity,
   SysDeptEntity,
+  SysJobEntity,
   SysRoleEntity,
   SysRolePermissionEntity,
   SysUserEntity,
@@ -95,6 +96,12 @@ const PERMISSION_SEEDS: PermissionSeed[] = [
   { name: '部门功能开关', code: 'system:dept:settings', type: 'api' },
   { name: '在线用户列表', code: 'system:session:list', type: 'api' },
   { name: '在线用户踢下线', code: 'system:session:kick', type: 'api' },
+  { name: '定时任务列表', code: 'infra:job:list', type: 'api' },
+  { name: '定时任务新增', code: 'infra:job:create', type: 'api' },
+  { name: '定时任务编辑', code: 'infra:job:update', type: 'api' },
+  { name: '定时任务删除', code: 'infra:job:delete', type: 'api' },
+  { name: '定时任务执行', code: 'infra:job:run', type: 'api' },
+  { name: '定时任务日志', code: 'infra:job:log:list', type: 'api' },
 ];
 
 const MENU_SEEDS: MenuSeed[] = [
@@ -224,6 +231,26 @@ const MENU_SEEDS: MenuSeed[] = [
         icon: 'ri:article-line',
         type: 'menu',
         permissionCode: 'content:article:list',
+        sort: 1,
+      },
+    ],
+  },
+  {
+    name: '基础设施',
+    path: '/infra',
+    component: null,
+    icon: 'ri:tools-line',
+    type: 'directory',
+    permissionCode: null,
+    sort: 3,
+    children: [
+      {
+        name: '定时任务',
+        path: '/infra/job',
+        component: 'views/infra/job/index',
+        icon: 'ri:timer-line',
+        type: 'menu',
+        permissionCode: 'infra:job:list',
         sort: 1,
       },
     ],
@@ -708,6 +735,23 @@ async function upsertDevArticles(
   }
 }
 
+async function upsertDevJobs(repo: Repository<SysJobEntity>): Promise<void> {
+  let job = await repo.findOne({ where: { name: 'Demo 心跳' } });
+  if (!job) {
+    await repo.save(
+      repo.create({
+        name: 'Demo 心跳',
+        jobGroup: 'default',
+        invokeTarget: 'demo.heartbeat',
+        cronExpression: '0 */6 * * *',
+        status: 0,
+        concurrent: 0,
+        remark: 'seed 示例任务（默认暂停）',
+      }),
+    );
+  }
+}
+
 /** 初始化 RBAC 与开发会员 seed 数据（幂等） */
 export async function runInitSeed(dataSource: DataSource): Promise<void> {
   const roleRepo = dataSource.getRepository(SysRoleEntity);
@@ -725,6 +769,7 @@ export async function runInitSeed(dataSource: DataSource): Promise<void> {
   const noticeRepo = dataSource.getRepository(SysNoticeEntity);
   const messageRepo = dataSource.getRepository(SysMessageEntity);
   const deptRepo = dataSource.getRepository(SysDeptEntity);
+  const jobRepo = dataSource.getRepository(SysJobEntity);
 
   let superAdminRole = await roleRepo.findOne({
     where: { code: SUPER_ADMIN_ROLE_CODE },
@@ -770,6 +815,7 @@ export async function runInitSeed(dataSource: DataSource): Promise<void> {
   await upsertDevDataScopeConfigs(configRepo);
   await upsertDevDeptConfigs(configRepo);
   const deptNameToId = await upsertDevDepts(deptRepo);
+  await upsertDevJobs(jobRepo);
 
   const nodeEnv = process.env.NODE_ENV ?? 'development';
   const isProduction = nodeEnv === 'production';

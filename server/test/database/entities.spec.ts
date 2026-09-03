@@ -17,6 +17,8 @@ import {
   SysRoleEntity,
   SysRolePermissionEntity,
   SysRoleDeptEntity,
+  SysJobEntity,
+  SysJobLogEntity,
   SysUserEntity,
   SysUserRoleEntity,
   entities,
@@ -63,7 +65,7 @@ describe('RBAC database entities', () => {
     }
   });
 
-  it('loads all 19 entities with expected table names', () => {
+  it('loads all 21 entities with expected table names', () => {
     const tableNames = dataSource.entityMetadatas
       .map((meta) => meta.tableName)
       .sort();
@@ -75,6 +77,8 @@ describe('RBAC database entities', () => {
       'sys_dept',
       'sys_dict_data',
       'sys_dict_type',
+      'sys_job',
+      'sys_job_log',
       'sys_login_log',
       'sys_menu',
       'sys_message',

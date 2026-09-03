@@ -17,6 +17,8 @@ import { SysNoticeReadEntity } from './sys-notice-read.entity';
 import { SysMessageEntity } from './sys-message.entity';
 import { SysDeptEntity } from './sys-dept.entity';
 import { SysRoleDeptEntity } from './sys-role-dept.entity';
+import { SysJobEntity } from './sys-job.entity';
+import { SysJobLogEntity } from './sys-job-log.entity';
 
 export { ArticleEntity } from './article.entity';
 export { MemberUserEntity } from './member-user.entity';
@@ -37,6 +39,8 @@ export { SysNoticeReadEntity } from './sys-notice-read.entity';
 export { SysMessageEntity } from './sys-message.entity';
 export { SysDeptEntity } from './sys-dept.entity';
 export { SysRoleDeptEntity } from './sys-role-dept.entity';
+export { SysJobEntity } from './sys-job.entity';
+export { SysJobLogEntity } from './sys-job-log.entity';
 
 /** 全部 RBAC / Member / Dict 实体，供 TypeORM 与测试加载 */
 export const entities = [
@@ -59,4 +63,6 @@ export const entities = [
   SysMessageEntity,
   SysDeptEntity,
   SysRoleDeptEntity,
+  SysJobEntity,
+  SysJobLogEntity,
 ];

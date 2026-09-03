@@ -31,6 +31,7 @@ import { NoticeModule } from './modules/notice/notice.module';
 import { DeptModule } from './modules/dept/dept.module';
 import { DataScopeModule } from './modules/data-scope/data-scope.module';
 import { OnlineSessionModule } from './modules/online-session/online-session.module';
+import { JobModule } from './modules/job/job.module';
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import { OnlineSessionModule } from './modules/online-session/online-session.mod
     DeptModule,
     DataScopeModule,
     OnlineSessionModule,
+    JobModule,
   ],
   providers: [
     {
