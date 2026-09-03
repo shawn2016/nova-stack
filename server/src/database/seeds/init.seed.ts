@@ -12,6 +12,7 @@ import {
   SysNoticeReadEntity,
   SysPermissionEntity,
   SysRegionEntity,
+  SysDeptEntity,
   SysRoleEntity,
   SysRolePermissionEntity,
   SysUserEntity,
@@ -87,6 +88,11 @@ const PERMISSION_SEEDS: PermissionSeed[] = [
   { name: '消息列表', code: 'system:message:list', type: 'api' },
   { name: '消息发送', code: 'system:message:send', type: 'api' },
   { name: '消息删除', code: 'system:message:delete', type: 'api' },
+  { name: '部门列表', code: 'system:dept:list', type: 'api' },
+  { name: '部门新增', code: 'system:dept:create', type: 'api' },
+  { name: '部门编辑', code: 'system:dept:update', type: 'api' },
+  { name: '部门删除', code: 'system:dept:delete', type: 'api' },
+  { name: '部门功能开关', code: 'system:dept:settings', type: 'api' },
 ];
 
 const MENU_SEEDS: MenuSeed[] = [
@@ -163,13 +169,22 @@ const MENU_SEEDS: MenuSeed[] = [
         sort: 7,
       },
       {
+        name: '部门管理',
+        path: '/system/dept',
+        component: 'views/system/dept/index',
+        icon: 'ri:organization-chart',
+        type: 'menu',
+        permissionCode: 'system:dept:list',
+        sort: 8,
+      },
+      {
         name: '站点配置',
         path: '/system/site-config',
         component: 'views/system/site-config/index',
         icon: 'ri:global-line',
         type: 'menu',
         permissionCode: 'system:config:list',
-        sort: 8,
+        sort: 9,
       },
       {
         name: '审计日志',
@@ -178,7 +193,7 @@ const MENU_SEEDS: MenuSeed[] = [
         icon: 'ri:file-list-3-line',
         type: 'menu',
         permissionCode: 'system:audit:login:list',
-        sort: 9,
+        sort: 10,
       },
     ],
   },
@@ -344,6 +359,90 @@ const DEV_DICT_DATA_SEEDS: DictDataSeed[] = [
   { typeCode: 'article_status', label: '草稿', value: 'draft', sort: 1, status: 1 },
   { typeCode: 'article_status', label: '已发布', value: 'published', sort: 2, status: 1 },
 ];
+
+const DEV_DEPT_CONFIG_SEEDS: SiteConfigSeed[] = [
+  {
+    configKey: 'dept.module.enabled',
+    configName: '部门模块总开关',
+    configValue: 'true',
+    configGroup: 'dept',
+  },
+  {
+    configKey: 'dept.user_binding.enabled',
+    configName: '用户部门绑定开关',
+    configValue: 'true',
+    configGroup: 'dept',
+  },
+];
+
+interface DeptSeed {
+  name: string;
+  parentName?: string;
+  sort: number;
+  leader?: string | null;
+  status?: number;
+}
+
+const DEV_DEPT_SEEDS: DeptSeed[] = [
+  { name: '总公司', sort: 0, leader: '管理员' },
+  { name: '研发部', parentName: '总公司', sort: 1 },
+  { name: '运营部', parentName: '总公司', sort: 2 },
+];
+
+async function upsertDevDeptConfigs(
+  repo: Repository<SysConfigEntity>,
+): Promise<void> {
+  for (const seed of DEV_DEPT_CONFIG_SEEDS) {
+    let config = await repo.findOne({ where: { configKey: seed.configKey } });
+    if (!config) {
+      config = repo.create({
+        configKey: seed.configKey,
+        configName: seed.configName,
+        configValue: seed.configValue,
+        configGroup: seed.configGroup ?? null,
+        remark: seed.remark ?? null,
+      });
+    } else {
+      config.configName = seed.configName;
+      config.configValue = seed.configValue;
+      config.configGroup = seed.configGroup ?? null;
+      config.remark = seed.remark ?? null;
+    }
+    await repo.save(config);
+  }
+}
+
+async function upsertDevDepts(
+  repo: Repository<SysDeptEntity>,
+): Promise<Map<string, string>> {
+  const nameToId = new Map<string, string>();
+
+  for (const seed of DEV_DEPT_SEEDS) {
+    const parentId = seed.parentName
+      ? nameToId.get(seed.parentName) ?? '0'
+      : '0';
+
+    let dept = await repo.findOne({ where: { name: seed.name, parentId } });
+    if (!dept) {
+      dept = repo.create({
+        parentId,
+        name: seed.name,
+        sort: seed.sort,
+        leader: seed.leader ?? null,
+        phone: null,
+        status: seed.status ?? 1,
+      });
+    } else {
+      dept.sort = seed.sort;
+      dept.leader = seed.leader ?? null;
+      dept.status = seed.status ?? 1;
+    }
+    dept = await repo.save(dept);
+    nameToId.set(seed.name, dept.id);
+  }
+
+  return nameToId;
+}
 
 async function upsertDevSiteConfigs(
   repo: Repository<SysConfigEntity>,
@@ -550,6 +649,7 @@ export async function runInitSeed(dataSource: DataSource): Promise<void> {
   const regionRepo = dataSource.getRepository(SysRegionEntity);
   const noticeRepo = dataSource.getRepository(SysNoticeEntity);
   const messageRepo = dataSource.getRepository(SysMessageEntity);
+  const deptRepo = dataSource.getRepository(SysDeptEntity);
 
   let superAdminRole = await roleRepo.findOne({
     where: { code: SUPER_ADMIN_ROLE_CODE },
@@ -587,6 +687,8 @@ export async function runInitSeed(dataSource: DataSource): Promise<void> {
   }
 
   await upsertRegions(regionRepo);
+  await upsertDevDeptConfigs(configRepo);
+  const deptNameToId = await upsertDevDepts(deptRepo);
 
   const nodeEnv = process.env.NODE_ENV ?? 'development';
   const isProduction = nodeEnv === 'production';
@@ -616,6 +718,12 @@ export async function runInitSeed(dataSource: DataSource): Promise<void> {
           roleId: superAdminRole.id,
         }),
       );
+    }
+
+    const rootDeptId = deptNameToId.get('总公司');
+    if (rootDeptId && !adminUser.deptId) {
+      adminUser.deptId = rootDeptId;
+      await userRepo.save(adminUser);
     }
 
     let member = await memberRepo.findOne({ where: { phone: DEV_MEMBER_PHONE } });

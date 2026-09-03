@@ -79,6 +79,7 @@
         { type: 'index', width: 60, label: '序号' },
         { prop: 'username', label: '用户名', minWidth: 120 },
         { prop: 'nickname', label: '昵称', minWidth: 120 },
+        { prop: 'deptName', label: '部门', minWidth: 120, formatter: (row) => row.deptName || '-' },
         {
           prop: 'roleCodes',
           label: '角色',

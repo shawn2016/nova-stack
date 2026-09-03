@@ -9,6 +9,7 @@ import {
   SysUserRoleEntity,
 } from '../../database/entities';
 import { AuthModule } from '../auth/auth.module';
+import { DeptModule } from '../dept/dept.module';
 import { MenuController } from './menu/menu.controller';
 import { MenuService } from './menu/menu.service';
 import { RoleController } from './role/role.controller';
@@ -19,6 +20,7 @@ import { UserService } from './user/user.service';
 @Module({
   imports: [
     AuthModule,
+    DeptModule,
     TypeOrmModule.forFeature([
       SysUserEntity,
       SysUserRoleEntity,

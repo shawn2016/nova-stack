@@ -110,3 +110,13 @@ export type {
   UnreadCountResult,
   UpdateNoticeDto,
 } from './notice.js';
+
+export type {
+  CreateDeptDto,
+  DeptListItem,
+  DeptSettings,
+  DeptTreeNode,
+  UpdateDeptDto,
+  UpdateDeptSettingsDto,
+  UpdateDeptStatusDto,
+} from './dept.js';

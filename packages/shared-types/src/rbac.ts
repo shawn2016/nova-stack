@@ -5,6 +5,8 @@ export interface SysUserListItem {
   nickname: string;
   avatar: string;
   status: 0 | 1;
+  deptId: string | null;
+  deptName: string | null;
   roleIds: string[];
   roleCodes: string[];
 }
@@ -21,12 +23,14 @@ export interface CreateUserDto {
   password: string;
   nickname?: string;
   status?: 0 | 1;
+  deptId?: string | null;
 }
 
 /** 更新用户请求（MVP 不含改密码） */
 export interface UpdateUserDto {
   nickname?: string;
   status?: 0 | 1;
+  deptId?: string | null;
 }
 
 /** 分配用户角色请求 */
