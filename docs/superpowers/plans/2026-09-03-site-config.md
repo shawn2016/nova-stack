@@ -2,6 +2,7 @@
 change: site-config
 design-doc: docs/superpowers/specs/2026-09-03-site-config-design.md
 base-ref: 7a7af2d5732709c6239470e942ac69246865dcc9
+archived-with: 2026-09-03-site-config
 ---
 
 # site-config 实施计划

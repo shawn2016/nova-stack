@@ -2,6 +2,8 @@
 comet_change: site-config
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-09-03-site-config
+status: final
 ---
 
 # site-config 深度技术设计

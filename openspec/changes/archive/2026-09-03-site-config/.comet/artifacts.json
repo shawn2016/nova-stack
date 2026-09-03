@@ -3,6 +3,7 @@
   "openspec_design": "openspec/changes/site-config/design.md",
   "openspec_tasks": "openspec/changes/site-config/tasks.md",
   "openspec_delta_spec": "openspec/changes/site-config/specs/site-config-admin-ui/spec.md",
-  "handoff_context": "openspec/changes/site-config/.comet/handoff/design-context.json",
-  "handoff_markdown": "openspec/changes/site-config/.comet/handoff/design-context.md"
+  "handoff_context": "openspec/changes/archive/2026-09-03-site-config/.comet/handoff/design-context.json",
+  "handoff_markdown": "openspec/changes/archive/2026-09-03-site-config/.comet/handoff/design-context.md",
+  "archive_directory": "openspec/changes/archive/2026-09-03-site-config"
 }
