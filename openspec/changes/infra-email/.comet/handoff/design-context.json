@@ -1,0 +1,15 @@
+{
+  "change": "infra-email",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "4faebba29484200cd6b9f810bf52c1cfd355062b22e4dd068fdef5b6e5eb1d1a",
+  "files": [
+    { "path": "openspec/changes/infra-email/proposal.md", "sha256": "beef5a0a36d67f2d7a3466d38720cb7263cf94deae27f32dd6bcfdb86f8e3282" },
+    { "path": "openspec/changes/infra-email/design.md", "sha256": "1876156e8c3032f4ae769c19132a8195e7bab9cdcf5081109f21ff25c7f53b50" },
+    { "path": "openspec/changes/infra-email/tasks.md", "sha256": "37339dd9e91e2f0dd4f596af82328d3551251e5ef7b148acac160d25ead6ed97" },
+    { "path": "openspec/changes/infra-email/specs/email-admin-ui/spec.md", "sha256": "0cc755ae5e612beb2d008224cb37a2596658dbb877eec2e13994210bcc7e2ef2" },
+    { "path": "openspec/changes/infra-email/specs/email-api/spec.md", "sha256": "2352a30cdff43201a7658dbb52f62c7a6dc4e9c808f2f0feccc09b8e49d1b6af" }
+  ]
+}
