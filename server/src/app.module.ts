@@ -30,6 +30,7 @@ import { RegionModule } from './modules/region/region.module';
 import { NoticeModule } from './modules/notice/notice.module';
 import { DeptModule } from './modules/dept/dept.module';
 import { DataScopeModule } from './modules/data-scope/data-scope.module';
+import { OnlineSessionModule } from './modules/online-session/online-session.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { DataScopeModule } from './modules/data-scope/data-scope.module';
     NoticeModule,
     DeptModule,
     DataScopeModule,
+    OnlineSessionModule,
   ],
   providers: [
     {

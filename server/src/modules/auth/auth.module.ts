@@ -11,6 +11,7 @@ import {
 } from '../../database/entities';
 import { JwtModule } from '../../common/jwt/jwt.module';
 import { AuditModule } from '../audit/audit.module';
+import { OnlineSessionModule } from '../online-session/online-session.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
@@ -20,6 +21,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule,
     AuditModule,
+    OnlineSessionModule,
     TypeOrmModule.forFeature([
       SysUserEntity,
       SysUserRoleEntity,

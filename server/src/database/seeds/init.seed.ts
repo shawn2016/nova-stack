@@ -93,6 +93,8 @@ const PERMISSION_SEEDS: PermissionSeed[] = [
   { name: '部门编辑', code: 'system:dept:update', type: 'api' },
   { name: '部门删除', code: 'system:dept:delete', type: 'api' },
   { name: '部门功能开关', code: 'system:dept:settings', type: 'api' },
+  { name: '在线用户列表', code: 'system:session:list', type: 'api' },
+  { name: '在线用户踢下线', code: 'system:session:kick', type: 'api' },
 ];
 
 const MENU_SEEDS: MenuSeed[] = [
@@ -194,6 +196,15 @@ const MENU_SEEDS: MenuSeed[] = [
         type: 'menu',
         permissionCode: 'system:audit:login:list',
         sort: 10,
+      },
+      {
+        name: '在线用户',
+        path: '/system/online-session',
+        component: 'views/system/online-session/index',
+        icon: 'ri:user-follow-line',
+        type: 'menu',
+        permissionCode: 'system:session:list',
+        sort: 11,
       },
     ],
   },
@@ -360,6 +371,15 @@ const DEV_DICT_DATA_SEEDS: DictDataSeed[] = [
   { typeCode: 'article_status', label: '已发布', value: 'published', sort: 2, status: 1 },
 ];
 
+const DEV_ONLINE_SESSION_CONFIG_SEEDS: SiteConfigSeed[] = [
+  {
+    configKey: 'online_session.module.enabled',
+    configName: '在线用户模块开关',
+    configValue: 'true',
+    configGroup: 'online_session',
+  },
+];
+
 const DEV_DATA_SCOPE_CONFIG_SEEDS: SiteConfigSeed[] = [
   {
     configKey: 'data_scope.module.enabled',
@@ -397,6 +417,29 @@ const DEV_DEPT_SEEDS: DeptSeed[] = [
   { name: '研发部', parentName: '总公司', sort: 1 },
   { name: '运营部', parentName: '总公司', sort: 2 },
 ];
+
+async function upsertDevOnlineSessionConfigs(
+  repo: Repository<SysConfigEntity>,
+): Promise<void> {
+  for (const seed of DEV_ONLINE_SESSION_CONFIG_SEEDS) {
+    let config = await repo.findOne({ where: { configKey: seed.configKey } });
+    if (!config) {
+      config = repo.create({
+        configKey: seed.configKey,
+        configName: seed.configName,
+        configValue: seed.configValue,
+        configGroup: seed.configGroup ?? null,
+        remark: seed.remark ?? null,
+      });
+    } else {
+      config.configName = seed.configName;
+      config.configValue = seed.configValue;
+      config.configGroup = seed.configGroup ?? null;
+      config.remark = seed.remark ?? null;
+    }
+    await repo.save(config);
+  }
+}
 
 async function upsertDevDataScopeConfigs(
   repo: Repository<SysConfigEntity>,
@@ -723,6 +766,7 @@ export async function runInitSeed(dataSource: DataSource): Promise<void> {
   }
 
   await upsertRegions(regionRepo);
+  await upsertDevOnlineSessionConfigs(configRepo);
   await upsertDevDataScopeConfigs(configRepo);
   await upsertDevDeptConfigs(configRepo);
   const deptNameToId = await upsertDevDepts(deptRepo);
