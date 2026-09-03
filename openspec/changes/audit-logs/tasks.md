@@ -18,4 +18,4 @@
 
 ## 5. 集成验证
 
-- [ ] 5.1 全量 test/e2e/build + openspec validate — 验证：通过
+- [x] 5.1 全量 test/e2e/build + openspec validate — 验证：通过

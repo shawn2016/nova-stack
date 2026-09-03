@@ -42,4 +42,4 @@ base-ref: a5c68dd9a545af89eed783cee835746a7eec2d5f
 
 ## Task 6: 集成验证
 
-- [ ] 6.1 全绿 + openspec validate
+- [x] 6.1 全绿 + openspec validate
