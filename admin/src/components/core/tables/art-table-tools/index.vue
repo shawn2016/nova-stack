@@ -43,49 +43,17 @@
       <ArtSvgIcon :icon="isFullScreen ? 'ri:fullscreen-exit-line' : 'ri:fullscreen-line'" />
     </div>
 
-    <ElPopover v-if="shouldShow('columns')" placement="bottom" trigger="click">
-      <template #reference>
-        <div class="button">
-          <ArtSvgIcon icon="ri:align-right" />
-        </div>
-      </template>
-      <div>
-        <ElScrollbar max-height="380px">
-          <VueDraggable
-            v-model="columns"
-            :disabled="false"
-            filter=".fixed-column"
-            :prevent-on-filter="false"
-            @move="checkColumnMove"
-          >
-            <div
-              v-for="item in columns"
-              :key="item.prop || item.type"
-              class="column-option flex-c"
-              :class="{ 'fixed-column': item.fixed }"
-            >
-              <div
-                class="drag-icon mr-2 h-4.5 flex-cc text-g-500"
-                :class="item.fixed ? 'cursor-default text-g-300' : 'cursor-move'"
-              >
-                <ArtSvgIcon
-                  :icon="item.fixed ? 'ri:unpin-line' : 'ri:drag-move-2-fill'"
-                  class="text-base"
-                />
-              </div>
-              <ElCheckbox
-                :model-value="getColumnVisibility(item)"
-                @update:model-value="(val) => updateColumnVisibility(item, val)"
-                :disabled="item.disabled"
-                class="flex-1 min-w-0 [&_.el-checkbox__label]:overflow-hidden [&_.el-checkbox__label]:text-ellipsis [&_.el-checkbox__label]:whitespace-nowrap"
-              >
-                {{ item.label || (item.type === 'selection' ? t('table.selection') : '') }}
-              </ElCheckbox>
-            </div>
-          </VueDraggable>
-        </ElScrollbar>
-      </div>
-    </ElPopover>
+    <div v-if="shouldShow('columns')" class="button" @click="columnSettingsVisible = true">
+      <ArtSvgIcon icon="ri:align-right" />
+    </div>
+
+    <ArtTableColumnSettings
+      v-if="shouldShow('columns')"
+      v-model="columnSettingsVisible"
+      :columns="columns"
+      :default-columns="defaultColumns"
+      @confirm="handleColumnSettingsConfirm"
+    />
 
     <ElPopover v-if="shouldShow('settings')" placement="bottom" trigger="click">
       <template #reference>
@@ -141,10 +109,10 @@
 </template>
 
 <script lang="ts" setup>
-  import { computed, onMounted, onUnmounted, ref } from 'vue'
+  import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
   import { storeToRefs } from 'pinia'
-  import { VueDraggable } from 'vue-draggable-plus'
   import { useI18n } from 'vue-i18n'
+  import ArtTableColumnSettings from '@/components/core/tables/art-table-column-settings/index.vue'
   import { TableSizeEnum } from '@/enums/formEnum'
   import { useTableStore } from '@/store/modules/table'
   import type { ColumnOption } from '@/types/component'
@@ -172,12 +140,12 @@
     fullClass: 'art-page-view',
     layout: 'search,refresh,size,fullscreen,columns,settings',
     loading: false,
-    showSearchBar: undefined,
+    showSearchBar: undefined
   })
 
   const columns = defineModel<ColumnOption[]>('columns', {
     required: false,
-    default: () => [],
+    default: () => []
   })
 
   const emit = defineEmits<{
@@ -187,6 +155,8 @@
   }>()
 
   const menuVisible = ref(false)
+  const columnSettingsVisible = ref(false)
+  const defaultColumns = ref<ColumnOption[]>([])
   const isManualRefresh = ref(false)
   const isFullScreen = ref(false)
   const originalOverflow = ref('')
@@ -198,33 +168,35 @@
     get: () => props.showSearchBar,
     set: (value: boolean | undefined) => {
       if (value !== undefined) emit('update:showSearchBar', value)
-    },
+    }
   })
 
   const tableSizeOptions = [
     { value: TableSizeEnum.SMALL, label: t('table.sizeOptions.small') },
     { value: TableSizeEnum.DEFAULT, label: t('table.sizeOptions.default') },
-    { value: TableSizeEnum.LARGE, label: t('table.sizeOptions.large') },
+    { value: TableSizeEnum.LARGE, label: t('table.sizeOptions.large') }
   ]
 
   const layoutItems = computed(() => props.layout.split(',').map((item) => item.trim()))
 
   const shouldShow = (componentName: string) => layoutItems.value.includes(componentName)
 
-  const getColumnVisibility = (col: ColumnOption): boolean => {
-    if (col.visible !== undefined) return col.visible
-    return col.checked ?? true
+  function cloneColumns(cols: ColumnOption[]): ColumnOption[] {
+    return cols.map((col) => ({ ...col }))
   }
 
-  const updateColumnVisibility = (col: ColumnOption, value: boolean | string | number) => {
-    const boolValue = !!value
-    col.checked = boolValue
-    col.visible = boolValue
-  }
+  watch(
+    columns,
+    (value) => {
+      if (defaultColumns.value.length === 0 && value.length > 0) {
+        defaultColumns.value = cloneColumns(value)
+      }
+    },
+    { immediate: true, deep: true }
+  )
 
-  const checkColumnMove = (event: { related: HTMLElement }) => {
-    if (event.related?.classList.contains('fixed-column')) return false
-    return true
+  function handleColumnSettingsConfirm(nextColumns: ColumnOption[]) {
+    columns.value = nextColumns
   }
 
   const search = () => {

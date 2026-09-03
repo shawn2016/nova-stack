@@ -11,6 +11,5 @@ export interface ArtListPanelToolsContext {
   onRefresh: () => void
 }
 
-export const ART_LIST_PANEL_TOOLS_KEY: InjectionKey<ArtListPanelToolsContext> = Symbol(
-  'artListPanelTools',
-)
+export const ART_LIST_PANEL_TOOLS_KEY: InjectionKey<ArtListPanelToolsContext> =
+  Symbol('artListPanelTools')

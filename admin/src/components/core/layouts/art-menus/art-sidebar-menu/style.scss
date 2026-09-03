@@ -88,6 +88,8 @@
 
   .menu-left {
     position: relative;
+    display: flex;
+    flex-direction: column;
     box-sizing: border-box;
     height: 100vh;
 
@@ -95,8 +97,62 @@
       height: 100dvh;
     }
 
+    .menu-body {
+      flex: 1;
+      min-height: 0;
+
+      :deep(.el-scrollbar) {
+        height: 100%;
+      }
+    }
+
+    .menu-footer {
+      display: flex;
+      flex-shrink: 0;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-top: 1px solid var(--art-card-border);
+
+      &.is-collapsed {
+        justify-content: center;
+      }
+
+      &__btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        color: var(--art-gray-600);
+        cursor: pointer;
+        background: var(--art-gray-200);
+        border: none;
+        border-radius: calc(var(--custom-radius) / 2 + 2px);
+        transition:
+          color 0.2s ease,
+          background-color 0.2s ease;
+
+        &:hover {
+          color: var(--art-gray-800);
+          background: var(--art-gray-300);
+        }
+
+        &.is-active {
+          color: var(--theme-color);
+          background: color-mix(in srgb, var(--theme-color) 12%, var(--art-gray-200));
+        }
+
+        .art-svg-icon {
+          font-size: 16px;
+        }
+      }
+    }
+
     .el-menu {
-      height: 100%;
+      height: auto;
+      min-height: 100%;
     }
 
     &:hover {
@@ -246,6 +302,25 @@
 
     .dual-menu-left {
       border-right: 1px solid rgb(255 255 255 / 9%) !important;
+    }
+
+    .menu-footer {
+      border-top-color: rgb(255 255 255 / 9%);
+
+      .menu-footer__btn {
+        color: rgb(255 255 255 / 65%);
+        background: rgb(255 255 255 / 6%);
+
+        &:hover {
+          color: rgb(255 255 255 / 85%);
+          background: rgb(255 255 255 / 10%);
+        }
+
+        &.is-active {
+          color: var(--theme-color);
+          background: color-mix(in srgb, var(--theme-color) 18%, rgb(255 255 255 / 6%));
+        }
+      }
     }
   }
 }

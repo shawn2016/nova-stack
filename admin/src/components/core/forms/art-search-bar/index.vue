@@ -461,7 +461,7 @@
    * 操作按钮样式：始终靠左，紧贴最后一个表单项
    */
   const actionButtonsStyle = computed(() => ({
-    'justify-content': 'flex-start',
+    'justify-content': 'flex-start'
   }))
 
   /**

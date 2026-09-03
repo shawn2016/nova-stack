@@ -27,8 +27,8 @@
               <span>{{ col.label || '操作' }}</span>
               <ArtTableTools
                 variant="menu"
-                v-model:columns="listPanelTools.columns"
-                v-model:show-search-bar="listPanelTools.showSearchBar"
+                v-model:columns="compactToolsColumns"
+                v-model:show-search-bar="compactToolsShowSearchBar"
                 :show-zebra="listPanelTools.showZebra.value"
                 :layout="listPanelTools.layout.value"
                 :loading="listPanelTools.loading.value"
@@ -100,6 +100,22 @@
 
   const listPanelTools = inject(ART_LIST_PANEL_TOOLS_KEY, null)
   const useCompactTools = computed(() => listPanelTools?.compactTools.value ?? false)
+
+  const compactToolsColumns = computed({
+    get: () => listPanelTools?.columns.value ?? [],
+    set: (value) => {
+      if (listPanelTools) listPanelTools.columns.value = value
+    },
+  })
+
+  const compactToolsShowSearchBar = computed({
+    get: () => listPanelTools?.showSearchBar.value,
+    set: (value: boolean | undefined) => {
+      if (listPanelTools && value !== undefined) {
+        listPanelTools.showSearchBar.value = value
+      }
+    },
+  })
 
   const { width } = useWindowSize()
   const elTableRef = ref<InstanceType<typeof ElTable> | null>(null)

@@ -63,18 +63,23 @@
     <div
       v-show="menuList.length > 0"
       class="menu-left"
-      :class="`menu-left-${getMenuTheme.theme} menu-left-${!menuOpen ? 'close' : 'open'}`"
+      :class="[
+        `menu-left-${getMenuTheme.theme}`,
+        `menu-left-${!menuOpen ? 'close' : 'open'}`,
+      ]"
       :style="{
         background: getMenuTheme.background,
-        width: isDualMenuCollapsed ? MENU_CLOSE_WIDTH : undefined
+        width: isDualMenuCollapsed ? MENU_CLOSE_WIDTH : undefined,
       }"
+      @mouseenter="handleMenuMouseEnter"
+      @mouseleave="handleMenuMouseLeave"
     >
       <!-- Logo、系统名称 -->
       <div
         class="header"
         @click="navigateToHome"
         :style="{
-          background: getMenuTheme.background
+          background: getMenuTheme.background,
         }"
       >
         <ArtLogo v-if="!isDualMenu" class="logo" />
@@ -83,33 +88,69 @@
           :class="{ 'is-dual-menu-name': isDualMenu }"
           :style="{
             color: getMenuTheme.systemNameColor,
-            opacity: !menuOpen ? 0 : 1
+            opacity: !menuOpen ? 0 : 1,
           }"
         >
           {{ AppConfig.systemInfo.name }}
         </p>
       </div>
-      <ElScrollbar :style="scrollbarStyle">
-        <ElMenu
-          :class="'el-menu-' + getMenuTheme.theme"
-          :collapse="!menuOpen"
-          :default-active="routerPath"
-          :text-color="getMenuTheme.textColor"
-          :unique-opened="uniqueOpened"
-          :background-color="getMenuTheme.background"
-          :default-openeds="defaultOpenedMenus"
-          :popper-class="`menu-left-popper menu-left-${getMenuTheme.theme}-popper`"
-          :show-timeout="50"
-          :hide-timeout="50"
+
+      <div class="menu-body">
+        <ElScrollbar>
+          <ElMenu
+            :class="'el-menu-' + getMenuTheme.theme"
+            :collapse="!menuOpen"
+            :default-active="routerPath"
+            :text-color="getMenuTheme.textColor"
+            :unique-opened="uniqueOpened"
+            :background-color="getMenuTheme.background"
+            :default-openeds="defaultOpenedMenus"
+            :popper-class="`menu-left-popper menu-left-${getMenuTheme.theme}-popper`"
+            :show-timeout="50"
+            :hide-timeout="50"
+          >
+            <SidebarSubmenu
+              :list="menuList"
+              :isMobile="isMobileMode"
+              :theme="getMenuTheme"
+              @close="handleMenuClose"
+            />
+          </ElMenu>
+        </ElScrollbar>
+      </div>
+
+      <footer
+        v-if="!isMobileScreen"
+        class="menu-footer"
+        :class="{ 'is-collapsed': !menuOpen }"
+      >
+        <ElTooltip
+          :content="menuOpen ? $t('sidebar.collapse') : $t('sidebar.expand')"
+          placement="top"
+          :show-after="300"
         >
-          <SidebarSubmenu
-            :list="menuList"
-            :isMobile="isMobileMode"
-            :theme="getMenuTheme"
-            @close="handleMenuClose"
-          />
-        </ElMenu>
-      </ElScrollbar>
+          <button type="button" class="menu-footer__btn" @click="toggleMenuVisibility">
+            <ArtSvgIcon
+              :icon="menuOpen ? 'ri:arrow-left-double-line' : 'ri:arrow-right-double-line'"
+            />
+          </button>
+        </ElTooltip>
+        <ElTooltip
+          v-if="menuOpen"
+          :content="isMenuPinned ? $t('sidebar.unpin') : $t('sidebar.pin')"
+          placement="top"
+          :show-after="300"
+        >
+          <button
+            type="button"
+            class="menu-footer__btn"
+            :class="{ 'is-active': isMenuPinned }"
+            @click="toggleMenuPin"
+          >
+            <ArtSvgIcon :icon="isMenuPinned ? 'ri:pushpin-2-fill' : 'ri:pushpin-line'" />
+          </button>
+        </ElTooltip>
+      </footer>
 
       <!-- 双列菜单右侧折叠按钮 -->
       <div class="dual-menu-collapse-btn" v-if="isDualMenu" @click="toggleMenuVisibility">
@@ -152,7 +193,7 @@
   const router = useRouter()
   const settingStore = useSettingStore()
 
-  const { getMenuOpenWidth, menuType, uniqueOpened, dualMenuShowText, menuOpen, getMenuTheme } =
+  const { getMenuOpenWidth, menuType, uniqueOpened, dualMenuShowText, menuOpen, autoClose, getMenuTheme } =
     storeToRefs(settingStore)
 
   // 组件内部状态
@@ -177,6 +218,9 @@
 
   // 移动端屏幕判断（使用 computed 避免重复计算）
   const isMobileScreen = computed(() => width.value < MOBILE_BREAKPOINT)
+
+  /** 菜单是否固定（与 autoClose 相反：固定时不随鼠标自动收起） */
+  const isMenuPinned = computed(() => !autoClose.value)
 
   // 路由相关
   const firstLevelMenuPath = computed(() => route.matched[0]?.path)
@@ -212,26 +256,6 @@
     return currentMenu?.children ?? []
   })
 
-  // 双列菜单收起时的滚动条样式
-  const scrollbarStyle = computed(() => {
-    if (isDualMenuCollapsed.value) {
-      return {
-        position: 'absolute',
-        top: '60px',
-        right: 0,
-        left: 0,
-        height: 'calc(100% - 10px)',
-        transform: 'translateY(-50px)',
-        transition: 'transform 0.3s ease'
-      }
-    }
-
-    return {
-      transform: 'translateY(0)',
-      height: 'calc(100% - 60px)',
-      transition: 'transform 0.3s ease'
-    }
-  })
 
   /**
    * 延迟隐藏移动端模态框（使用 VueUse 的 useTimeoutFn）
@@ -277,6 +301,34 @@
    */
   const navigateToHome = (): void => {
     router.push(homePath.value)
+  }
+
+  /**
+   * 切换菜单固定状态
+   */
+  const toggleMenuPin = (): void => {
+    if (isMenuPinned.value) {
+      settingStore.setAutoClose()
+      settingStore.setMenuOpen(false)
+      return
+    }
+    settingStore.setAutoClose()
+  }
+
+  /**
+   * 未固定时，悬停展开菜单
+   */
+  const handleMenuMouseEnter = (): void => {
+    if (isMobileScreen.value || isMenuPinned.value || menuOpen.value) return
+    settingStore.setMenuOpen(true)
+  }
+
+  /**
+   * 未固定时，移出收起菜单
+   */
+  const handleMenuMouseLeave = (): void => {
+    if (isMobileScreen.value || isMenuPinned.value) return
+    settingStore.setMenuOpen(false)
   }
 
   /**

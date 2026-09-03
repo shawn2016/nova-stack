@@ -32,6 +32,12 @@
       "description": "More configurations"
     }
   },
+  "sidebar": {
+    "collapse": "Collapse menu",
+    "expand": "Expand menu",
+    "pin": "Pin menu",
+    "unpin": "Unpin menu (expand on hover)"
+  },
   "common": {
     "tips": "Prompt",
     "cancel": "Cancel",
@@ -288,6 +294,18 @@
       "selection": "Select",
       "expand": "Expand",
       "index": "Index"
+    },
+    "columnSettings": {
+      "title": "Column Settings",
+      "selectAll": "All",
+      "columnTitle": "Column Title",
+      "columnWidth": "Width (px)",
+      "freezeColumn": "Freeze Column (max 4)",
+      "freezeLeft": "Left",
+      "freezeNone": "None",
+      "freezeRight": "Right",
+      "restoreDefault": "Restore Default",
+      "maxFreezeTip": "You can freeze up to 4 columns"
     },
     "zebra": "Zebra",
     "border": "Border",

@@ -30,7 +30,7 @@
 
   const formData = computed({
     get: () => props.modelValue,
-    set: (val) => emit('update:modelValue', val),
+    set: (val) => emit('update:modelValue', val)
   })
 
   const rules = {}
@@ -41,8 +41,8 @@
       key: 'keyword',
       type: 'input',
       placeholder: '用户名或昵称',
-      clearable: true,
-    },
+      clearable: true
+    }
   ])
 
   function handleReset() {

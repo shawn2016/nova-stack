@@ -32,6 +32,12 @@
       "description": "等更多配置"
     }
   },
+  "sidebar": {
+    "collapse": "收起菜单",
+    "expand": "展开菜单",
+    "pin": "固定菜单",
+    "unpin": "取消固定（悬停展开）"
+  },
   "common": {
     "tips": "提示",
     "cancel": "取消",
@@ -288,6 +294,18 @@
       "selection": "勾选",
       "expand": "展开",
       "index": "序号"
+    },
+    "columnSettings": {
+      "title": "列设置",
+      "selectAll": "全部",
+      "columnTitle": "列标题",
+      "columnWidth": "列宽（像素）",
+      "freezeColumn": "冻结列（最多 4 列）",
+      "freezeLeft": "左侧",
+      "freezeNone": "不设置",
+      "freezeRight": "右侧",
+      "restoreDefault": "恢复默认",
+      "maxFreezeTip": "最多冻结 4 列"
     },
     "zebra": "斑马纹",
     "border": "边框",

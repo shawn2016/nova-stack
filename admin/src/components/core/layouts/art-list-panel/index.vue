@@ -17,11 +17,7 @@
         </button>
       </nav>
 
-      <header
-        v-else-if="title"
-        class="art-list-panel__head"
-        :class="`is-size-${componentSize}`"
-      >
+      <header v-else-if="title" class="art-list-panel__head" :class="`is-size-${componentSize}`">
         <h2 class="art-list-panel__title">{{ title }}</h2>
         <div v-if="$slots['head-actions']" class="art-list-panel__head-actions">
           <slot name="head-actions" />
@@ -61,10 +57,7 @@
   import { useSlots } from 'vue'
   import { useGlobalConfig } from 'element-plus'
   import { listPanelConfig } from '@/config/modules/listPanel'
-  import {
-    ART_LIST_PANEL_TOOLS_KEY,
-    type ArtListPanelToolsContext,
-  } from './context'
+  import { ART_LIST_PANEL_TOOLS_KEY, type ArtListPanelToolsContext } from './context'
 
   defineOptions({ name: 'ArtListPanel' })
 
@@ -95,7 +88,7 @@
     showSearchToggle: listPanelConfig.showSearchToggle,
     tableHeaderLayout: listPanelConfig.tableHeaderLayout,
     showZebra: listPanelConfig.showZebra,
-    compactTools: listPanelConfig.compactTools,
+    compactTools: listPanelConfig.compactTools
   })
 
   const globalConfig = useGlobalConfig()
@@ -115,7 +108,7 @@
   const hasSearchSlot = computed(() => Boolean(slots.search))
 
   const showSearchSection = computed(
-    () => hasSearchSlot.value && showSearchBar.value !== false && showSearchBar.value,
+    () => hasSearchSlot.value && showSearchBar.value !== false && showSearchBar.value
   )
 
   const headerSearchToggle = computed({
@@ -124,7 +117,7 @@
       if (hasSearchSlot.value && value !== undefined) {
         showSearchBar.value = value
       }
-    },
+    }
   })
 
   function handleTabChange(name: string) {
@@ -136,9 +129,7 @@
 
   const compactTools = computed(() => props.compactTools)
 
-  const showTableHeader = computed(
-    () => !(props.compactTools && !slots['toolbar-left']),
-  )
+  const showTableHeader = computed(() => !(props.compactTools && !slots['toolbar-left']))
 
   provide(ART_LIST_PANEL_TOOLS_KEY, {
     compactTools,
@@ -147,7 +138,7 @@
     loading: computed(() => props.loading),
     layout: computed(() => props.tableHeaderLayout),
     showZebra: computed(() => props.showZebra),
-    onRefresh: () => emit('refresh'),
+    onRefresh: () => emit('refresh')
   } satisfies ArtListPanelToolsContext)
 </script>
 
