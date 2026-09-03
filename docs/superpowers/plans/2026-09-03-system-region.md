@@ -1,3 +1,7 @@
+---
+archived-with: 2026-09-03-system-region
+status: final
+---
 # system-region 实施计划
 
 base-ref: 66b253437f149492670b428dc6434b7ae9ffc989

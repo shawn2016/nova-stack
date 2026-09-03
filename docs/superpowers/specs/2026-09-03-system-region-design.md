@@ -2,6 +2,8 @@
 comet_change: system-region
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-09-03-system-region
+status: final
 ---
 
 # system-region 深度技术设计
