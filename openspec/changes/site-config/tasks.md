@@ -14,8 +14,8 @@
 
 ## 4. Admin 站点配置 UI
 
-- [ ] 4.1 api + 管理页 — 验证：admin build
-- [ ] 4.2 v-permission — 验证：按钮受控
+- [x] 4.1 api + 管理页 — 验证：admin build
+- [x] 4.2 v-permission — 验证：按钮受控
 
 ## 5. 集成验证
 

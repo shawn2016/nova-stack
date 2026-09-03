@@ -39,7 +39,7 @@ base-ref: 7a7af2d5732709c6239470e942ac69246865dcc9
 
 ## Task 4: Admin 站点配置 UI
 
-- [ ] 4.1 api + 管理页 + v-permission — 验证：admin build
+- [x] 4.1 api + 管理页 + v-permission — 验证：admin build
 
 ## Task 5: 集成验证
 
