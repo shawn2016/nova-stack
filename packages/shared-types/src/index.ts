@@ -79,3 +79,10 @@ export type {
   UpdateDictDataDto,
   UpdateDictTypeDto,
 } from './dict.js';
+
+export type {
+  CreateSiteConfigDto,
+  SiteConfigByKeyResult,
+  SiteConfigListItem,
+  UpdateSiteConfigDto,
+} from './site-config.js';

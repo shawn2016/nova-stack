@@ -2,6 +2,7 @@ import { DataSource, EntityMetadata } from 'typeorm';
 import {
   ArticleEntity,
   MemberUserEntity,
+  SysConfigEntity,
   SysDictDataEntity,
   SysDictTypeEntity,
   SysMenuEntity,
@@ -54,7 +55,7 @@ describe('RBAC database entities', () => {
     }
   });
 
-  it('loads all 10 entities with expected table names', () => {
+  it('loads all 11 entities with expected table names', () => {
     const tableNames = dataSource.entityMetadatas
       .map((meta) => meta.tableName)
       .sort();
@@ -62,6 +63,7 @@ describe('RBAC database entities', () => {
     expect(tableNames).toEqual([
       'article',
       'member_user',
+      'sys_config',
       'sys_dict_data',
       'sys_dict_type',
       'sys_menu',
@@ -124,6 +126,19 @@ describe('RBAC database entities', () => {
 
     expect(meta.tableName).toBe('member_user');
     expect(hasUniqueConstraint(meta, 'phone')).toBe(true);
+    expect(meta.relations).toHaveLength(0);
+  });
+
+  it('maps sys_config with unique configKey and text configValue', () => {
+    const meta = dataSource.getMetadata(SysConfigEntity);
+
+    expect(meta.tableName).toBe('sys_config');
+    expect(hasUniqueConstraint(meta, 'configKey')).toBe(true);
+    expect(meta.findColumnWithPropertyName('configKey')?.databaseName).toBe('config_key');
+    expect(meta.findColumnWithPropertyName('configName')?.databaseName).toBe('config_name');
+    expect(meta.findColumnWithPropertyName('configValue')?.type).toBe('text');
+    expect(meta.findColumnWithPropertyName('configGroup')?.isNullable).toBe(true);
+    expect(meta.findColumnWithPropertyName('remark')?.isNullable).toBe(true);
     expect(meta.relations).toHaveLength(0);
   });
 

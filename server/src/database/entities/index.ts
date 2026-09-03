@@ -1,5 +1,6 @@
 import { ArticleEntity } from './article.entity';
 import { MemberUserEntity } from './member-user.entity';
+import { SysConfigEntity } from './sys-config.entity';
 import { SysDictDataEntity } from './sys-dict-data.entity';
 import { SysDictTypeEntity } from './sys-dict-type.entity';
 import { SysMenuEntity } from './sys-menu.entity';
@@ -11,6 +12,7 @@ import { SysUserRoleEntity } from './sys-user-role.entity';
 
 export { ArticleEntity } from './article.entity';
 export { MemberUserEntity } from './member-user.entity';
+export { SysConfigEntity } from './sys-config.entity';
 export { SysDictDataEntity } from './sys-dict-data.entity';
 export { SysDictTypeEntity } from './sys-dict-type.entity';
 export { SysMenuEntity } from './sys-menu.entity';
@@ -30,6 +32,7 @@ export const entities = [
   SysRolePermissionEntity,
   MemberUserEntity,
   ArticleEntity,
+  SysConfigEntity,
   SysDictTypeEntity,
   SysDictDataEntity,
 ];
