@@ -1,0 +1,15 @@
+{
+  "change": "audit-logs",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "d1b06deb14f7a28b0b63573457b6ba16ba48a0fb8ab825cc1c9b670745a9dbdc",
+  "files": [
+    { "path": "openspec/changes/audit-logs/proposal.md", "sha256": "94c412332b32a2cf2a03e5bef2ff9a9b007d197d632110050b94a3a5c242e693" },
+    { "path": "openspec/changes/audit-logs/design.md", "sha256": "7f93dbf6ff6239355477317588c04e5945f958b82ed954353cf6b5b4e12c1305" },
+    { "path": "openspec/changes/audit-logs/tasks.md", "sha256": "7526c197f3450e5e715a9c3eebd469f2d3808c3b043b87f2d422fafbb4e0d9c0" },
+    { "path": "openspec/changes/audit-logs/specs/audit-log-admin-ui/spec.md", "sha256": "f367e9ac8a1121b6dcdf5d7eadf2dda0334d91f193da0399ae445917dd40d9d6" },
+    { "path": "openspec/changes/audit-logs/specs/audit-log-api/spec.md", "sha256": "ab5ac7c1f5d6e5d65db5ca6019af33ec82c812534926ca423dbddbbca6084288" }
+  ]
+}
