@@ -34,7 +34,7 @@ base-ref: a5c68dd9a545af89eed783cee835746a7eec2d5f
 
 ## Task 4: Seed
 
-- [ ] 4.1 permissions + 菜单 — 验证：seed 测试
+- [x] 4.1 permissions + 菜单 — 验证：seed 测试
 
 ## Task 5: Admin 审计 UI
 

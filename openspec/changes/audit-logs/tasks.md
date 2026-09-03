@@ -10,7 +10,7 @@
 
 ## 3. Seed
 
-- [ ] 3.1 permissions + 菜单 — 验证：seed 测试
+- [x] 3.1 permissions + 菜单 — 验证：seed 测试
 
 ## 4. Admin 审计 UI
 
