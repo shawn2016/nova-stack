@@ -25,7 +25,7 @@ base-ref: a5c68dd9a545af89eed783cee835746a7eec2d5f
 
 ## Task 2: 登录日志
 
-- [ ] 2.1 LoginLogService + AuthService 集成 — 验证：e2e
+- [x] 2.1 LoginLogService + AuthService 集成 — 验证：e2e
 
 ## Task 3: 操作审计与查询 API
 
