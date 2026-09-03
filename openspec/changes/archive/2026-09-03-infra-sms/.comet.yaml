@@ -18,12 +18,12 @@ verification_report: docs/superpowers/reports/2026-09-03-infra-sms-verify.md
 branch_status: pending
 created_at: 2026-09-03
 verified_at: 2026-09-03
-archive_confirmation: pending
-archived: false
+archive_confirmation: confirmed
+archived: true
 bound_branch: comet/infra-sms
 verify_failures: 0
 direct_override: null
-handoff_context: openspec/changes/infra-sms/.comet/handoff/design-context.json
+handoff_context: openspec/changes/archive/2026-09-03-infra-sms/.comet/handoff/design-context.json
 handoff_hash: 1d7b92facbf3f2978950dee057a202155ee06b1ed45beaca3eee752659d99d9e
 classic_profile: full
 classic_migration: 1

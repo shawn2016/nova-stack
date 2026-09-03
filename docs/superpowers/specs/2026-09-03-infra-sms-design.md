@@ -2,6 +2,8 @@
 comet_change: infra-sms
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-09-03-infra-sms
+status: final
 ---
 
 # infra-sms 深度技术设计

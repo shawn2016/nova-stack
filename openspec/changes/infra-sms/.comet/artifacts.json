@@ -1,8 +1,0 @@
-{
-  "openspec_proposal": "openspec/changes/infra-sms/proposal.md",
-  "openspec_design": "openspec/changes/infra-sms/design.md",
-  "openspec_tasks": "openspec/changes/infra-sms/tasks.md",
-  "openspec_delta_spec": "openspec/changes/infra-sms/specs/sms-admin-ui/spec.md",
-  "handoff_context": "openspec/changes/infra-sms/.comet/handoff/design-context.json",
-  "handoff_markdown": "openspec/changes/infra-sms/.comet/handoff/design-context.md"
-}
