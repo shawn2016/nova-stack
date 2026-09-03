@@ -1,0 +1,8 @@
+{
+  "openspec_proposal": "openspec/changes/system-data-scope/proposal.md",
+  "openspec_design": "openspec/changes/system-data-scope/design.md",
+  "openspec_tasks": "openspec/changes/system-data-scope/tasks.md",
+  "openspec_delta_spec": "openspec/changes/system-data-scope/specs/data-scope-admin-ui/spec.md",
+  "handoff_context": "openspec/changes/system-data-scope/.comet/handoff/design-context.json",
+  "handoff_markdown": "openspec/changes/system-data-scope/.comet/handoff/design-context.md"
+}
