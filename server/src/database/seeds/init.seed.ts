@@ -7,6 +7,9 @@ import {
   SysDictDataEntity,
   SysDictTypeEntity,
   SysMenuEntity,
+  SysMessageEntity,
+  SysNoticeEntity,
+  SysNoticeReadEntity,
   SysPermissionEntity,
   SysRegionEntity,
   SysRoleEntity,
@@ -76,6 +79,14 @@ const PERMISSION_SEEDS: PermissionSeed[] = [
   { name: '地区新增', code: 'system:region:create', type: 'api' },
   { name: '地区编辑', code: 'system:region:update', type: 'api' },
   { name: '地区删除', code: 'system:region:delete', type: 'api' },
+  { name: '通知列表', code: 'system:notice:list', type: 'api' },
+  { name: '通知新增', code: 'system:notice:create', type: 'api' },
+  { name: '通知编辑', code: 'system:notice:update', type: 'api' },
+  { name: '通知删除', code: 'system:notice:delete', type: 'api' },
+  { name: '通知发布', code: 'system:notice:publish', type: 'api' },
+  { name: '消息列表', code: 'system:message:list', type: 'api' },
+  { name: '消息发送', code: 'system:message:send', type: 'api' },
+  { name: '消息删除', code: 'system:message:delete', type: 'api' },
 ];
 
 const MENU_SEEDS: MenuSeed[] = [
@@ -134,13 +145,31 @@ const MENU_SEEDS: MenuSeed[] = [
         sort: 5,
       },
       {
+        name: '通知公告',
+        path: '/system/notice',
+        component: 'views/system/notice/index',
+        icon: 'ri:notification-3-line',
+        type: 'menu',
+        permissionCode: 'system:notice:list',
+        sort: 6,
+      },
+      {
+        name: '消息中心',
+        path: '/system/message',
+        component: 'views/system/message/index',
+        icon: 'ri:mail-line',
+        type: 'menu',
+        permissionCode: 'system:message:list',
+        sort: 7,
+      },
+      {
         name: '站点配置',
         path: '/system/site-config',
         component: 'views/system/site-config/index',
         icon: 'ri:global-line',
         type: 'menu',
         permissionCode: 'system:config:list',
-        sort: 6,
+        sort: 8,
       },
       {
         name: '审计日志',
@@ -149,7 +178,7 @@ const MENU_SEEDS: MenuSeed[] = [
         icon: 'ri:file-list-3-line',
         type: 'menu',
         permissionCode: 'system:audit:login:list',
-        sort: 7,
+        sort: 9,
       },
     ],
   },
@@ -378,6 +407,54 @@ async function upsertRegions(repo: Repository<SysRegionEntity>): Promise<void> {
   }
 }
 
+async function upsertDevNotices(
+  noticeRepo: Repository<SysNoticeEntity>,
+  messageRepo: Repository<SysMessageEntity>,
+  adminUserId: string,
+): Promise<void> {
+  let draft = await noticeRepo.findOne({ where: { title: 'Dev 草稿公告' } });
+  if (!draft) {
+    draft = await noticeRepo.save(
+      noticeRepo.create({
+        title: 'Dev 草稿公告',
+        content: '这是一条开发环境草稿公告',
+        type: 1,
+        status: 0,
+        publisherId: adminUserId,
+        publishedAt: null,
+      }),
+    );
+  }
+
+  let published = await noticeRepo.findOne({ where: { title: 'Dev 已发布公告' } });
+  if (!published) {
+    published = await noticeRepo.save(
+      noticeRepo.create({
+        title: 'Dev 已发布公告',
+        content: '欢迎登录 Nova Stack 管理后台',
+        type: 2,
+        status: 1,
+        publisherId: adminUserId,
+        publishedAt: new Date(),
+      }),
+    );
+  }
+
+  let message = await messageRepo.findOne({ where: { title: 'Dev 欢迎消息' } });
+  if (!message) {
+    await messageRepo.save(
+      messageRepo.create({
+        senderId: adminUserId,
+        receiverId: adminUserId,
+        title: 'Dev 欢迎消息',
+        content: 'seed 示例站内消息',
+        isRead: 0,
+        readAt: null,
+      }),
+    );
+  }
+}
+
 async function upsertDevDicts(
   typeRepo: Repository<SysDictTypeEntity>,
   dataRepo: Repository<SysDictDataEntity>,
@@ -471,6 +548,8 @@ export async function runInitSeed(dataSource: DataSource): Promise<void> {
   const dictDataRepo = dataSource.getRepository(SysDictDataEntity);
   const configRepo = dataSource.getRepository(SysConfigEntity);
   const regionRepo = dataSource.getRepository(SysRegionEntity);
+  const noticeRepo = dataSource.getRepository(SysNoticeEntity);
+  const messageRepo = dataSource.getRepository(SysMessageEntity);
 
   let superAdminRole = await roleRepo.findOne({
     where: { code: SUPER_ADMIN_ROLE_CODE },
@@ -555,5 +634,6 @@ export async function runInitSeed(dataSource: DataSource): Promise<void> {
     await upsertDevArticles(articleRepo, adminUser.id);
     await upsertDevDicts(dictTypeRepo, dictDataRepo);
     await upsertDevSiteConfigs(configRepo);
+    await upsertDevNotices(noticeRepo, messageRepo, adminUser.id);
   }
 }
