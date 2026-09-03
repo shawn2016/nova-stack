@@ -169,3 +169,19 @@ export type {
   UpdateSmsChannelDto,
   UpdateSmsTemplateDto,
 } from './sms.js';
+
+export type {
+  CreateEmailChannelDto,
+  CreateEmailTemplateDto,
+  EmailChannelDetail,
+  EmailChannelListItem,
+  EmailLogListItem,
+  EmailProviderType,
+  EmailStatus,
+  EmailTemplateDetail,
+  EmailTemplateListItem,
+  SendEmailDto,
+  SendEmailResult,
+  UpdateEmailChannelDto,
+  UpdateEmailTemplateDto,
+} from './email.js';

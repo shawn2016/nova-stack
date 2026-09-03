@@ -33,6 +33,7 @@ import { DataScopeModule } from './modules/data-scope/data-scope.module';
 import { OnlineSessionModule } from './modules/online-session/online-session.module';
 import { JobModule } from './modules/job/job.module';
 import { SmsModule } from './modules/sms/sms.module';
+import { EmailModule } from './modules/email/email.module';
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { SmsModule } from './modules/sms/sms.module';
     OnlineSessionModule,
     JobModule,
     SmsModule,
+    EmailModule,
   ],
   providers: [
     {
