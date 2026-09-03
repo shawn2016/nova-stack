@@ -38,7 +38,7 @@ base-ref: a5c68dd9a545af89eed783cee835746a7eec2d5f
 
 ## Task 5: Admin 审计 UI
 
-- [ ] 5.1 双 Tab 审计页 — 验证：admin build
+- [x] 5.1 双 Tab 审计页 — 验证：admin build
 
 ## Task 6: 集成验证
 

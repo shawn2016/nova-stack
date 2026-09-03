@@ -14,7 +14,7 @@
 
 ## 4. Admin 审计 UI
 
-- [ ] 4.1 审计日志页（双 Tab） — 验证：admin build
+- [x] 4.1 审计日志页（双 Tab） — 验证：admin build
 
 ## 5. 集成验证
 
