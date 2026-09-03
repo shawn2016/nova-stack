@@ -1,0 +1,15 @@
+{
+  "change": "infra-scheduled-job",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "079b1d620413ea0fa8bd4a67984ed533df3bfc464a613b2e91f6779ce1dc0f4e",
+  "files": [
+    { "path": "openspec/changes/infra-scheduled-job/proposal.md", "sha256": "8522195c33901f7be993e9de7f03a632d8f85d06cbc6f219ccccef80941251fc" },
+    { "path": "openspec/changes/infra-scheduled-job/design.md", "sha256": "793524fcd9e3a36372a2cb13830eace0f82e26bbf714229a69d509885e1a20f0" },
+    { "path": "openspec/changes/infra-scheduled-job/tasks.md", "sha256": "dba98c2e85fdaa5c7386c6450e70850f6377fe8cd90b68127a6306f66c8e6e83" },
+    { "path": "openspec/changes/infra-scheduled-job/specs/scheduled-job-admin-ui/spec.md", "sha256": "65a8ed7f371b0b654e6c5fbdc1320600091c1e5bc1693d5d4d5692c50c32fa92" },
+    { "path": "openspec/changes/infra-scheduled-job/specs/scheduled-job-api/spec.md", "sha256": "72fd4ba7e2f28fb2b75621b517b515486a195bcab1122b3af40b69a21f768777" }
+  ]
+}
