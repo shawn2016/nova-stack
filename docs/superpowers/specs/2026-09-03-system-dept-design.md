@@ -2,7 +2,8 @@
 comet_change: system-dept
 role: technical-design
 canonical_spec: openspec
-status: draft
+archived-with: 2026-09-03-system-dept
+status: final
 ---
 
 # system-dept 深度技术设计

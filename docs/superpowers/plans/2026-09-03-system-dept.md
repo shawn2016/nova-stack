@@ -1,3 +1,7 @@
+---
+archived-with: 2026-09-03-system-dept
+status: final
+---
 # system-dept 实施计划
 
 base-ref: bafd356e
