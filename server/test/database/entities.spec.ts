@@ -9,6 +9,7 @@ import {
   SysMenuEntity,
   SysOperLogEntity,
   SysPermissionEntity,
+  SysRegionEntity,
   SysRoleEntity,
   SysRolePermissionEntity,
   SysUserEntity,
@@ -57,7 +58,7 @@ describe('RBAC database entities', () => {
     }
   });
 
-  it('loads all 13 entities with expected table names', () => {
+  it('loads all 14 entities with expected table names', () => {
     const tableNames = dataSource.entityMetadatas
       .map((meta) => meta.tableName)
       .sort();
@@ -72,6 +73,7 @@ describe('RBAC database entities', () => {
       'sys_menu',
       'sys_oper_log',
       'sys_permission',
+      'sys_region',
       'sys_role',
       'sys_role_permission',
       'sys_user',
@@ -189,6 +191,16 @@ describe('RBAC database entities', () => {
           'publishedAt,status',
       ),
     ).toBe(true);
+    expect(meta.relations).toHaveLength(0);
+  });
+
+  it('maps sys_region tree fields with unique code', () => {
+    const meta = dataSource.getMetadata(SysRegionEntity);
+
+    expect(meta.tableName).toBe('sys_region');
+    expect(hasUniqueConstraint(meta, 'code')).toBe(true);
+    expect(meta.findColumnWithPropertyName('parentId')?.databaseName).toBe('parent_id');
+    expect(meta.findColumnWithPropertyName('level')?.type).toBe('tinyint');
     expect(meta.relations).toHaveLength(0);
   });
 

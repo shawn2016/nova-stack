@@ -93,3 +93,10 @@ export type {
   OperLogListItem,
   OperLogListQuery,
 } from './audit-log.js';
+
+export type {
+  CreateRegionDto,
+  RegionListItem,
+  RegionTreeNode,
+  UpdateRegionDto,
+} from './region.js';
