@@ -18,8 +18,8 @@ verification_report: docs/superpowers/reports/2026-09-03-system-online-session-v
 branch_status: pending
 created_at: 2026-09-03
 verified_at: 2026-09-03
-archive_confirmation: pending
-archived: false
+archive_confirmation: confirmed
+archived: true
 bound_branch: comet/system-online-session
 verify_failures: 0
 direct_override: null
