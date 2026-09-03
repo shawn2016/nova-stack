@@ -129,4 +129,17 @@ export async function initE2eSchema(dataSource: DataSource): Promise<void> {
       UNIQUE (type_id, value)
     )
   `);
+
+  await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS sys_config (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      config_key VARCHAR(64) NOT NULL UNIQUE,
+      config_name VARCHAR(64) NOT NULL,
+      config_value TEXT NOT NULL,
+      config_group VARCHAR(32),
+      remark VARCHAR(255),
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
 }
