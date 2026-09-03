@@ -2,6 +2,7 @@
 change: system-dict
 design-doc: docs/superpowers/specs/2026-09-03-system-dict-design.md
 base-ref: 3ac59f98931f87d7eb9fbda5f10c3945eefc2e48
+archived-with: 2026-09-03-system-dict
 ---
 
 # system-dict 实施计划

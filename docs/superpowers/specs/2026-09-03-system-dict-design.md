@@ -2,6 +2,8 @@
 comet_change: system-dict
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-09-03-system-dict
+status: final
 ---
 
 # system-dict 深度技术设计
