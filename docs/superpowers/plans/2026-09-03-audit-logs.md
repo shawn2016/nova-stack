@@ -2,6 +2,7 @@
 change: audit-logs
 design-doc: docs/superpowers/specs/2026-09-03-audit-logs-design.md
 base-ref: a5c68dd9a545af89eed783cee835746a7eec2d5f
+archived-with: 2026-09-03-audit-logs
 ---
 
 # audit-logs 实施计划

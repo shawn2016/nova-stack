@@ -2,6 +2,8 @@
 comet_change: audit-logs
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-09-03-audit-logs
+status: final
 ---
 
 # audit-logs 深度技术设计
