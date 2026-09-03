@@ -8,7 +8,6 @@ import {
   SysOperLogEntity,
 } from '../../src/database/entities';
 import { createE2eApp, E2eAppContext } from '../auth/e2e-app.helper';
-import { seedAuditPermissions } from './seed-audit-permissions';
 
 describe('Audit API (e2e)', () => {
   let ctx: E2eAppContext;
@@ -45,7 +44,6 @@ describe('Audit API (e2e)', () => {
   beforeAll(async () => {
     ctx = await createE2eApp();
     app = ctx.app;
-    await seedAuditPermissions(ctx.dataSource);
     adminToken = await loginAdmin();
     memberToken = await loginMember();
   }, 30000);

@@ -66,6 +66,8 @@ const PERMISSION_SEEDS: PermissionSeed[] = [
   { name: '站点配置新增', code: 'system:config:create', type: 'api' },
   { name: '站点配置编辑', code: 'system:config:update', type: 'api' },
   { name: '站点配置删除', code: 'system:config:delete', type: 'api' },
+  { name: '登录日志列表', code: 'system:audit:login:list', type: 'api' },
+  { name: '操作日志列表', code: 'system:audit:oper:list', type: 'api' },
 ];
 
 const MENU_SEEDS: MenuSeed[] = [
@@ -122,6 +124,15 @@ const MENU_SEEDS: MenuSeed[] = [
         type: 'menu',
         permissionCode: 'system:config:list',
         sort: 5,
+      },
+      {
+        name: '审计日志',
+        path: '/system/audit-logs',
+        component: 'views/system/audit-logs/index',
+        icon: 'ri:file-list-3-line',
+        type: 'menu',
+        permissionCode: 'system:audit:login:list',
+        sort: 6,
       },
     ],
   },

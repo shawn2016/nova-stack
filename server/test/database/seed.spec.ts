@@ -177,13 +177,15 @@ describe('runInitSeed', () => {
 
     await runInitSeed(dataSource);
 
-    expect(stores.permissions.length).toBe(30);
+    expect(stores.permissions.length).toBe(32);
     expect(stores.permissions.some((p) => p.code === 'system:user:list')).toBe(true);
     expect(stores.permissions.some((p) => p.code === 'content:article:list')).toBe(true);
     expect(stores.permissions.some((p) => p.code === 'system:dict:type:list')).toBe(true);
     expect(stores.permissions.some((p) => p.code === 'system:dict:data:delete')).toBe(true);
     expect(stores.permissions.some((p) => p.code === 'system:config:list')).toBe(true);
     expect(stores.permissions.some((p) => p.code === 'system:config:delete')).toBe(true);
+    expect(stores.permissions.some((p) => p.code === 'system:audit:login:list')).toBe(true);
+    expect(stores.permissions.some((p) => p.code === 'system:audit:oper:list')).toBe(true);
     expect(stores.menus.some((m) => m.name === '系统管理')).toBe(true);
     expect(stores.menus.some((m) => m.name === '用户管理')).toBe(true);
     expect(stores.menus.some((m) => m.name === '字典管理' && m.path === '/system/dict')).toBe(
@@ -201,13 +203,23 @@ describe('runInitSeed', () => {
     expect(stores.menus.find((m) => m.name === '站点配置')?.component).toBe(
       'views/system/site-config/index',
     );
+    expect(
+      stores.menus.some((m) => m.name === '审计日志' && m.path === '/system/audit-logs'),
+    ).toBe(true);
+    expect(stores.menus.find((m) => m.name === '审计日志')?.component).toBe(
+      'views/system/audit-logs/index',
+    );
+    expect(stores.menus.find((m) => m.name === '审计日志')?.permissionCode).toBe(
+      'system:audit:login:list',
+    );
+    expect(stores.menus.find((m) => m.name === '审计日志')?.sort).toBe(6);
     expect(stores.menus.some((m) => m.name === '内容管理')).toBe(true);
     expect(stores.menus.some((m) => m.name === '文章管理' && m.path === '/content/articles')).toBe(
       true,
     );
     expect(stores.menus.find((m) => m.name === '系统管理')?.icon).toBe('ri:settings-3-line');
     expect(stores.menus.find((m) => m.name === '用户管理')?.icon).toBe('ri:user-line');
-    expect(stores.rolePermissions.length).toBe(30);
+    expect(stores.rolePermissions.length).toBe(32);
   });
 
   it('does not duplicate role-permission links on second run', async () => {
@@ -218,8 +230,8 @@ describe('runInitSeed', () => {
     await runInitSeed(dataSource);
     await runInitSeed(dataSource);
 
-    expect(stores.permissions.length).toBe(30);
-    expect(stores.rolePermissions.length).toBe(30);
+    expect(stores.permissions.length).toBe(32);
+    expect(stores.rolePermissions.length).toBe(32);
   });
 
   it('seeds dev sample articles in non-production', async () => {
@@ -344,6 +356,6 @@ describe('runInitSeed', () => {
     expect(bcrypt.hash).not.toHaveBeenCalled();
 
     expect(stores.roles.some((role) => role.code === 'super_admin')).toBe(true);
-    expect(stores.permissions.length).toBe(30);
+    expect(stores.permissions.length).toBe(32);
   });
 });
