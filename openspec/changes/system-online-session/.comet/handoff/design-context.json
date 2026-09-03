@@ -1,0 +1,15 @@
+{
+  "change": "system-online-session",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "8f3cbc8dfbfe45dcd7580744f700de4822b975f5046c9a50b9311ebecb1c371a",
+  "files": [
+    { "path": "openspec/changes/system-online-session/proposal.md", "sha256": "d537f0181a1b1d04013a051068b5a04e27a4f592f3c97d2698bbab0836823da6" },
+    { "path": "openspec/changes/system-online-session/design.md", "sha256": "d383a838a5f06815682349de46e9d223b9889523add8c31035077818133a270e" },
+    { "path": "openspec/changes/system-online-session/tasks.md", "sha256": "c1e4a0bcdfcde30bf4bbe44e7ea54e21656e0254cf57dd3865db51948884026a" },
+    { "path": "openspec/changes/system-online-session/specs/online-session-admin-ui/spec.md", "sha256": "d3df805b6872bf99202ea7ad73978e9821faecda03fba0370b9d051a4820441e" },
+    { "path": "openspec/changes/system-online-session/specs/online-session-api/spec.md", "sha256": "a7dd35ce8f1bf299890ddaa95a2076f974264cbf364ecf72b0a9cda994086e58" }
+  ]
+}
