@@ -10,6 +10,7 @@ export async function initE2eSchema(dataSource: DataSource): Promise<void> {
       nickname VARCHAR(64) NOT NULL,
       avatar VARCHAR(512),
       status TINYINT NOT NULL DEFAULT 1,
+      dept_id BIGINT,
       created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
@@ -221,6 +222,20 @@ export async function initE2eSchema(dataSource: DataSource): Promise<void> {
       is_read TINYINT NOT NULL DEFAULT 0,
       read_at DATETIME,
       created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS sys_dept (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      parent_id BIGINT NOT NULL DEFAULT 0,
+      name VARCHAR(64) NOT NULL,
+      sort INT NOT NULL DEFAULT 0,
+      leader VARCHAR(64),
+      phone VARCHAR(32),
+      status TINYINT NOT NULL DEFAULT 1,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
   `);
 }

@@ -3,33 +3,31 @@ import {
   CreateDateColumn,
   Entity,
   PrimaryGeneratedColumn,
-  Unique,
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity('sys_user')
-@Unique(['username'])
-export class SysUserEntity {
+@Entity('sys_dept')
+export class SysDeptEntity {
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id!: string;
 
-  @Column({ type: 'varchar', length: 64 })
-  username!: string;
-
-  @Column({ type: 'varchar', length: 255, name: 'password_hash' })
-  passwordHash!: string;
+  @Column({ type: 'bigint', name: 'parent_id', default: 0 })
+  parentId!: string;
 
   @Column({ type: 'varchar', length: 64 })
-  nickname!: string;
+  name!: string;
 
-  @Column({ type: 'varchar', length: 512, nullable: true })
-  avatar!: string | null;
+  @Column({ type: 'int', default: 0 })
+  sort!: number;
+
+  @Column({ type: 'varchar', length: 64, nullable: true })
+  leader!: string | null;
+
+  @Column({ type: 'varchar', length: 32, nullable: true })
+  phone!: string | null;
 
   @Column({ type: 'tinyint', default: 1 })
   status!: number;
-
-  @Column({ type: 'bigint', name: 'dept_id', nullable: true })
-  deptId!: string | null;
 
   @CreateDateColumn({ type: 'datetime', name: 'created_at' })
   createdAt!: Date;

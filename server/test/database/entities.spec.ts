@@ -13,6 +13,7 @@ import {
   SysNoticeEntity,
   SysNoticeReadEntity,
   SysMessageEntity,
+  SysDeptEntity,
   SysRoleEntity,
   SysRolePermissionEntity,
   SysUserEntity,
@@ -61,7 +62,7 @@ describe('RBAC database entities', () => {
     }
   });
 
-  it('loads all 17 entities with expected table names', () => {
+  it('loads all 18 entities with expected table names', () => {
     const tableNames = dataSource.entityMetadatas
       .map((meta) => meta.tableName)
       .sort();
@@ -70,6 +71,7 @@ describe('RBAC database entities', () => {
       'article',
       'member_user',
       'sys_config',
+      'sys_dept',
       'sys_dict_data',
       'sys_dict_type',
       'sys_login_log',
@@ -94,6 +96,8 @@ describe('RBAC database entities', () => {
     expect(hasUniqueConstraint(meta, 'username')).toBe(true);
     expect(meta.findColumnWithPropertyName('passwordHash')).toBeDefined();
     expect(meta.findColumnWithPropertyName('status')).toBeDefined();
+    expect(meta.findColumnWithPropertyName('deptId')?.databaseName).toBe('dept_id');
+    expect(meta.findColumnWithPropertyName('deptId')?.isNullable).toBe(true);
   });
 
   it('maps sys_role with unique code index', () => {

@@ -28,6 +28,7 @@ import { SiteConfigModule } from './modules/site-config/site-config.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { RegionModule } from './modules/region/region.module';
 import { NoticeModule } from './modules/notice/notice.module';
+import { DeptModule } from './modules/dept/dept.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { NoticeModule } from './modules/notice/notice.module';
     AuditModule,
     RegionModule,
     NoticeModule,
+    DeptModule,
   ],
   providers: [
     {

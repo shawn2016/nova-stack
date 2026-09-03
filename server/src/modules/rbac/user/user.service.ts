@@ -14,6 +14,7 @@ import {
   SysUserRoleEntity,
 } from '../../../database/entities';
 import { toApiId } from '../../../common/utils/to-api-id';
+import { DeptService } from '../../dept/dept.service';
 import { AssignUserRolesDto } from './dto/assign-user-roles.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ListUsersDto } from './dto/list-users.dto';
@@ -28,6 +29,7 @@ export class UserService {
     private readonly userRoleRepo: Repository<SysUserRoleEntity>,
     @InjectRepository(SysRoleEntity)
     private readonly roleRepo: Repository<SysRoleEntity>,
+    private readonly deptService: DeptService,
   ) {}
 
   async list(query: ListUsersDto): Promise<PaginationResult<SysUserListItem>> {
@@ -68,6 +70,10 @@ export class UserService {
       nickname: dto.nickname ?? dto.username,
       avatar: null,
       status: dto.status ?? 1,
+      deptId:
+        dto.deptId !== undefined
+          ? await this.deptService.resolveActiveDeptId(dto.deptId)
+          : null,
     });
     const saved = await this.userRepo.save(user);
     return this.toDetail(saved);
@@ -78,6 +84,9 @@ export class UserService {
 
     if (dto.nickname !== undefined) user.nickname = dto.nickname;
     if (dto.status !== undefined) user.status = dto.status;
+    if (dto.deptId !== undefined) {
+      user.deptId = await this.deptService.resolveActiveDeptId(dto.deptId);
+    }
 
     const saved = await this.userRepo.save(user);
     return this.toDetail(saved);
@@ -144,12 +153,17 @@ export class UserService {
 
   private async toListItem(user: SysUserEntity): Promise<SysUserListItem> {
     const { roleIds, roleCodes } = await this.loadRoleInfo(user.id);
+    const deptNameMap = user.deptId
+      ? await this.deptService.getDeptNameMap([user.deptId])
+      : new Map<string, string>();
     return {
       id: toApiId(user.id),
       username: user.username,
       nickname: user.nickname,
       avatar: user.avatar ?? '',
       status: user.status as 0 | 1,
+      deptId: user.deptId ? toApiId(user.deptId) : null,
+      deptName: user.deptId ? deptNameMap.get(toApiId(user.deptId)) ?? null : null,
       roleIds,
       roleCodes,
     };
