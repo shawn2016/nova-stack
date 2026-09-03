@@ -1,3 +1,7 @@
+---
+archived-with: 2026-09-03-infra-scheduled-job
+status: final
+---
 # infra-scheduled-job 实施计划
 
 base-ref: HEAD

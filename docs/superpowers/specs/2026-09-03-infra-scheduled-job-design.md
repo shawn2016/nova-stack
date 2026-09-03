@@ -2,7 +2,8 @@
 comet_change: infra-scheduled-job
 role: technical-design
 canonical_spec: openspec
-status: draft
+archived-with: 2026-09-03-infra-scheduled-job
+status: final
 ---
 
 # infra-schedcheduled-job 深度技术设计
