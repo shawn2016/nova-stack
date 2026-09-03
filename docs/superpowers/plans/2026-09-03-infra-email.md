@@ -1,3 +1,7 @@
+---
+archived-with: 2026-09-03-infra-email
+status: final
+---
 # infra-email 实施计划
 
 base-ref: HEAD

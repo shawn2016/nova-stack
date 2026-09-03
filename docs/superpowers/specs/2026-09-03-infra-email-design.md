@@ -2,6 +2,8 @@
 comet_change: infra-email
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-09-03-infra-email
+status: final
 ---
 
 # infra-email 深度技术设计

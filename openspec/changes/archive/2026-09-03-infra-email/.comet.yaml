@@ -18,12 +18,12 @@ verification_report: docs/superpowers/reports/2026-09-03-infra-email-verify.md
 branch_status: pending
 created_at: 2026-09-03
 verified_at: 2026-09-03
-archive_confirmation: pending
-archived: false
+archive_confirmation: confirmed
+archived: true
 bound_branch: comet/infra-email
 verify_failures: 0
 direct_override: null
-handoff_context: openspec/changes/infra-email/.comet/handoff/design-context.json
+handoff_context: openspec/changes/archive/2026-09-03-infra-email/.comet/handoff/design-context.json
 handoff_hash: 4faebba29484200cd6b9f810bf52c1cfd355062b22e4dd068fdef5b6e5eb1d1a
 classic_profile: full
 classic_migration: 1
