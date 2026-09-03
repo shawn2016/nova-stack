@@ -1,18 +1,15 @@
 <template>
   <div class="art-full-height">
-    <ElCard class="art-table-card">
-      <ArtTableHeader
-        v-model:columns="columnChecks"
-        :loading="loading"
-        :showSearchBar="false"
-        @refresh="refreshData"
-      >
-        <template #left>
-          <ElButton v-permission="'infra:job:create'" @click="openDialog('add')" v-ripple>
-            新增任务
-          </ElButton>
-        </template>
-      </ArtTableHeader>
+    <ArtListPanel
+      v-model:columns="columnChecks"
+      :loading="loading"
+      @refresh="refreshData"
+    >
+      <template #toolbar-left>
+        <ElButton v-permission="'infra:job:create'" @click="openDialog('add')" v-ripple>
+          新增任务
+        </ElButton>
+      </template>
 
       <ArtTable
         :loading="loading"
@@ -22,7 +19,7 @@
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
       />
-    </ElCard>
+    </ArtListPanel>
 
     <JobDialog
       v-model="dialogVisible"

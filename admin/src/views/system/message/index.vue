@@ -1,37 +1,33 @@
 <template>
   <div class="art-full-height">
-    <ArtSearchBar
-      v-show="showSearchBar"
-      v-model="searchForm"
-      :items="searchItems"
-      :showExpand="false"
-      @reset="handleSearchReset"
-      @search="handleSearch"
-    />
-
-    <ElCard class="art-table-card" :style="{ marginTop: showSearchBar ? '12px' : '0' }">
-      <ArtTableHeader
-        v-model:showSearchBar="showSearchBar"
-        :loading="loading"
-        @refresh="loadData"
-      >
-        <template #left>
-          <ElSpace wrap>
-            <ElRadioGroup v-model="activeTab" @change="handleTabChange">
-              <ElRadioButton value="inbox">收件箱</ElRadioButton>
-              <ElRadioButton value="sent">发件箱</ElRadioButton>
-            </ElRadioGroup>
-            <ElButton
-              v-if="activeTab === 'inbox'"
-              v-permission="'system:message:send'"
-              @click="sendVisible = true"
-              v-ripple
-            >
-              发送消息
-            </ElButton>
-          </ElSpace>
-        </template>
-      </ArtTableHeader>
+    <ArtListPanel
+      v-model:active-tab="activeTab"
+      v-model:show-search-bar="showSearchBar"
+      :tabs="MESSAGE_TABS"
+      :loading="loading"
+      @refresh="loadData"
+      @tab-change="handleTabChange"
+    >
+      <template #search>
+        <ArtSearchBar
+          v-model="searchForm"
+          :items="searchItems"
+          :showExpand="false"
+          embedded
+          @reset="handleSearchReset"
+          @search="handleSearch"
+        />
+      </template>
+      <template #toolbar-left>
+        <ElButton
+          v-if="activeTab === 'inbox'"
+          v-permission="'system:message:send'"
+          @click="sendVisible = true"
+          v-ripple
+        >
+          发送消息
+        </ElButton>
+      </template>
 
       <ArtTable
         :loading="loading"
@@ -41,7 +37,7 @@
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
       />
-    </ElCard>
+    </ArtListPanel>
 
     <SendDialog v-model="sendVisible" @success="loadData" />
   </div>
@@ -62,6 +58,11 @@
   import SendDialog from './modules/send-dialog.vue'
 
   defineOptions({ name: 'Messages' })
+
+  const MESSAGE_TABS = [
+    { name: 'inbox', label: '收件箱' },
+    { name: 'sent', label: '发件箱' },
+  ] as const
 
   const activeTab = ref<'inbox' | 'sent'>('inbox')
   const showSearchBar = ref(true)
@@ -96,7 +97,6 @@
       prop: 'operation',
       label: '操作',
       width: 140,
-      align: 'right',
       formatter: (row: MessageListItem) => {
         const items: TableActionItem[] = []
         if (activeTab.value === 'inbox' && row.isRead === 0) {

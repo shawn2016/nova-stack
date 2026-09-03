@@ -4,6 +4,7 @@
     v-model="formData"
     :items="formItems"
     :rules="rules"
+    embedded
     @reset="handleReset"
     @search="handleSearch"
   />

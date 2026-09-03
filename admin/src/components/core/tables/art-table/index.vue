@@ -22,7 +22,21 @@
 
         <!-- 渲染普通列 -->
         <ElTableColumn v-else v-bind="cleanColumnProps(col)">
-          <template v-if="col.useHeaderSlot && col.prop" #header="headerScope">
+          <template v-if="col.prop === 'operation' && useCompactTools && listPanelTools" #header>
+            <div class="art-table-operation-header">
+              <span>{{ col.label || '操作' }}</span>
+              <ArtTableTools
+                variant="menu"
+                v-model:columns="listPanelTools.columns"
+                v-model:show-search-bar="listPanelTools.showSearchBar"
+                :show-zebra="listPanelTools.showZebra.value"
+                :layout="listPanelTools.layout.value"
+                :loading="listPanelTools.loading.value"
+                @refresh="listPanelTools.onRefresh()"
+              />
+            </div>
+          </template>
+          <template v-else-if="col.useHeaderSlot && col.prop" #header="headerScope">
             <slot
               :name="col.headerSlotName || `${col.prop}-header`"
               v-bind="{ ...headerScope, prop: col.prop, label: col.label }"
@@ -72,7 +86,7 @@
 </template>
 
 <script setup lang="ts">
-  import { ref, computed, nextTick, watchEffect, getCurrentInstance, useAttrs } from 'vue'
+  import { ref, computed, nextTick, watchEffect, getCurrentInstance, useAttrs, inject } from 'vue'
   import type { ElTable, TableProps } from 'element-plus'
   import { storeToRefs } from 'pinia'
   import { ColumnOption } from '@/types'
@@ -80,8 +94,12 @@
   import { useCommon } from '@/hooks/core/useCommon'
   import { useTableHeight } from '@/hooks/core/useTableHeight'
   import { useResizeObserver, useWindowSize } from '@vueuse/core'
+  import { ART_LIST_PANEL_TOOLS_KEY } from '@/components/core/layouts/art-list-panel/context'
 
   defineOptions({ name: 'ArtTable' })
+
+  const listPanelTools = inject(ART_LIST_PANEL_TOOLS_KEY, null)
+  const useCompactTools = computed(() => listPanelTools?.compactTools.value ?? false)
 
   const { width } = useWindowSize()
   const elTableRef = ref<InstanceType<typeof ElTable> | null>(null)
@@ -281,6 +299,11 @@
   // 清理列属性，移除插槽相关的自定义属性，确保它们不会被 ElTableColumn 错误解释
   const cleanColumnProps = (col: ColumnOption) => {
     const columnProps = { ...col }
+    // 操作列：表头与单元格统一左对齐（忽略各页误设的 align: 'right'）
+    if (col.prop === 'operation') {
+      columnProps.headerAlign = 'left'
+      columnProps.align = 'left'
+    }
     // 删除自定义的插槽控制属性
     delete columnProps.useHeaderSlot
     delete columnProps.headerSlotName
@@ -365,4 +388,10 @@
 
 <style lang="scss" scoped>
   @use './style';
+
+  .art-table-operation-header {
+    display: inline-flex;
+    gap: 4px;
+    align-items: center;
+  }
 </style>

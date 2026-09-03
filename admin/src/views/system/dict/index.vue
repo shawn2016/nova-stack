@@ -2,38 +2,34 @@
   <div class="dict-page art-full-height">
     <ElRow :gutter="12" class="dict-page__row">
       <ElCol :xs="24" :lg="12" class="dict-page__col">
-        <ArtSearchBar
-          v-show="showTypeSearchBar"
-          v-model="typeSearchForm"
-          :items="typeSearchItems"
-          :span="12"
-          :showExpand="false"
-          @reset="handleTypeSearchReset"
-          @search="handleTypeSearch"
-        />
-
-        <ElCard
-          class="art-table-card dict-page__card"
-          :style="{ marginTop: showTypeSearchBar ? '12px' : '0' }"
+        <ArtListPanel
+          v-model:show-search-bar="showTypeSearchBar"
+          v-model:columns="typeColumnChecks"
+          :loading="typeLoading"
+          @refresh="refreshTypeData"
         >
-          <ArtTableHeader
-            v-model:columns="typeColumnChecks"
-            v-model:showSearchBar="showTypeSearchBar"
-            :loading="typeLoading"
-            @refresh="refreshTypeData"
-          >
-            <template #left>
-              <ElSpace wrap>
-                <ElButton
-                  v-permission="'system:dict:type:create'"
-                  @click="showTypeDialog('add')"
-                  v-ripple
-                >
-                  新增类型
-                </ElButton>
-              </ElSpace>
-            </template>
-          </ArtTableHeader>
+          <template #search>
+            <ArtSearchBar
+              v-model="typeSearchForm"
+              :items="typeSearchItems"
+              :span="12"
+              :showExpand="false"
+              embedded
+              @reset="handleTypeSearchReset"
+              @search="handleTypeSearch"
+            />
+          </template>
+          <template #toolbar-left>
+            <ElSpace wrap>
+              <ElButton
+                v-permission="'system:dict:type:create'"
+                @click="showTypeDialog('add')"
+                v-ripple
+              >
+                新增类型
+              </ElButton>
+            </ElSpace>
+          </template>
 
           <ArtTable
             ref="typeTableRef"
@@ -46,47 +42,43 @@
             @pagination:size-change="handleTypeSizeChange"
             @pagination:current-change="handleTypeCurrentChange"
           />
-        </ElCard>
+        </ArtListPanel>
       </ElCol>
 
       <ElCol :xs="24" :lg="12" class="dict-page__col">
-        <ArtSearchBar
-          v-show="showDataSearchBar"
-          v-model="dataSearchForm"
-          :items="dataSearchItems"
-          :span="12"
-          :showExpand="false"
-          @reset="handleDataSearchReset"
-          @search="handleDataSearch"
-        />
-
-        <ElCard
-          class="art-table-card dict-page__card"
-          :style="{ marginTop: showDataSearchBar ? '12px' : '0' }"
+        <ArtListPanel
+          v-model:show-search-bar="showDataSearchBar"
+          v-model:columns="dataColumnChecks"
+          :loading="dataLoading"
+          @refresh="refreshDataTable"
         >
-          <ArtTableHeader
-            v-model:columns="dataColumnChecks"
-            v-model:showSearchBar="showDataSearchBar"
-            :loading="dataLoading"
-            @refresh="refreshDataTable"
-          >
-            <template #left>
-              <ElSpace wrap>
-                <ElButton
-                  v-permission="'system:dict:data:create'"
-                  :disabled="!selectedType"
-                  @click="showDataDialog('add')"
-                  v-ripple
-                >
-                  新增字典项
-                </ElButton>
-                <span v-if="selectedType" class="dict-page__subtitle">
-                  {{ selectedType.name }}（{{ selectedType.code }}）
-                </span>
-                <span v-else class="dict-page__subtitle text-g-400">请先选择左侧字典类型</span>
-              </ElSpace>
-            </template>
-          </ArtTableHeader>
+          <template #search>
+            <ArtSearchBar
+              v-model="dataSearchForm"
+              :items="dataSearchItems"
+              :span="12"
+              :showExpand="false"
+              embedded
+              @reset="handleDataSearchReset"
+              @search="handleDataSearch"
+            />
+          </template>
+          <template #toolbar-left>
+            <ElSpace wrap>
+              <ElButton
+                v-permission="'system:dict:data:create'"
+                :disabled="!selectedType"
+                @click="showDataDialog('add')"
+                v-ripple
+              >
+                新增字典项
+              </ElButton>
+              <span v-if="selectedType" class="dict-page__subtitle">
+                {{ selectedType.name }}（{{ selectedType.code }}）
+              </span>
+              <span v-else class="dict-page__subtitle text-g-400">请先选择左侧字典类型</span>
+            </ElSpace>
+          </template>
 
           <ArtTable
             :loading="dataLoading"
@@ -96,7 +88,7 @@
             @pagination:size-change="handleDataSizeChange"
             @pagination:current-change="handleDataCurrentChange"
           />
-        </ElCard>
+        </ArtListPanel>
       </ElCol>
     </ElRow>
 
@@ -221,7 +213,6 @@
           prop: 'operation',
           label: '操作',
           width: 140,
-          align: 'right',
           fixed: 'right',
           formatter: (row) => {
             const items: TableActionItem[] = [
@@ -288,7 +279,6 @@
           prop: 'operation',
           label: '操作',
           width: 140,
-          align: 'right',
           fixed: 'right',
           formatter: (row) => {
             const items: TableActionItem[] = [
@@ -445,22 +435,15 @@
     &__col {
       height: 100%;
       min-width: 0;
-    }
 
-    &__card {
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
+      :deep(.art-list-panel) {
+        height: 100%;
+      }
     }
 
     &__subtitle {
       font-size: 13px;
       line-height: 32px;
-    }
-
-    :deep(.art-search-bar) {
-      padding: 12px 12px 0;
     }
 
     :deep(.art-table .el-table__cell) {

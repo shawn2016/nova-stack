@@ -1,32 +1,26 @@
 <template>
   <div class="content-articles-page art-full-height">
-    <ArticleSearch
-      v-show="showSearchBar"
-      v-model="searchForm"
-      @search="handleSearch"
-      @reset="resetSearchParams"
-    />
-
-    <ElCard class="art-table-card" :style="{ marginTop: showSearchBar ? '12px' : '0' }">
-      <ArtTableHeader
-        v-model:columns="columnChecks"
-        v-model:showSearchBar="showSearchBar"
-        :loading="loading"
-        @refresh="refreshData"
-      >
-        <template #left>
-          <ElSpace wrap>
-            <ElButton
-              v-permission="'content:article:create'"
-              type="primary"
-              @click="goCreate"
-              v-ripple
-            >
-              新建文章
-            </ElButton>
-          </ElSpace>
-        </template>
-      </ArtTableHeader>
+    <ArtListPanel
+      v-model:show-search-bar="showSearchBar"
+      v-model:columns="columnChecks"
+      :loading="loading"
+      @refresh="refreshData"
+    >
+      <template #search>
+        <ArticleSearch v-model="searchForm" @search="handleSearch" @reset="resetSearchParams" />
+      </template>
+      <template #toolbar-left>
+        <ElSpace wrap>
+          <ElButton
+            v-permission="'content:article:create'"
+            type="primary"
+            @click="goCreate"
+            v-ripple
+          >
+            新建文章
+          </ElButton>
+        </ElSpace>
+      </template>
 
       <ArtTable
         :loading="loading"
@@ -36,7 +30,7 @@
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
       />
-    </ElCard>
+    </ArtListPanel>
   </div>
 </template>
 
@@ -117,7 +111,6 @@
           prop: 'operation',
           label: '操作',
           width: 140,
-          align: 'right',
           fixed: 'right',
           formatter: (row) => {
             const items: TableActionItem[] = [

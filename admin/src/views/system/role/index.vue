@@ -1,27 +1,21 @@
 <template>
   <div class="art-full-height">
-    <RoleSearch
-      v-show="showSearchBar"
-      v-model="searchForm"
-      @search="handleSearch"
-      @reset="resetSearchParams"
-    />
-
-    <ElCard class="art-table-card" :style="{ marginTop: showSearchBar ? '12px' : '0' }">
-      <ArtTableHeader
-        v-model:columns="columnChecks"
-        v-model:showSearchBar="showSearchBar"
-        :loading="loading"
-        @refresh="refreshData"
-      >
-        <template #left>
-          <ElSpace wrap>
-            <ElButton v-permission="'system:role:create'" @click="showDialog('add')" v-ripple>
-              新增角色
-            </ElButton>
-          </ElSpace>
-        </template>
-      </ArtTableHeader>
+    <ArtListPanel
+      v-model:show-search-bar="showSearchBar"
+      v-model:columns="columnChecks"
+      :loading="loading"
+      @refresh="refreshData"
+    >
+      <template #search>
+        <RoleSearch v-model="searchForm" @search="handleSearch" @reset="resetSearchParams" />
+      </template>
+      <template #toolbar-left>
+        <ElSpace wrap>
+          <ElButton v-permission="'system:role:create'" @click="showDialog('add')" v-ripple>
+            新增角色
+          </ElButton>
+        </ElSpace>
+      </template>
 
       <ArtTable
         :loading="loading"
@@ -31,7 +25,7 @@
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
       />
-    </ElCard>
+    </ArtListPanel>
 
     <RoleEditDialog
       v-model="dialogVisible"

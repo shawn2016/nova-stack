@@ -1,27 +1,25 @@
 <template>
   <div class="user-page art-full-height">
-    <UserSearch
-      v-show="showSearchBar"
-      v-model="searchForm"
-      @search="handleSearch"
-      @reset="resetSearchParams"
-    />
-
-    <ElCard class="art-table-card" :style="{ marginTop: showSearchBar ? '12px' : '0' }">
-      <ArtTableHeader
-        v-model:columns="columnChecks"
-        v-model:showSearchBar="showSearchBar"
-        :loading="loading"
-        @refresh="refreshData"
-      >
-        <template #left>
-          <ElSpace wrap>
-            <ElButton v-permission="'system:user:create'" @click="showDialog('add')" v-ripple>
-              新增用户
-            </ElButton>
-          </ElSpace>
-        </template>
-      </ArtTableHeader>
+    <ArtListPanel
+      title="用户管理"
+      v-model:show-search-bar="showSearchBar"
+      v-model:columns="columnChecks"
+      :loading="loading"
+      @refresh="refreshData"
+    >
+      <template #search>
+        <UserSearch v-model="searchForm" @search="handleSearch" @reset="resetSearchParams" />
+      </template>
+      <template #head-actions>
+        <ElButton
+          v-permission="'system:user:create'"
+          type="primary"
+          @click="showDialog('add')"
+          v-ripple
+        >
+          新增用户
+        </ElButton>
+      </template>
 
       <ArtTable
         :loading="loading"
@@ -31,14 +29,14 @@
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
       />
+    </ArtListPanel>
 
-      <UserDialog
-        v-model:visible="dialogVisible"
-        :type="dialogType"
-        :user-data="currentUserData"
-        @success="refreshData"
-      />
-    </ElCard>
+    <UserDialog
+      v-model:visible="dialogVisible"
+      :type="dialogType"
+      :user-data="currentUserData"
+      @success="refreshData"
+    />
   </div>
 </template>
 

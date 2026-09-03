@@ -1,88 +1,50 @@
 <template>
   <div class="art-full-height">
-    <ElCard class="art-table-card">
-      <ElTabs v-model="activeTab">
-        <ElTabPane label="通道" name="channels">
-          <ArtTableHeader :loading="channelLoading" :showSearchBar="false" @refresh="loadChannels">
-            <template #left>
-              <ElButton v-permission="'infra:sms:channel:create'" @click="openChannelDialog('add')">
-                新增通道
-              </ElButton>
-            </template>
-          </ArtTableHeader>
-          <ElTable v-loading="channelLoading" :data="channels" size="small">
-            <ElTableColumn prop="name" label="名称" min-width="120" />
-            <ElTableColumn prop="provider" label="Provider" width="100" />
-            <ElTableColumn prop="status" label="状态" width="90">
-              <template #default="{ row }">
-                <ElTag :type="row.status === 1 ? 'success' : 'info'">
-                  {{ row.status === 1 ? '启用' : '禁用' }}
-                </ElTag>
-              </template>
-            </ElTableColumn>
-            <ElTableColumn label="操作" width="160" align="right">
-              <template #default="{ row }">
-                <ArtTableActions :items="channelActions(row)" />
-              </template>
-            </ElTableColumn>
-          </ElTable>
-        </ElTabPane>
+    <ArtListPanel
+      v-model:active-tab="activeTab"
+      v-model:show-search-bar="showSearchBar"
+      v-model:columns="columnChecks"
+      :tabs="SMS_TABS"
+      :loading="panelLoading"
+      @refresh="handlePanelRefresh"
+      @tab-change="handleTabChange"
+    >
+      <template #search>
+        <ArtSearchBar
+          :key="activeTab"
+          v-model="searchForms[activeTab]"
+          :items="currentSearchItems"
+          :showExpand="false"
+          embedded
+          @reset="handleSearchReset"
+          @search="handleSearch"
+        />
+      </template>
+      <template #toolbar-left>
+        <template v-if="activeTab === 'channels'">
+          <ElButton v-permission="'infra:sms:channel:create'" @click="openChannelDialog('add')">
+            新增通道
+          </ElButton>
+        </template>
+        <template v-else-if="activeTab === 'templates'">
+          <ElButton v-permission="'infra:sms:template:create'" @click="openTemplateDialog('add')">
+            新增模板
+          </ElButton>
+          <ElButton v-permission="'infra:sms:send'" type="primary" plain @click="sendVisible = true">
+            测试发送
+          </ElButton>
+        </template>
+      </template>
 
-        <ElTabPane label="模板" name="templates">
-          <ArtTableHeader :loading="templateLoading" :showSearchBar="false" @refresh="loadTemplates">
-            <template #left>
-              <ElButton
-                v-permission="'infra:sms:template:create'"
-                @click="openTemplateDialog('add')"
-              >
-                新增模板
-              </ElButton>
-              <ElButton v-permission="'infra:sms:send'" type="primary" plain @click="sendVisible = true">
-                测试发送
-              </ElButton>
-            </template>
-          </ArtTableHeader>
-          <ElTable v-loading="templateLoading" :data="templates" size="small">
-            <ElTableColumn prop="code" label="Code" width="120" />
-            <ElTableColumn prop="name" label="名称" min-width="120" />
-            <ElTableColumn prop="content" label="内容" min-width="200" show-overflow-tooltip />
-            <ElTableColumn prop="status" label="状态" width="90">
-              <template #default="{ row }">
-                <ElTag :type="row.status === 1 ? 'success' : 'info'">
-                  {{ row.status === 1 ? '启用' : '禁用' }}
-                </ElTag>
-              </template>
-            </ElTableColumn>
-            <ElTableColumn label="操作" width="160" align="right">
-              <template #default="{ row }">
-                <ArtTableActions :items="templateActions(row)" />
-              </template>
-            </ElTableColumn>
-          </ElTable>
-        </ElTabPane>
-
-        <ElTabPane label="日志" name="logs">
-          <ArtTableHeader :loading="logLoading" :showSearchBar="false" @refresh="loadLogs" />
-          <ElTable v-loading="logLoading" :data="logs" size="small">
-            <ElTableColumn prop="phone" label="手机号" width="120" />
-            <ElTableColumn prop="templateCode" label="模板" width="120" />
-            <ElTableColumn prop="content" label="内容" min-width="180" show-overflow-tooltip />
-            <ElTableColumn prop="status" label="状态" width="80">
-              <template #default="{ row }">
-                <ElTag :type="row.status === 1 ? 'success' : 'danger'">
-                  {{ row.status === 1 ? '成功' : '失败' }}
-                </ElTag>
-              </template>
-            </ElTableColumn>
-            <ElTableColumn prop="sentAt" label="发送时间" min-width="160">
-              <template #default="{ row }">
-                {{ new Date(row.sentAt).toLocaleString('zh-CN') }}
-              </template>
-            </ElTableColumn>
-          </ElTable>
-        </ElTabPane>
-      </ElTabs>
-    </ElCard>
+      <ArtTable
+        :loading="panelLoading"
+        :data="currentData"
+        :columns="visibleColumns"
+        :pagination="pagination"
+        @pagination:size-change="handleSizeChange"
+        @pagination:current-change="handleCurrentChange"
+      />
+    </ArtListPanel>
 
     <ElDialog v-model="channelVisible" :title="channelMode === 'add' ? '新增通道' : '编辑通道'" width="480px">
       <ElForm ref="channelFormRef" :model="channelForm" label-width="88px">
@@ -158,6 +120,10 @@
 </template>
 
 <script setup lang="ts">
+  import ArtTableActions from '@/components/core/tables/art-table-actions/index.vue'
+  import type { TableActionItem } from '@/components/core/tables/art-table-actions/index.vue'
+  import { getColumnChecks } from '@/hooks/core/useTableColumns'
+  import type { ColumnOption } from '@/types/component'
   import {
     createSmsChannel,
     createSmsTemplate,
@@ -171,18 +137,157 @@
     updateSmsTemplate,
   } from '@/api/sms'
   import type { SmsChannelListItem, SmsLogListItem, SmsTemplateListItem } from '@nova/shared-types'
-  import type { TableActionItem } from '@/components/core/tables/art-table-actions/index.vue'
-  import { ElMessageBox } from 'element-plus'
+  import { ElMessageBox, ElTag } from 'element-plus'
 
   defineOptions({ name: 'InfraSms' })
 
-  const activeTab = ref('channels')
+  type SmsTab = 'channels' | 'templates' | 'logs'
+
+  const SMS_TABS = [
+    { name: 'channels', label: '通道' },
+    { name: 'templates', label: '模板' },
+    { name: 'logs', label: '日志' },
+  ]
+
+  const activeTab = ref<SmsTab>('channels')
+  const showSearchBar = ref(true)
   const channels = ref<SmsChannelListItem[]>([])
   const templates = ref<SmsTemplateListItem[]>([])
   const logs = ref<SmsLogListItem[]>([])
   const channelLoading = ref(false)
   const templateLoading = ref(false)
   const logLoading = ref(false)
+  const pagination = reactive({ current: 1, size: 20, total: 0 })
+
+  const searchForms = reactive({
+    channels: { keyword: '' },
+    templates: { keyword: '' },
+    logs: { phone: '', templateCode: '' },
+  })
+
+  const currentSearchItems = computed(() => {
+    if (activeTab.value === 'logs') {
+      return [
+        {
+          label: '手机号',
+          key: 'phone',
+          type: 'input',
+          props: { clearable: true, placeholder: '请输入手机号' },
+        },
+        {
+          label: '模板',
+          key: 'templateCode',
+          type: 'input',
+          props: { clearable: true, placeholder: '模板 Code' },
+        },
+      ]
+    }
+    return [
+      {
+        label: '关键词',
+        key: 'keyword',
+        type: 'input',
+        props: {
+          clearable: true,
+          placeholder: activeTab.value === 'channels' ? '通道名称' : '模板名称或 Code',
+        },
+      },
+    ]
+  })
+
+  function createChannelColumns(): ColumnOption<SmsChannelListItem>[] {
+    return [
+      { prop: 'name', label: '名称', minWidth: 120 },
+      { prop: 'provider', label: 'Provider', width: 100 },
+      {
+        prop: 'status',
+        label: '状态',
+        width: 90,
+        formatter: (row) =>
+          h(ElTag, { type: row.status === 1 ? 'success' : 'info' }, () =>
+            row.status === 1 ? '启用' : '禁用',
+          ),
+      },
+      {
+        prop: 'operation',
+        label: '操作',
+        width: 160,
+        fixed: 'right',
+        formatter: (row) => h(ArtTableActions, { items: channelActions(row) }),
+      },
+    ]
+  }
+
+  function createTemplateColumns(): ColumnOption<SmsTemplateListItem>[] {
+    return [
+      { prop: 'code', label: 'Code', width: 120 },
+      { prop: 'name', label: '名称', minWidth: 120 },
+      { prop: 'content', label: '内容', minWidth: 200, showOverflowTooltip: true },
+      {
+        prop: 'status',
+        label: '状态',
+        width: 90,
+        formatter: (row) =>
+          h(ElTag, { type: row.status === 1 ? 'success' : 'info' }, () =>
+            row.status === 1 ? '启用' : '禁用',
+          ),
+      },
+      {
+        prop: 'operation',
+        label: '操作',
+        width: 160,
+        fixed: 'right',
+        formatter: (row) => h(ArtTableActions, { items: templateActions(row) }),
+      },
+    ]
+  }
+
+  function createLogColumns(): ColumnOption<SmsLogListItem>[] {
+    return [
+      { prop: 'phone', label: '手机号', width: 120 },
+      { prop: 'templateCode', label: '模板', width: 120 },
+      { prop: 'content', label: '内容', minWidth: 180, showOverflowTooltip: true },
+      {
+        prop: 'status',
+        label: '状态',
+        width: 80,
+        formatter: (row) =>
+          h(ElTag, { type: row.status === 1 ? 'success' : 'danger' }, () =>
+            row.status === 1 ? '成功' : '失败',
+          ),
+      },
+      {
+        prop: 'sentAt',
+        label: '发送时间',
+        minWidth: 160,
+        formatter: (row) => new Date(row.sentAt).toLocaleString('zh-CN'),
+      },
+    ]
+  }
+
+  function getColumnsForTab(tab: SmsTab) {
+    if (tab === 'channels') return createChannelColumns()
+    if (tab === 'templates') return createTemplateColumns()
+    return createLogColumns()
+  }
+
+  const columnChecks = ref(getColumnChecks(getColumnsForTab('channels')))
+
+  const visibleColumns = computed(() =>
+    columnChecks.value.filter((col) => col.checked !== false && col.visible !== false),
+  )
+
+  const currentData = computed(() => {
+    if (activeTab.value === 'channels') return channels.value
+    if (activeTab.value === 'templates') return templates.value
+    return logs.value
+  })
+
+  const panelLoading = computed(() => {
+    if (activeTab.value === 'channels') return channelLoading.value
+    if (activeTab.value === 'templates') return templateLoading.value
+    return logLoading.value
+  })
 
   const channelVisible = ref(false)
   const channelMode = ref<'add' | 'edit'>('add')
@@ -223,14 +328,60 @@
   })
 
   watch(activeTab, (tab) => {
-    if (tab === 'logs') loadLogs()
+    columnChecks.value = getColumnChecks(getColumnsForTab(tab))
   })
+
+  function handlePanelRefresh() {
+    return loadCurrentTab()
+  }
+
+  function handleTabChange() {
+    pagination.current = 1
+    loadCurrentTab()
+  }
+
+  function handleSearch() {
+    pagination.current = 1
+    loadCurrentTab()
+  }
+
+  function handleSearchReset() {
+    if (activeTab.value === 'logs') {
+      searchForms.logs.phone = ''
+      searchForms.logs.templateCode = ''
+    } else {
+      searchForms[activeTab.value].keyword = ''
+    }
+    handleSearch()
+  }
+
+  function handleSizeChange(size: number) {
+    pagination.size = size
+    pagination.current = 1
+    loadCurrentTab()
+  }
+
+  function handleCurrentChange(current: number) {
+    pagination.current = current
+    loadCurrentTab()
+  }
+
+  function loadCurrentTab() {
+    if (activeTab.value === 'channels') return loadChannels()
+    if (activeTab.value === 'templates') return loadTemplates()
+    return loadLogs()
+  }
 
   async function loadChannels() {
     channelLoading.value = true
     try {
-      const res = await fetchSmsChannelList({ current: 1, size: 100 })
+      const res = await fetchSmsChannelList({
+        current: pagination.current,
+        size: pagination.size,
+        keyword: searchForms.channels.keyword || undefined,
+      })
       channels.value = res.records
+      pagination.total = res.total
       if (!templateForm.channelId && channels.value.length) {
         templateForm.channelId = channels.value[0].id
       }
@@ -242,8 +393,13 @@
   async function loadTemplates() {
     templateLoading.value = true
     try {
-      const res = await fetchSmsTemplateList({ current: 1, size: 100 })
+      const res = await fetchSmsTemplateList({
+        current: pagination.current,
+        size: pagination.size,
+        keyword: searchForms.templates.keyword || undefined,
+      })
       templates.value = res.records
+      pagination.total = res.total
     } finally {
       templateLoading.value = false
     }
@@ -252,8 +408,14 @@
   async function loadLogs() {
     logLoading.value = true
     try {
-      const res = await fetchSmsLogList({ current: 1, size: 50 })
+      const res = await fetchSmsLogList({
+        current: pagination.current,
+        size: pagination.size,
+        phone: searchForms.logs.phone || undefined,
+        templateCode: searchForms.logs.templateCode || undefined,
+      })
       logs.value = res.records
+      pagination.total = res.total
     } finally {
       logLoading.value = false
     }

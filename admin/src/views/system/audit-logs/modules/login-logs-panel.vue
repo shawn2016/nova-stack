@@ -1,30 +1,25 @@
 <template>
-  <div class="audit-logs-panel">
-    <LoginLogSearch
-      v-show="showSearchBar"
-      v-model="searchForm"
-      @search="handleSearch"
-      @reset="resetSearchParams"
+  <ArtListPanel
+    v-model:active-tab="activeTab"
+    v-model:show-search-bar="showSearchBar"
+    v-model:columns="columnChecks"
+    :tabs="AUDIT_LOG_TABS"
+    :loading="loading"
+    @refresh="refreshData"
+  >
+    <template #search>
+      <LoginLogSearch v-model="searchForm" @search="handleSearch" @reset="resetSearchParams" />
+    </template>
+
+    <ArtTable
+      :loading="loading"
+      :data="data"
+      :columns="columns"
+      :pagination="pagination"
+      @pagination:size-change="handleSizeChange"
+      @pagination:current-change="handleCurrentChange"
     />
-
-    <div class="audit-logs-panel__table" :style="{ marginTop: showSearchBar ? '12px' : '0' }">
-      <ArtTableHeader
-        v-model:columns="columnChecks"
-        v-model:showSearchBar="showSearchBar"
-        :loading="loading"
-        @refresh="refreshData"
-      />
-
-      <ArtTable
-        :loading="loading"
-        :data="data"
-        :columns="columns"
-        :pagination="pagination"
-        @pagination:size-change="handleSizeChange"
-        @pagination:current-change="handleCurrentChange"
-      />
-    </div>
-  </div>
+  </ArtListPanel>
 </template>
 
 <script setup lang="ts">
@@ -36,8 +31,11 @@
   import { ElTag } from 'element-plus'
   import LoginLogSearch from './login-log-search.vue'
   import type { LoginLogSearchForm } from './login-log-search.vue'
+  import { AUDIT_LOG_TABS, type AuditLogTab } from './audit-log-tabs'
 
   defineOptions({ name: 'LoginLogsPanel' })
+
+  const activeTab = defineModel<AuditLogTab>('activeTab', { required: true })
 
   const searchForm = ref<LoginLogSearchForm>({
     username: undefined,
@@ -116,12 +114,3 @@
     getData()
   }
 </script>
-
-<style lang="scss" scoped>
-  .audit-logs-panel {
-    &__table {
-      display: flex;
-      flex-direction: column;
-    }
-  }
-</style>

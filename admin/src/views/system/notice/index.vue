@@ -1,27 +1,26 @@
 <template>
   <div class="art-full-height">
-    <ArtSearchBar
-      v-show="showSearchBar"
-      v-model="searchForm"
-      :items="searchItems"
-      :showExpand="false"
-      @reset="handleSearchReset"
-      @search="handleSearch"
-    />
-
-    <ElCard class="art-table-card" :style="{ marginTop: showSearchBar ? '12px' : '0' }">
-      <ArtTableHeader
-        v-model:columns="columnChecks"
-        v-model:showSearchBar="showSearchBar"
-        :loading="loading"
-        @refresh="refreshData"
-      >
-        <template #left>
-          <ElButton v-permission="'system:notice:create'" @click="showDialog('add')" v-ripple>
-            新增公告
-          </ElButton>
-        </template>
-      </ArtTableHeader>
+    <ArtListPanel
+      v-model:show-search-bar="showSearchBar"
+      v-model:columns="columnChecks"
+      :loading="loading"
+      @refresh="refreshData"
+    >
+      <template #search>
+        <ArtSearchBar
+          v-model="searchForm"
+          :items="searchItems"
+          :showExpand="false"
+          embedded
+          @reset="handleSearchReset"
+          @search="handleSearch"
+        />
+      </template>
+      <template #toolbar-left>
+        <ElButton v-permission="'system:notice:create'" @click="showDialog('add')" v-ripple>
+          新增公告
+        </ElButton>
+      </template>
 
       <ArtTable
         :loading="loading"
@@ -31,7 +30,7 @@
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
       />
-    </ElCard>
+    </ArtListPanel>
 
     <NoticeDialog
       v-model="dialogVisible"
@@ -155,7 +154,6 @@
           prop: 'operation',
           label: '操作',
           width: 180,
-          align: 'right',
           formatter: (row: NoticeListItem) => {
             const items: TableActionItem[] = [
               {

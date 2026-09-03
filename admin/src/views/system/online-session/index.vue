@@ -1,21 +1,21 @@
 <template>
   <div class="art-full-height">
-    <ArtSearchBar
-      v-show="showSearchBar"
-      v-model="searchForm"
-      :items="formItems"
-      :showExpand="false"
-      @reset="handleReset"
-      @search="handleSearch"
-    />
-
-    <ElCard class="art-table-card" :style="{ marginTop: showSearchBar ? '12px' : '0' }">
-      <ArtTableHeader
-        :loading="loading"
-        v-model:columns="columnChecks"
-        v-model:showSearchBar="showSearchBar"
-        @refresh="refreshData"
-      />
+    <ArtListPanel
+      v-model:show-search-bar="showSearchBar"
+      v-model:columns="columnChecks"
+      :loading="loading"
+      @refresh="refreshData"
+    >
+      <template #search>
+        <ArtSearchBar
+          v-model="searchForm"
+          :items="formItems"
+          :showExpand="false"
+          embedded
+          @reset="handleReset"
+          @search="handleSearch"
+        />
+      </template>
 
       <ArtTable
         :loading="loading"
@@ -25,7 +25,7 @@
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
       />
-    </ElCard>
+    </ArtListPanel>
   </div>
 </template>
 

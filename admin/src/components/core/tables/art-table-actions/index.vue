@@ -99,7 +99,7 @@
   .art-table-actions {
     display: inline-flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: flex-start;
     flex-wrap: nowrap;
     white-space: nowrap;
     line-height: 1;
@@ -107,14 +107,15 @@
 
     &__divider {
       flex-shrink: 0;
-      margin: 0 8px;
+      margin: 0 6px;
       color: var(--el-border-color-lighter);
       user-select: none;
     }
 
     &__link {
       flex-shrink: 0;
-      font-size: 14px;
+      font-size: 13px;
+      line-height: 1.4;
       color: var(--el-color-primary);
       cursor: pointer;
       white-space: nowrap;

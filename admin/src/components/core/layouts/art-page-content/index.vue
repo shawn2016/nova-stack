@@ -1,7 +1,11 @@
 <!-- 布局内容 -->
 <template>
-  <div class="layout-content" :class="{ 'overflow-auto': isFullPage }" :style="containerStyle">
-    <div id="app-content-header">
+  <div
+    class="layout-content"
+    :class="{ 'overflow-auto': isFullPage, 'is-full-page': isFullPage }"
+    :style="containerStyle"
+  >
+    <div id="app-content-header" v-if="showContentHeader">
       <!-- 节日滚动 -->
       <ArtFestivalTextScroll v-if="!isFullPage" />
 
@@ -14,7 +18,7 @@
       </div>
     </div>
 
-    <RouterView v-if="isRefresh" v-slot="{ Component, route }" :style="contentStyle">
+    <RouterView v-if="isRefresh" v-slot="{ Component, route }">
       <!-- 缓存路由动画 -->
       <Transition :name="showTransitionMask ? '' : actualTransition" mode="out-in" appear>
         <KeepAlive :max="10" :exclude="keepAliveExclude">
@@ -51,15 +55,20 @@
   import type { CSSProperties } from 'vue'
   import { useRoute } from 'vue-router'
   import { useAutoLayoutHeight } from '@/hooks/core/useLayoutHeight'
+  import { uiConfig } from '@/config/modules/ui'
   import { useSettingStore } from '@/store/modules/setting'
   import { useWorktabStore } from '@/store/modules/worktab'
 
   defineOptions({ name: 'ArtPageContent' })
 
   const route = useRoute()
-  const { containerMinHeight } = useAutoLayoutHeight()
-  const { pageTransition, containerWidth, refresh } = storeToRefs(useSettingStore())
+  const settingStore = useSettingStore()
+  const { pageTransition, containerWidth, refresh, showFestivalText } = storeToRefs(settingStore)
   const { keepAliveExclude } = storeToRefs(useWorktabStore())
+
+  useAutoLayoutHeight(undefined, {
+    extraSpacing: uiConfig.contentInset * 2,
+  })
 
   const isRefresh = shallowRef(true)
   const isOpenRouteInfo = import.meta.env.VITE_OPEN_ROUTE_INFO
@@ -71,6 +80,10 @@
   // 检查当前路由是否需要使用无基础布局模式
   const isFullPage = computed(() => route.matched.some((r) => r.meta?.isFullPage))
   const prevIsFullPage = ref(isFullPage.value)
+
+  const showContentHeader = computed(
+    () => !isFullPage.value && (showFestivalText.value || isOpenRouteInfo === 'true'),
+  )
 
   // 切换动画名称：首次加载、从全屏返回时不使用动画
   const actualTransition = computed(() => {
@@ -104,17 +117,11 @@
             width: '100%',
             height: '100vh',
             zIndex: 2500,
-            background: 'var(--default-bg-color)'
+            background: 'var(--default-bg-color)',
           }
         : {
-            maxWidth: containerWidth.value
-          }
-  )
-
-  const contentStyle = computed(
-    (): CSSProperties => ({
-      minHeight: containerMinHeight.value
-    })
+            maxWidth: containerWidth.value,
+          },
   )
 
   const reload = () => {

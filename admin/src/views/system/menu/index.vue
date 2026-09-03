@@ -1,31 +1,30 @@
 <template>
   <div class="menu-page art-full-height">
-    <ArtSearchBar
-      v-show="showSearchBar"
-      v-model="formFilters"
-      :items="formItems"
-      :showExpand="false"
-      @reset="handleReset"
-      @search="handleSearch"
-    />
-
-    <ElCard class="art-table-card" :style="{ marginTop: showSearchBar ? '12px' : '0' }">
-      <ArtTableHeader
-        :showZebra="false"
-        :loading="loading"
-        v-model:columns="columnChecks"
-        v-model:showSearchBar="showSearchBar"
-        @refresh="loadMenuList"
-      >
-        <template #left>
-          <ElButton v-permission="'system:menu:create'" @click="handleAddMenu" v-ripple>
-            添加菜单
-          </ElButton>
-          <ElButton @click="toggleExpand" v-ripple>
-            {{ isExpanded ? '收起' : '展开' }}
-          </ElButton>
-        </template>
-      </ArtTableHeader>
+    <ArtListPanel
+      v-model:show-search-bar="showSearchBar"
+      v-model:columns="columnChecks"
+      :loading="loading"
+      :show-zebra="false"
+      @refresh="loadMenuList"
+    >
+      <template #search>
+        <ArtSearchBar
+          v-model="formFilters"
+          :items="formItems"
+          :showExpand="false"
+          embedded
+          @reset="handleReset"
+          @search="handleSearch"
+        />
+      </template>
+      <template #toolbar-left>
+        <ElButton v-permission="'system:menu:create'" @click="handleAddMenu" v-ripple>
+          添加菜单
+        </ElButton>
+        <ElButton @click="toggleExpand" v-ripple>
+          {{ isExpanded ? '收起' : '展开' }}
+        </ElButton>
+      </template>
 
       <ArtTable
         ref="tableRef"
@@ -37,14 +36,14 @@
         :tree-props="{ children: 'children' }"
         :default-expand-all="false"
       />
+    </ArtListPanel>
 
-      <MenuDialog
-        v-model:visible="dialogVisible"
-        :edit-data="editData"
-        :menu-options="flatMenuList"
-        @success="handleMenuSaved"
-      />
-    </ElCard>
+    <MenuDialog
+      v-model:visible="dialogVisible"
+      :edit-data="editData"
+      :menu-options="flatMenuList"
+      @success="handleMenuSaved"
+    />
   </div>
 </template>
 
@@ -173,7 +172,6 @@
       prop: 'operation',
       label: '操作',
       width: 120,
-      align: 'right',
       formatter: (row: MenuTreeItem) =>
         h(ArtTableActions, {
           items: [
