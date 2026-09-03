@@ -9,6 +9,7 @@ import {
   SysDictTypeEntity,
   SysMenuEntity,
   SysPermissionEntity,
+  SysRegionEntity,
   SysRoleEntity,
   SysRolePermissionEntity,
   SysUserEntity,
@@ -35,6 +36,7 @@ interface SeedStores {
   dictTypes: SysDictTypeEntity[];
   dictData: SysDictDataEntity[];
   siteConfigs: SysConfigEntity[];
+  regions: SysRegionEntity[];
 }
 
 function matchesWhere<T extends ObjectLiteral>(
@@ -90,6 +92,7 @@ function createMockDataSource(stores: SeedStores): DataSource {
   const dictTypeRepo = createInMemoryRepo(stores.dictTypes);
   const dictDataRepo = createInMemoryRepo(stores.dictData);
   const siteConfigRepo = createInMemoryRepo(stores.siteConfigs);
+  const regionRepo = createInMemoryRepo(stores.regions);
 
   return {
     getRepository: jest.fn((entity) => {
@@ -116,6 +119,8 @@ function createMockDataSource(stores: SeedStores): DataSource {
           return dictDataRepo;
         case SysConfigEntity:
           return siteConfigRepo;
+        case SysRegionEntity:
+          return regionRepo;
         default:
           throw new Error(`Unexpected entity: ${String(entity)}`);
       }
@@ -136,6 +141,7 @@ function emptyStores(): SeedStores {
     dictTypes: [],
     dictData: [],
     siteConfigs: [],
+    regions: [],
   };
 }
 
@@ -177,7 +183,7 @@ describe('runInitSeed', () => {
 
     await runInitSeed(dataSource);
 
-    expect(stores.permissions.length).toBe(33);
+    expect(stores.permissions.length).toBe(37);
     expect(stores.permissions.some((p) => p.code === 'system:user:list')).toBe(true);
     expect(stores.permissions.some((p) => p.code === 'content:article:list')).toBe(true);
     expect(stores.permissions.some((p) => p.code === 'system:dict:type:list')).toBe(true);
@@ -186,6 +192,8 @@ describe('runInitSeed', () => {
     expect(stores.permissions.some((p) => p.code === 'system:config:delete')).toBe(true);
     expect(stores.permissions.some((p) => p.code === 'system:audit:login:list')).toBe(true);
     expect(stores.permissions.some((p) => p.code === 'system:audit:oper:list')).toBe(true);
+    expect(stores.permissions.some((p) => p.code === 'system:region:list')).toBe(true);
+    expect(stores.permissions.some((p) => p.code === 'system:region:delete')).toBe(true);
     expect(stores.menus.some((m) => m.name === '系统管理')).toBe(true);
     expect(stores.menus.some((m) => m.name === '用户管理')).toBe(true);
     expect(stores.menus.some((m) => m.name === '字典管理' && m.path === '/system/dict')).toBe(
@@ -193,6 +201,12 @@ describe('runInitSeed', () => {
     );
     expect(stores.menus.find((m) => m.name === '字典管理')?.permissionCode).toBe(
       'system:dict:type:list',
+    );
+    expect(
+      stores.menus.some((m) => m.name === '地区管理' && m.path === '/system/region'),
+    ).toBe(true);
+    expect(stores.menus.find((m) => m.name === '地区管理')?.permissionCode).toBe(
+      'system:region:list',
     );
     expect(
       stores.menus.some((m) => m.name === '站点配置' && m.path === '/system/site-config'),
@@ -212,14 +226,14 @@ describe('runInitSeed', () => {
     expect(stores.menus.find((m) => m.name === '审计日志')?.permissionCode).toBe(
       'system:audit:login:list',
     );
-    expect(stores.menus.find((m) => m.name === '审计日志')?.sort).toBe(6);
+    expect(stores.menus.find((m) => m.name === '审计日志')?.sort).toBe(7);
     expect(stores.menus.some((m) => m.name === '内容管理')).toBe(true);
     expect(stores.menus.some((m) => m.name === '文章管理' && m.path === '/content/articles')).toBe(
       true,
     );
     expect(stores.menus.find((m) => m.name === '系统管理')?.icon).toBe('ri:settings-3-line');
     expect(stores.menus.find((m) => m.name === '用户管理')?.icon).toBe('ri:user-line');
-    expect(stores.rolePermissions.length).toBe(33);
+    expect(stores.rolePermissions.length).toBe(37);
   });
 
   it('does not duplicate role-permission links on second run', async () => {
@@ -230,8 +244,8 @@ describe('runInitSeed', () => {
     await runInitSeed(dataSource);
     await runInitSeed(dataSource);
 
-    expect(stores.permissions.length).toBe(33);
-    expect(stores.rolePermissions.length).toBe(33);
+    expect(stores.permissions.length).toBe(37);
+    expect(stores.rolePermissions.length).toBe(37);
   });
 
   it('seeds dev sample articles in non-production', async () => {
@@ -339,6 +353,29 @@ describe('runInitSeed', () => {
     expect(stores.siteConfigs).toHaveLength(3);
   });
 
+  it('seeds china regions from flat json', async () => {
+    process.env.NODE_ENV = 'development';
+    const stores = emptyStores();
+    const dataSource = createMockDataSource(stores);
+
+    await runInitSeed(dataSource);
+
+    expect(stores.regions.length).toBeGreaterThan(3000);
+    expect(stores.regions.some((r) => r.name === '北京市' && r.level === 1)).toBe(true);
+  });
+
+  it('does not duplicate regions on second run', async () => {
+    process.env.NODE_ENV = 'development';
+    const stores = emptyStores();
+    const dataSource = createMockDataSource(stores);
+
+    await runInitSeed(dataSource);
+    const countAfterFirst = stores.regions.length;
+    await runInitSeed(dataSource);
+
+    expect(stores.regions.length).toBe(countAfterFirst);
+  });
+
   it('skips default admin and dev member seeds in production', async () => {
     process.env.NODE_ENV = 'production';
     const stores = emptyStores();
@@ -353,9 +390,10 @@ describe('runInitSeed', () => {
     expect(stores.dictTypes).toHaveLength(0);
     expect(stores.dictData).toHaveLength(0);
     expect(stores.siteConfigs).toHaveLength(0);
+    expect(stores.regions.length).toBeGreaterThan(3000);
     expect(bcrypt.hash).not.toHaveBeenCalled();
 
     expect(stores.roles.some((role) => role.code === 'super_admin')).toBe(true);
-    expect(stores.permissions.length).toBe(33);
+    expect(stores.permissions.length).toBe(37);
   });
 });

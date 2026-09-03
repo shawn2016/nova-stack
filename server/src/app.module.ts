@@ -26,6 +26,7 @@ import { PermissionGuard } from './modules/rbac/guards/permission.guard';
 import { DictModule } from './modules/dict/dict.module';
 import { SiteConfigModule } from './modules/site-config/site-config.module';
 import { AuditModule } from './modules/audit/audit.module';
+import { RegionModule } from './modules/region/region.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { AuditModule } from './modules/audit/audit.module';
     DictModule,
     SiteConfigModule,
     AuditModule,
+    RegionModule,
   ],
   providers: [
     {

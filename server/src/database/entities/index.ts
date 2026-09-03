@@ -11,6 +11,7 @@ import { SysRoleEntity } from './sys-role.entity';
 import { SysRolePermissionEntity } from './sys-role-permission.entity';
 import { SysUserEntity } from './sys-user.entity';
 import { SysUserRoleEntity } from './sys-user-role.entity';
+import { SysRegionEntity } from './sys-region.entity';
 
 export { ArticleEntity } from './article.entity';
 export { MemberUserEntity } from './member-user.entity';
@@ -25,6 +26,7 @@ export { SysRoleEntity } from './sys-role.entity';
 export { SysRolePermissionEntity } from './sys-role-permission.entity';
 export { SysUserEntity } from './sys-user.entity';
 export { SysUserRoleEntity } from './sys-user-role.entity';
+export { SysRegionEntity } from './sys-region.entity';
 
 /** 全部 RBAC / Member / Dict 实体，供 TypeORM 与测试加载 */
 export const entities = [
@@ -41,4 +43,5 @@ export const entities = [
   SysDictDataEntity,
   SysLoginLogEntity,
   SysOperLogEntity,
+  SysRegionEntity,
 ];

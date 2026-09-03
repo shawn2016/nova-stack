@@ -8,11 +8,14 @@ import {
   SysDictTypeEntity,
   SysMenuEntity,
   SysPermissionEntity,
+  SysRegionEntity,
   SysRoleEntity,
   SysRolePermissionEntity,
   SysUserEntity,
   SysUserRoleEntity,
 } from '../entities';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 const SUPER_ADMIN_ROLE_CODE = 'super_admin';
 const ADMIN_USERNAME = 'admin';
@@ -69,6 +72,10 @@ const PERMISSION_SEEDS: PermissionSeed[] = [
   { name: '登录日志列表', code: 'system:audit:login:list', type: 'api' },
   { name: '操作日志列表', code: 'system:audit:oper:list', type: 'api' },
   { name: '文件上传', code: 'system:file:upload', type: 'api' },
+  { name: '地区列表', code: 'system:region:list', type: 'api' },
+  { name: '地区新增', code: 'system:region:create', type: 'api' },
+  { name: '地区编辑', code: 'system:region:update', type: 'api' },
+  { name: '地区删除', code: 'system:region:delete', type: 'api' },
 ];
 
 const MENU_SEEDS: MenuSeed[] = [
@@ -118,13 +125,22 @@ const MENU_SEEDS: MenuSeed[] = [
         sort: 4,
       },
       {
+        name: '地区管理',
+        path: '/system/region',
+        component: 'views/system/region/index',
+        icon: 'ri:map-pin-line',
+        type: 'menu',
+        permissionCode: 'system:region:list',
+        sort: 5,
+      },
+      {
         name: '站点配置',
         path: '/system/site-config',
         component: 'views/system/site-config/index',
         icon: 'ri:global-line',
         type: 'menu',
         permissionCode: 'system:config:list',
-        sort: 5,
+        sort: 6,
       },
       {
         name: '审计日志',
@@ -133,7 +149,7 @@ const MENU_SEEDS: MenuSeed[] = [
         icon: 'ri:file-list-3-line',
         type: 'menu',
         permissionCode: 'system:audit:login:list',
-        sort: 6,
+        sort: 7,
       },
     ],
   },
@@ -323,6 +339,45 @@ async function upsertDevSiteConfigs(
   }
 }
 
+interface RegionFlatSeed {
+  code: string;
+  name: string;
+  parentCode: string;
+  level: 1 | 2 | 3;
+  sort: number;
+}
+
+async function upsertRegions(repo: Repository<SysRegionEntity>): Promise<void> {
+  const filePath = join(__dirname, 'data/china-regions.flat.json');
+  const seeds = JSON.parse(readFileSync(filePath, 'utf-8')) as RegionFlatSeed[];
+  seeds.sort((a, b) => a.level - b.level || a.sort - b.sort);
+
+  const codeToId = new Map<string, string>();
+  codeToId.set('0', '0');
+
+  for (const seed of seeds) {
+    const parentId = codeToId.get(seed.parentCode) ?? '0';
+    let region = await repo.findOne({ where: { code: seed.code } });
+    if (!region) {
+      region = repo.create({
+        parentId,
+        name: seed.name,
+        code: seed.code,
+        level: seed.level,
+        sort: seed.sort,
+        status: 1,
+      });
+    } else {
+      region.parentId = parentId;
+      region.name = seed.name;
+      region.level = seed.level;
+      region.sort = seed.sort;
+    }
+    region = await repo.save(region);
+    codeToId.set(seed.code, region.id);
+  }
+}
+
 async function upsertDevDicts(
   typeRepo: Repository<SysDictTypeEntity>,
   dataRepo: Repository<SysDictDataEntity>,
@@ -415,6 +470,7 @@ export async function runInitSeed(dataSource: DataSource): Promise<void> {
   const dictTypeRepo = dataSource.getRepository(SysDictTypeEntity);
   const dictDataRepo = dataSource.getRepository(SysDictDataEntity);
   const configRepo = dataSource.getRepository(SysConfigEntity);
+  const regionRepo = dataSource.getRepository(SysRegionEntity);
 
   let superAdminRole = await roleRepo.findOne({
     where: { code: SUPER_ADMIN_ROLE_CODE },
@@ -450,6 +506,8 @@ export async function runInitSeed(dataSource: DataSource): Promise<void> {
       );
     }
   }
+
+  await upsertRegions(regionRepo);
 
   const nodeEnv = process.env.NODE_ENV ?? 'development';
   const isProduction = nodeEnv === 'production';
