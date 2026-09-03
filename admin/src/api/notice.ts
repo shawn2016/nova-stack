@@ -95,21 +95,35 @@ export function markNoticeRead(id: string) {
   })
 }
 
-export function fetchMessageInbox(params: { current?: number; size?: number } = {}) {
-  const { current = 1, size = 20 } = params
+export interface MessageListQuery {
+  keyword?: string
+  current?: number
+  size?: number
+}
+
+export function fetchMessageInbox(params: MessageListQuery = {}) {
+  const { keyword, current = 1, size = 20 } = params
   return request<PaginationResult<MessageListItem>>({
     url: '/messages/inbox',
     method: 'GET',
-    params: { page: current, pageSize: size },
+    params: {
+      page: current,
+      pageSize: size,
+      ...(keyword ? { keyword } : {}),
+    },
   }).then(toTableResponse)
 }
 
-export function fetchMessageSent(params: { current?: number; size?: number } = {}) {
-  const { current = 1, size = 20 } = params
+export function fetchMessageSent(params: MessageListQuery = {}) {
+  const { keyword, current = 1, size = 20 } = params
   return request<PaginationResult<MessageListItem>>({
     url: '/messages/sent',
     method: 'GET',
-    params: { page: current, pageSize: size },
+    params: {
+      page: current,
+      pageSize: size,
+      ...(keyword ? { keyword } : {}),
+    },
   }).then(toTableResponse)
 }
 

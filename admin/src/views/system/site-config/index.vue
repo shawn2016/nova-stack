@@ -43,27 +43,24 @@
 </template>
 
 <script setup lang="ts">
-  import { ButtonMoreItem } from '@/components/core/forms/art-button-more/index.vue'
-  import ArtButtonMore from '@/components/core/forms/art-button-more/index.vue'
+  import ArtTableActions from '@/components/core/tables/art-table-actions/index.vue'
+  import type { TableActionItem } from '@/components/core/tables/art-table-actions/index.vue'
   import { useTable } from '@/hooks/core/useTable'
   import { deleteSiteConfig, fetchSiteConfigList } from '@/api/site-config'
   import type { SiteConfigListQuery } from '@/api/site-config'
   import type { SiteConfigListItem } from '@nova/shared-types'
   import { ElMessageBox } from 'element-plus'
-  import { useUserStore } from '@/store/modules/user'
   import SiteConfigSearch from './modules/site-config-search.vue'
   import SiteConfigDialog from './modules/site-config-dialog.vue'
 
   defineOptions({ name: 'SiteConfig' })
-
-  const userStore = useUserStore()
 
   const searchForm = ref<SiteConfigListQuery>({
     keyword: undefined,
     group: undefined,
   })
 
-  const showSearchBar = ref(false)
+  const showSearchBar = ref(true)
   const dialogVisible = ref(false)
   const dialogType = ref<'add' | 'edit'>('add')
   const currentConfigData = ref<SiteConfigListItem | undefined>(undefined)
@@ -112,31 +109,27 @@
         {
           prop: 'operation',
           label: '操作',
-          width: 80,
+          width: 140,
+          align: 'right',
           fixed: 'right',
-          formatter: (row) => {
-            const items: ButtonMoreItem[] = []
-            if (userStore.hasPermission('system:config:update')) {
-              items.push({
-                key: 'edit',
-                label: '编辑配置',
-                icon: 'ri:edit-2-line',
-              })
-            }
-            if (userStore.hasPermission('system:config:delete')) {
-              items.push({
-                key: 'delete',
-                label: '删除配置',
-                icon: 'ri:delete-bin-4-line',
-                color: '#f56c6c',
-              })
-            }
-            if (!items.length) return h('span', '-')
-            return h(ArtButtonMore, {
-              list: items,
-              onClick: (item: ButtonMoreItem) => buttonMoreClick(item, row),
-            })
-          },
+          formatter: (row) =>
+            h(ArtTableActions, {
+              items: [
+                {
+                  key: 'edit',
+                  label: '编辑',
+                  auth: 'system:config:update',
+                  onClick: () => buttonMoreClick({ key: 'edit' }, row),
+                },
+                {
+                  key: 'delete',
+                  label: '删除',
+                  danger: true,
+                  auth: 'system:config:delete',
+                  onClick: () => buttonMoreClick({ key: 'delete' }, row),
+                },
+              ] satisfies TableActionItem[],
+            }),
         },
       ],
     },
@@ -153,7 +146,7 @@
     getData()
   }
 
-  const buttonMoreClick = (item: ButtonMoreItem, row: SiteConfigListItem) => {
+  const buttonMoreClick = (item: Pick<TableActionItem, 'key'>, row: SiteConfigListItem) => {
     switch (item.key) {
       case 'edit':
         showDialog('edit', row)

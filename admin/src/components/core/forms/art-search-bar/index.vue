@@ -428,6 +428,10 @@
     const shouldShowLess = !props.isExpand && !isExpanded.value
     if (shouldShowLess) {
       const maxItemsPerRow = Math.floor(24 / props.span) - 1
+      // span=24 时表单项独占一行，不应因预留按钮位而裁成 0 项
+      if (maxItemsPerRow < 1) {
+        return filteredItems
+      }
       return filteredItems.slice(0, maxItemsPerRow)
     }
     return filteredItems

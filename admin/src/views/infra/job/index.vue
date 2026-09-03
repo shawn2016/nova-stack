@@ -54,8 +54,8 @@
 </template>
 
 <script setup lang="ts">
-  import ArtButtonMore from '@/components/core/forms/art-button-more/index.vue'
-  import type { ButtonMoreItem } from '@/components/core/forms/art-button-more/index.vue'
+  import ArtTableActions from '@/components/core/tables/art-table-actions/index.vue'
+  import type { TableActionItem } from '@/components/core/tables/art-table-actions/index.vue'
   import { useTable } from '@/hooks/core/useTable'
   import {
     deleteJob,
@@ -67,12 +67,10 @@
   } from '@/api/job'
   import type { JobHandlerInfo, JobListItem, JobLogListItem } from '@nova/shared-types'
   import { ElMessageBox, ElTag } from 'element-plus'
-  import { useUserStore } from '@/store/modules/user'
   import JobDialog from './modules/job-dialog.vue'
 
   defineOptions({ name: 'InfraJob' })
 
-  const userStore = useUserStore()
   const handlers = ref<JobHandlerInfo[]>([])
   const dialogVisible = ref(false)
   const dialogType = ref<'add' | 'edit'>('add')
@@ -117,31 +115,43 @@
         {
           prop: 'operation',
           label: '操作',
-          width: 80,
+          width: 200,
           fixed: 'right',
           formatter: (row: JobListItem) => {
-            const items: ButtonMoreItem[] = []
-            if (userStore.hasPermission('infra:job:update')) {
-              items.push({ key: 'edit', label: '编辑' })
-              items.push({
+            const items: TableActionItem[] = [
+              {
+                key: 'edit',
+                label: '编辑',
+                auth: 'infra:job:update',
+                onClick: () => handleAction('edit', row),
+              },
+              {
                 key: 'toggle',
                 label: row.status === 1 ? '暂停' : '启用',
-              })
-            }
-            if (userStore.hasPermission('infra:job:run')) {
-              items.push({ key: 'run', label: '执行一次' })
-            }
-            if (userStore.hasPermission('infra:job:log:list')) {
-              items.push({ key: 'logs', label: '日志' })
-            }
-            if (userStore.hasPermission('infra:job:delete')) {
-              items.push({ key: 'delete', label: '删除', color: '#f56c6c' })
-            }
-            if (!items.length) return h('span', '-')
-            return h(ArtButtonMore, {
-              list: items,
-              onClick: (item: ButtonMoreItem) => handleAction(item.key, row),
-            })
+                auth: 'infra:job:update',
+                onClick: () => handleAction('toggle', row),
+              },
+              {
+                key: 'run',
+                label: '执行一次',
+                auth: 'infra:job:run',
+                onClick: () => handleAction('run', row),
+              },
+              {
+                key: 'logs',
+                label: '日志',
+                auth: 'infra:job:log:list',
+                onClick: () => handleAction('logs', row),
+              },
+              {
+                key: 'delete',
+                label: '删除',
+                danger: true,
+                auth: 'infra:job:delete',
+                onClick: () => handleAction('delete', row),
+              },
+            ]
+            return h(ArtTableActions, { items })
           },
         },
       ],

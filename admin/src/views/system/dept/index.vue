@@ -1,6 +1,7 @@
 <template>
   <div class="dept-page art-full-height">
     <ArtSearchBar
+      v-show="showSearchBar"
       v-model="formFilters"
       :items="formItems"
       :showExpand="false"
@@ -8,11 +9,12 @@
       @search="handleSearch"
     />
 
-    <ElCard class="art-table-card">
+    <ElCard class="art-table-card" :style="{ marginTop: showSearchBar ? '12px' : '0' }">
       <ArtTableHeader
         :showZebra="false"
         :loading="loading"
         v-model:columns="columnChecks"
+        v-model:showSearchBar="showSearchBar"
         @refresh="loadDeptTree"
       >
         <template #left>
@@ -68,7 +70,8 @@
 </template>
 
 <script setup lang="ts">
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+  import ArtTableActions from '@/components/core/tables/art-table-actions/index.vue'
+  import type { TableActionItem } from '@/components/core/tables/art-table-actions/index.vue'
   import { useTableColumns } from '@/hooks/core/useTableColumns'
   import type { DeptListItem, DeptTreeNode } from '@nova/shared-types'
   import DeptDialog from './modules/dept-dialog.vue'
@@ -87,6 +90,7 @@
   type DeptTreeItem = DeptTreeNode & { children?: DeptTreeItem[] }
 
   const userStore = useUserStore()
+  const showSearchBar = ref(true)
   const loading = ref(false)
   const isExpanded = ref(false)
   const tableRef = ref()
@@ -183,26 +187,31 @@
     {
       prop: 'operation',
       label: '操作',
-      width: 160,
+      width: 180,
       align: 'right',
       formatter: (row: DeptTreeItem) => {
-        const buttons = []
-        if (userStore.hasPermission('system:dept:create')) {
-          buttons.push(
-            h(ArtButtonTable, { type: 'add', onClick: () => handleAddChild(row) }),
-          )
-        }
-        if (userStore.hasPermission('system:dept:update')) {
-          buttons.push(
-            h(ArtButtonTable, { type: 'edit', onClick: () => handleEdit(row) }),
-          )
-        }
-        if (userStore.hasPermission('system:dept:delete')) {
-          buttons.push(
-            h(ArtButtonTable, { type: 'delete', onClick: () => handleDelete(row) }),
-          )
-        }
-        return h('div', { style: 'text-align: right' }, buttons)
+        const items: TableActionItem[] = [
+          {
+            key: 'add',
+            label: '新增子级',
+            auth: 'system:dept:create',
+            onClick: () => handleAddChild(row),
+          },
+          {
+            key: 'edit',
+            label: '编辑',
+            auth: 'system:dept:update',
+            onClick: () => handleEdit(row),
+          },
+          {
+            key: 'delete',
+            label: '删除',
+            danger: true,
+            auth: 'system:dept:delete',
+            onClick: () => handleDelete(row),
+          },
+        ]
+        return h(ArtTableActions, { items })
       },
     },
   ])

@@ -1,10 +1,19 @@
 <template>
   <div class="art-full-height">
-    <ElCard class="art-table-card">
+    <ArtSearchBar
+      v-show="showSearchBar"
+      v-model="searchForm"
+      :items="searchItems"
+      :showExpand="false"
+      @reset="handleSearchReset"
+      @search="handleSearch"
+    />
+
+    <ElCard class="art-table-card" :style="{ marginTop: showSearchBar ? '12px' : '0' }">
       <ArtTableHeader
         v-model:columns="columnChecks"
+        v-model:showSearchBar="showSearchBar"
         :loading="loading"
-        :showSearchBar="false"
         @refresh="refreshData"
       >
         <template #left>
@@ -34,25 +43,66 @@
 </template>
 
 <script setup lang="ts">
-  import { ButtonMoreItem } from '@/components/core/forms/art-button-more/index.vue'
-  import ArtButtonMore from '@/components/core/forms/art-button-more/index.vue'
+  import ArtTableActions from '@/components/core/tables/art-table-actions/index.vue'
+  import type { TableActionItem } from '@/components/core/tables/art-table-actions/index.vue'
   import { useTable } from '@/hooks/core/useTable'
   import {
     deleteNotice,
     fetchNoticeList,
     publishNotice,
   } from '@/api/notice'
+  import type { NoticeListQuery } from '@/api/notice'
   import type { NoticeListItem } from '@nova/shared-types'
   import { ElMessageBox, ElTag } from 'element-plus'
-  import { useUserStore } from '@/store/modules/user'
   import NoticeDialog from './modules/notice-dialog.vue'
 
   defineOptions({ name: 'Notices' })
 
-  const userStore = useUserStore()
+  const showSearchBar = ref(true)
   const dialogVisible = ref(false)
   const dialogType = ref<'add' | 'edit'>('add')
   const currentNotice = ref<NoticeListItem | undefined>(undefined)
+
+  const searchForm = reactive<NoticeListQuery>({
+    keyword: undefined,
+    status: undefined,
+    type: undefined,
+  })
+
+  const searchItems = computed(() => [
+    {
+      label: '关键词',
+      key: 'keyword',
+      type: 'input',
+      props: { clearable: true, placeholder: '标题' },
+    },
+    {
+      label: '类型',
+      key: 'type',
+      type: 'select',
+      props: {
+        clearable: true,
+        placeholder: '请选择类型',
+        options: [
+          { label: '通知', value: 1 },
+          { label: '公告', value: 2 },
+        ],
+      },
+    },
+    {
+      label: '状态',
+      key: 'status',
+      type: 'select',
+      props: {
+        clearable: true,
+        placeholder: '请选择状态',
+        options: [
+          { label: '草稿', value: 0 },
+          { label: '已发布', value: 1 },
+        ],
+      },
+    },
+  ])
 
   const statusTag: Record<0 | 1, { type: 'info' | 'success'; label: string }> = {
     0: { type: 'info', label: '草稿' },
@@ -71,6 +121,7 @@
     loading,
     pagination,
     getData,
+    replaceSearchParams,
     handleSizeChange,
     handleCurrentChange,
   } = useTable({
@@ -106,29 +157,32 @@
           width: 180,
           align: 'right',
           formatter: (row: NoticeListItem) => {
-            const items: ButtonMoreItem[] = []
-            if (userStore.hasPermission('system:notice:update')) {
-              items.push({
+            const items: TableActionItem[] = [
+              {
                 key: 'edit',
                 label: '编辑',
+                auth: 'system:notice:update',
                 onClick: () => showDialog('edit', row),
-              })
+              },
+            ]
+            if (row.status === 0) {
+              items.push(
+                {
+                  key: 'publish',
+                  label: '发布',
+                  auth: 'system:notice:publish',
+                  onClick: () => handlePublish(row),
+                },
+                {
+                  key: 'delete',
+                  label: '删除',
+                  danger: true,
+                  auth: 'system:notice:delete',
+                  onClick: () => handleDelete(row),
+                },
+              )
             }
-            if (row.status === 0 && userStore.hasPermission('system:notice:publish')) {
-              items.push({
-                key: 'publish',
-                label: '发布',
-                onClick: () => handlePublish(row),
-              })
-            }
-            if (row.status === 0 && userStore.hasPermission('system:notice:delete')) {
-              items.push({
-                key: 'delete',
-                label: '删除',
-                onClick: () => handleDelete(row),
-              })
-            }
-            return h(ArtButtonMore, { items })
+            return h(ArtTableActions, { items })
           },
         },
       ],
@@ -137,6 +191,24 @@
 
   function refreshData() {
     getData()
+  }
+
+  function handleSearch() {
+    replaceSearchParams({
+      keyword: searchForm.keyword || undefined,
+      status: searchForm.status,
+      type: searchForm.type,
+      current: 1,
+      size: pagination.size,
+    })
+    getData()
+  }
+
+  function handleSearchReset() {
+    searchForm.keyword = undefined
+    searchForm.status = undefined
+    searchForm.type = undefined
+    handleSearch()
   }
 
   function showDialog(type: 'add' | 'edit', row?: NoticeListItem) {

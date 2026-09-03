@@ -49,27 +49,24 @@
 </template>
 
 <script setup lang="ts">
-  import { ButtonMoreItem } from '@/components/core/forms/art-button-more/index.vue'
+  import ArtTableActions from '@/components/core/tables/art-table-actions/index.vue'
+  import type { TableActionItem } from '@/components/core/tables/art-table-actions/index.vue'
   import { useTable } from '@/hooks/core/useTable'
   import { deleteRole as deleteRoleApi, fetchRoleList } from '@/api/system-manage'
   import type { RoleListQuery } from '@/api/system-manage'
   import type { SysRoleListItem } from '@nova/shared-types'
-  import ArtButtonMore from '@/components/core/forms/art-button-more/index.vue'
   import RoleSearch from './modules/role-search.vue'
   import RoleEditDialog from './modules/role-edit-dialog.vue'
   import RolePermissionDialog from './modules/role-permission-dialog.vue'
   import { ElTag, ElMessageBox } from 'element-plus'
-  import { useUserStore } from '@/store/modules/user'
 
   defineOptions({ name: 'Role' })
-
-  const userStore = useUserStore()
 
   const searchForm = ref<RoleListQuery>({
     keyword: undefined,
   })
 
-  const showSearchBar = ref(false)
+  const showSearchBar = ref(true)
   const dialogVisible = ref(false)
   const permissionDialog = ref(false)
   const currentRoleData = ref<SysRoleListItem | undefined>(undefined)
@@ -115,35 +112,33 @@
         {
           prop: 'operation',
           label: '操作',
-          width: 80,
+          width: 180,
           fixed: 'right',
           formatter: (row) => {
-            const items: ButtonMoreItem[] = []
-            if (userStore.hasPermission('system:role:update')) {
-              items.push({
+            const items: TableActionItem[] = [
+              {
                 key: 'permission',
                 label: '分配权限',
-                icon: 'ri:shield-keyhole-line',
-              })
-              items.push({
+                auth: 'system:role:update',
+                onClick: () => buttonMoreClick({ key: 'permission' }, row),
+              },
+              {
                 key: 'edit',
-                label: '编辑角色',
-                icon: 'ri:edit-2-line',
-              })
-            }
-            if (userStore.hasPermission('system:role:delete') && row.code !== 'super_admin') {
+                label: '编辑',
+                auth: 'system:role:update',
+                onClick: () => buttonMoreClick({ key: 'edit' }, row),
+              },
+            ]
+            if (row.code !== 'super_admin') {
               items.push({
                 key: 'delete',
-                label: '删除角色',
-                icon: 'ri:delete-bin-4-line',
-                color: '#f56c6c',
+                label: '删除',
+                danger: true,
+                auth: 'system:role:delete',
+                onClick: () => buttonMoreClick({ key: 'delete' }, row),
               })
             }
-            if (!items.length) return h('span', '-')
-            return h(ArtButtonMore, {
-              list: items,
-              onClick: (item: ButtonMoreItem) => buttonMoreClick(item, row),
-            })
+            return h(ArtTableActions, { items })
           },
         },
       ],
@@ -161,7 +156,7 @@
     getData()
   }
 
-  const buttonMoreClick = (item: ButtonMoreItem, row: SysRoleListItem) => {
+  const buttonMoreClick = (item: Pick<TableActionItem, 'key'>, row: SysRoleListItem) => {
     switch (item.key) {
       case 'permission':
         showPermissionDialog(row)

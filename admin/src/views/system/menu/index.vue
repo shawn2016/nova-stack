@@ -1,6 +1,7 @@
 <template>
   <div class="menu-page art-full-height">
     <ArtSearchBar
+      v-show="showSearchBar"
       v-model="formFilters"
       :items="formItems"
       :showExpand="false"
@@ -8,11 +9,12 @@
       @search="handleSearch"
     />
 
-    <ElCard class="art-table-card">
+    <ElCard class="art-table-card" :style="{ marginTop: showSearchBar ? '12px' : '0' }">
       <ArtTableHeader
         :showZebra="false"
         :loading="loading"
         v-model:columns="columnChecks"
+        v-model:showSearchBar="showSearchBar"
         @refresh="loadMenuList"
       >
         <template #left>
@@ -47,7 +49,8 @@
 </template>
 
 <script setup lang="ts">
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+  import ArtTableActions from '@/components/core/tables/art-table-actions/index.vue'
+  import type { TableActionItem } from '@/components/core/tables/art-table-actions/index.vue'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
   import { useTableColumns } from '@/hooks/core/useTableColumns'
   import type { SysMenuListItem } from '@nova/shared-types'
@@ -62,6 +65,7 @@
   type MenuTreeItem = SysMenuListItem & { children?: MenuTreeItem[] }
 
   const userStore = useUserStore()
+  const showSearchBar = ref(true)
   const loading = ref(false)
   const isExpanded = ref(false)
   const tableRef = ref()
@@ -170,26 +174,24 @@
       label: '操作',
       width: 120,
       align: 'right',
-      formatter: (row: MenuTreeItem) => {
-        const buttons = []
-        if (userStore.hasPermission('system:menu:update')) {
-          buttons.push(
-            h(ArtButtonTable, {
-              type: 'edit',
+      formatter: (row: MenuTreeItem) =>
+        h(ArtTableActions, {
+          items: [
+            {
+              key: 'edit',
+              label: '编辑',
+              auth: 'system:menu:update',
               onClick: () => handleEditMenu(row),
-            }),
-          )
-        }
-        if (userStore.hasPermission('system:menu:delete')) {
-          buttons.push(
-            h(ArtButtonTable, {
-              type: 'delete',
+            },
+            {
+              key: 'delete',
+              label: '删除',
+              danger: true,
+              auth: 'system:menu:delete',
               onClick: () => handleDeleteMenu(row),
-            }),
-          )
-        }
-        return h('div', { style: 'text-align: right' }, buttons)
-      },
+            },
+          ] satisfies TableActionItem[],
+        }),
     },
   ])
 
@@ -226,7 +228,10 @@
     Object.assign(appliedFilters, { name: '', path: '' })
   }
 
-  function handleSearch() {
+  function handleSearch(filters?: { name?: string; path?: string }) {
+    if (filters) {
+      Object.assign(formFilters, filters)
+    }
     Object.assign(appliedFilters, { ...formFilters })
   }
 

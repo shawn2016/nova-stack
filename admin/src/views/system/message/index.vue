@@ -1,10 +1,23 @@
 <template>
   <div class="art-full-height">
-    <ElCard class="art-table-card">
-      <ArtTableHeader :loading="loading" :showSearchBar="false" @refresh="loadData">
+    <ArtSearchBar
+      v-show="showSearchBar"
+      v-model="searchForm"
+      :items="searchItems"
+      :showExpand="false"
+      @reset="handleSearchReset"
+      @search="handleSearch"
+    />
+
+    <ElCard class="art-table-card" :style="{ marginTop: showSearchBar ? '12px' : '0' }">
+      <ArtTableHeader
+        v-model:showSearchBar="showSearchBar"
+        :loading="loading"
+        @refresh="loadData"
+      >
         <template #left>
           <ElSpace wrap>
-            <ElRadioGroup v-model="activeTab" @change="loadData">
+            <ElRadioGroup v-model="activeTab" @change="handleTabChange">
               <ElRadioButton value="inbox">收件箱</ElRadioButton>
               <ElRadioButton value="sent">发件箱</ElRadioButton>
             </ElRadioGroup>
@@ -35,8 +48,8 @@
 </template>
 
 <script setup lang="ts">
-  import { ButtonMoreItem } from '@/components/core/forms/art-button-more/index.vue'
-  import ArtButtonMore from '@/components/core/forms/art-button-more/index.vue'
+  import ArtTableActions from '@/components/core/tables/art-table-actions/index.vue'
+  import type { TableActionItem } from '@/components/core/tables/art-table-actions/index.vue'
   import { useTableColumns } from '@/hooks/core/useTableColumns'
   import {
     deleteMessage,
@@ -46,17 +59,26 @@
   } from '@/api/notice'
   import type { MessageListItem } from '@nova/shared-types'
   import { ElMessageBox, ElTag } from 'element-plus'
-  import { useUserStore } from '@/store/modules/user'
   import SendDialog from './modules/send-dialog.vue'
 
   defineOptions({ name: 'Messages' })
 
-  const userStore = useUserStore()
   const activeTab = ref<'inbox' | 'sent'>('inbox')
+  const showSearchBar = ref(true)
   const sendVisible = ref(false)
   const loading = ref(false)
   const tableData = ref<MessageListItem[]>([])
   const pagination = reactive({ current: 1, size: 20, total: 0 })
+  const searchForm = reactive({ keyword: '' })
+
+  const searchItems = computed(() => [
+    {
+      label: '关键词',
+      key: 'keyword',
+      type: 'input',
+      props: { clearable: true, placeholder: '标题' },
+    },
+  ])
 
   const { columns } = useTableColumns(() => [
     { prop: 'title', label: '标题', minWidth: 160 },
@@ -76,26 +98,23 @@
       width: 140,
       align: 'right',
       formatter: (row: MessageListItem) => {
-        const items: ButtonMoreItem[] = []
-        if (
-          activeTab.value === 'inbox' &&
-          row.isRead === 0 &&
-          userStore.hasPermission('system:message:list')
-        ) {
+        const items: TableActionItem[] = []
+        if (activeTab.value === 'inbox' && row.isRead === 0) {
           items.push({
             key: 'read',
             label: '标记已读',
+            auth: 'system:message:list',
             onClick: () => handleMarkRead(row),
           })
         }
-        if (userStore.hasPermission('system:message:delete')) {
-          items.push({
-            key: 'delete',
-            label: '删除',
-            onClick: () => handleDelete(row),
-          })
-        }
-        return h(ArtButtonMore, { items })
+        items.push({
+          key: 'delete',
+          label: '删除',
+          danger: true,
+          auth: 'system:message:delete',
+          onClick: () => handleDelete(row),
+        })
+        return h(ArtTableActions, { items })
       },
     },
   ])
@@ -108,7 +127,11 @@
     loading.value = true
     try {
       const api = activeTab.value === 'inbox' ? fetchMessageInbox : fetchMessageSent
-      const res = await api({ current: pagination.current, size: pagination.size })
+      const res = await api({
+        current: pagination.current,
+        size: pagination.size,
+        keyword: searchForm.keyword || undefined,
+      })
       tableData.value = res.records
       pagination.total = res.total
     } catch (error) {
@@ -116,6 +139,21 @@
     } finally {
       loading.value = false
     }
+  }
+
+  function handleTabChange() {
+    pagination.current = 1
+    loadData()
+  }
+
+  function handleSearch() {
+    pagination.current = 1
+    loadData()
+  }
+
+  function handleSearchReset() {
+    searchForm.keyword = ''
+    handleSearch()
   }
 
   function handleSizeChange(size: number) {

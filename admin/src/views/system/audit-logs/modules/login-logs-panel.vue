@@ -45,7 +45,7 @@
     dateRange: undefined,
   })
 
-  const showSearchBar = ref(false)
+  const showSearchBar = ref(true)
 
   function formatDate(value?: string | null) {
     if (!value) return '-'

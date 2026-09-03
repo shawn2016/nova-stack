@@ -20,24 +20,9 @@
                 </ElTag>
               </template>
             </ElTableColumn>
-            <ElTableColumn label="操作" width="140" align="right">
+            <ElTableColumn label="操作" width="160" align="right">
               <template #default="{ row }">
-                <ElButton
-                  v-permission="'infra:sms:channel:update'"
-                  link
-                  type="primary"
-                  @click="openChannelDialog('edit', row)"
-                >
-                  编辑
-                </ElButton>
-                <ElButton
-                  v-permission="'infra:sms:channel:delete'"
-                  link
-                  type="danger"
-                  @click="removeChannel(row)"
-                >
-                  删除
-                </ElButton>
+                <ArtTableActions :items="channelActions(row)" />
               </template>
             </ElTableColumn>
           </ElTable>
@@ -68,24 +53,9 @@
                 </ElTag>
               </template>
             </ElTableColumn>
-            <ElTableColumn label="操作" width="140" align="right">
+            <ElTableColumn label="操作" width="160" align="right">
               <template #default="{ row }">
-                <ElButton
-                  v-permission="'infra:sms:template:update'"
-                  link
-                  type="primary"
-                  @click="openTemplateDialog('edit', row)"
-                >
-                  编辑
-                </ElButton>
-                <ElButton
-                  v-permission="'infra:sms:template:delete'"
-                  link
-                  type="danger"
-                  @click="removeTemplate(row)"
-                >
-                  删除
-                </ElButton>
+                <ArtTableActions :items="templateActions(row)" />
               </template>
             </ElTableColumn>
           </ElTable>
@@ -201,6 +171,7 @@
     updateSmsTemplate,
   } from '@/api/sms'
   import type { SmsChannelListItem, SmsLogListItem, SmsTemplateListItem } from '@nova/shared-types'
+  import type { TableActionItem } from '@/components/core/tables/art-table-actions/index.vue'
   import { ElMessageBox } from 'element-plus'
 
   defineOptions({ name: 'InfraSms' })
@@ -286,6 +257,42 @@
     } finally {
       logLoading.value = false
     }
+  }
+
+  function channelActions(row: SmsChannelListItem): TableActionItem[] {
+    return [
+      {
+        key: 'edit',
+        label: '编辑',
+        auth: 'infra:sms:channel:update',
+        onClick: () => openChannelDialog('edit', row),
+      },
+      {
+        key: 'delete',
+        label: '删除',
+        danger: true,
+        auth: 'infra:sms:channel:delete',
+        onClick: () => removeChannel(row),
+      },
+    ]
+  }
+
+  function templateActions(row: SmsTemplateListItem): TableActionItem[] {
+    return [
+      {
+        key: 'edit',
+        label: '编辑',
+        auth: 'infra:sms:template:update',
+        onClick: () => openTemplateDialog('edit', row),
+      },
+      {
+        key: 'delete',
+        label: '删除',
+        danger: true,
+        auth: 'infra:sms:template:delete',
+        onClick: () => removeTemplate(row),
+      },
+    ]
   }
 
   function openChannelDialog(mode: 'add' | 'edit', row?: SmsChannelListItem) {

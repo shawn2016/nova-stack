@@ -46,7 +46,7 @@
     dateRange: undefined,
   })
 
-  const showSearchBar = ref(false)
+  const showSearchBar = ref(true)
 
   const actionLabels: Record<string, string> = {
     create: '新增',

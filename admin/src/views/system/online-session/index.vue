@@ -1,18 +1,21 @@
 <template>
   <div class="art-full-height">
-    <ElCard class="art-table-card">
-      <ArtTableHeader :loading="loading" v-model:columns="columnChecks" @refresh="refreshData">
-        <template #left>
-          <ElInput
-            v-model="keyword"
-            clearable
-            placeholder="搜索用户名或 IP"
-            style="width: 220px"
-            @keyup.enter="handleSearch"
-          />
-          <ElButton type="primary" @click="handleSearch">搜索</ElButton>
-        </template>
-      </ArtTableHeader>
+    <ArtSearchBar
+      v-show="showSearchBar"
+      v-model="searchForm"
+      :items="formItems"
+      :showExpand="false"
+      @reset="handleReset"
+      @search="handleSearch"
+    />
+
+    <ElCard class="art-table-card" :style="{ marginTop: showSearchBar ? '12px' : '0' }">
+      <ArtTableHeader
+        :loading="loading"
+        v-model:columns="columnChecks"
+        v-model:showSearchBar="showSearchBar"
+        @refresh="refreshData"
+      />
 
       <ArtTable
         :loading="loading"
@@ -27,17 +30,27 @@
 </template>
 
 <script setup lang="ts">
+  import ArtTableActions from '@/components/core/tables/art-table-actions/index.vue'
+  import type { TableActionItem } from '@/components/core/tables/art-table-actions/index.vue'
   import { useTable } from '@/hooks/core/useTable'
   import { fetchOnlineSessionList, kickOnlineSession } from '@/api/online-session'
   import type { OnlineSessionListItem } from '@nova/shared-types'
-  import { useUserStore } from '@/store/modules/user'
   import { ElMessageBox } from 'element-plus'
 
   defineOptions({ name: 'OnlineSession' })
 
-  const userStore = useUserStore()
-  const keyword = ref('')
+  const showSearchBar = ref(true)
+  const searchForm = reactive({ keyword: '' })
   const currentTokenId = ref('')
+
+  const formItems = computed(() => [
+    {
+      label: '关键词',
+      key: 'keyword',
+      type: 'input',
+      props: { clearable: true, placeholder: '用户名或 IP' },
+    },
+  ])
 
   const {
     columns,
@@ -89,25 +102,31 @@
           fixed: 'right',
           formatter: (row: OnlineSessionListItem) => {
             const isCurrent = row.tokenId === currentTokenId.value
-            if (!userStore.hasPermission('system:session:kick') || isCurrent) {
-              return h('span', isCurrent ? '当前会话' : '-')
-            }
-            return h(
-              'a',
-              {
-                class: 'text-danger cursor-pointer',
-                onClick: () => handleKick(row),
-              },
-              '踢下线',
-            )
+            if (isCurrent) return h('span', { class: 'text-muted' }, '当前会话')
+            return h(ArtTableActions, {
+              items: [
+                {
+                  key: 'kick',
+                  label: '踢下线',
+                  danger: true,
+                  auth: 'system:session:kick',
+                  onClick: () => handleKick(row),
+                },
+              ] satisfies TableActionItem[],
+            })
           },
         },
       ],
     },
   })
 
+  function handleReset() {
+    searchForm.keyword = ''
+    handleSearch()
+  }
+
   function handleSearch() {
-    replaceSearchParams({ keyword: keyword.value || undefined })
+    replaceSearchParams({ keyword: searchForm.keyword || undefined })
     getData()
   }
 
@@ -122,10 +141,7 @@
 </script>
 
 <style scoped>
-  .text-danger {
-    color: var(--el-color-danger);
-  }
-  .cursor-pointer {
-    cursor: pointer;
+  .text-muted {
+    color: var(--el-text-color-secondary);
   }
 </style>

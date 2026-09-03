@@ -20,24 +20,9 @@
                 </ElTag>
               </template>
             </ElTableColumn>
-            <ElTableColumn label="操作" width="140" align="right">
+            <ElTableColumn label="操作" width="160" align="right">
               <template #default="{ row }">
-                <ElButton
-                  v-permission="'infra:email:channel:update'"
-                  link
-                  type="primary"
-                  @click="openChannelDialog('edit', row)"
-                >
-                  编辑
-                </ElButton>
-                <ElButton
-                  v-permission="'infra:email:channel:delete'"
-                  link
-                  type="danger"
-                  @click="removeChannel(row)"
-                >
-                  删除
-                </ElButton>
+                <ArtTableActions :items="channelActions(row)" />
               </template>
             </ElTableColumn>
           </ElTable>
@@ -69,24 +54,9 @@
                 </ElTag>
               </template>
             </ElTableColumn>
-            <ElTableColumn label="操作" width="140" align="right">
+            <ElTableColumn label="操作" width="160" align="right">
               <template #default="{ row }">
-                <ElButton
-                  v-permission="'infra:email:template:update'"
-                  link
-                  type="primary"
-                  @click="openTemplateDialog('edit', row)"
-                >
-                  编辑
-                </ElButton>
-                <ElButton
-                  v-permission="'infra:email:template:delete'"
-                  link
-                  type="danger"
-                  @click="removeTemplate(row)"
-                >
-                  删除
-                </ElButton>
+                <ArtTableActions :items="templateActions(row)" />
               </template>
             </ElTableColumn>
           </ElTable>
@@ -205,6 +175,7 @@
     updateEmailTemplate,
   } from '@/api/email'
   import type { EmailChannelListItem, EmailLogListItem, EmailTemplateListItem } from '@nova/shared-types'
+  import type { TableActionItem } from '@/components/core/tables/art-table-actions/index.vue'
   import { ElMessageBox } from 'element-plus'
 
   defineOptions({ name: 'InfraEmail' })
@@ -291,6 +262,42 @@
     } finally {
       logLoading.value = false
     }
+  }
+
+  function channelActions(row: EmailChannelListItem): TableActionItem[] {
+    return [
+      {
+        key: 'edit',
+        label: '编辑',
+        auth: 'infra:email:channel:update',
+        onClick: () => openChannelDialog('edit', row),
+      },
+      {
+        key: 'delete',
+        label: '删除',
+        danger: true,
+        auth: 'infra:email:channel:delete',
+        onClick: () => removeChannel(row),
+      },
+    ]
+  }
+
+  function templateActions(row: EmailTemplateListItem): TableActionItem[] {
+    return [
+      {
+        key: 'edit',
+        label: '编辑',
+        auth: 'infra:email:template:update',
+        onClick: () => openTemplateDialog('edit', row),
+      },
+      {
+        key: 'delete',
+        label: '删除',
+        danger: true,
+        auth: 'infra:email:template:delete',
+        onClick: () => removeTemplate(row),
+      },
+    ]
   }
 
   function openChannelDialog(mode: 'add' | 'edit', row?: EmailChannelListItem) {
