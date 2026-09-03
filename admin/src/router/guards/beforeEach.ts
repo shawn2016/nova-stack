@@ -50,8 +50,6 @@ import { useCommon } from '@/hooks/core/useCommon'
 import { useWorktabStore } from '@/store/modules/worktab'
 import { getMe } from '@/api/auth'
 import { appendHiddenRoutes, trackHiddenRouteRemovers } from '../permission'
-import { ApiStatus } from '@/utils/http/status'
-import { isHttpError } from '@/utils/http/error'
 import { RouteRegistry, MenuProcessor, IframeRouteManager, RoutePermissionValidator } from '../core'
 
 // 路由注册器实例
@@ -359,8 +357,8 @@ async function handleDynamicRoutes(
     routeInitInProgress = false
 
     // 输出详细错误信息，便于排查
-    if (isHttpError(error)) {
-      console.error(`[RouteGuard] 错误码: ${error.code}, 消息: ${error.message}`)
+    if (error instanceof Error) {
+      console.error(`[RouteGuard] 错误: ${error.message}`)
     }
 
     // 跳转到 500 页面，使用 replace 避免产生历史记录
@@ -414,20 +412,14 @@ function handleRootPathRedirect(to: RouteLocationNormalized, next: NavigationGua
   return false
 }
 
-  /**
-   * 判断是否为未授权错误（401）
-   */
-  function isUnauthorizedError(error: unknown): boolean {
-    if (isHttpError(error) && error.code === ApiStatus.unauthorized) {
-      return true
-    }
-    if (
-      typeof error === 'object' &&
-      error !== null &&
-      'response' in error &&
-      (error as { response?: { status?: number } }).response?.status === 401
-    ) {
-      return true
-    }
-    return false
-  }
+/**
+ * 判断是否为未授权错误（401）
+ */
+function isUnauthorizedError(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'response' in error &&
+    (error as { response?: { status?: number } }).response?.status === 401
+  )
+}

@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {
   SysMenuEntity,
@@ -10,7 +9,6 @@ import {
   SysUserRoleEntity,
 } from '../../database/entities';
 import { AuthModule } from '../auth/auth.module';
-import { PermissionGuard } from './guards/permission.guard';
 import { MenuController } from './menu/menu.controller';
 import { MenuService } from './menu/menu.service';
 import { RoleController } from './role/role.controller';
@@ -31,14 +29,6 @@ import { UserService } from './user/user.service';
     ]),
   ],
   controllers: [UserController, RoleController, MenuController],
-  providers: [
-    UserService,
-    RoleService,
-    MenuService,
-    {
-      provide: APP_GUARD,
-      useClass: PermissionGuard,
-    },
-  ],
+  providers: [UserService, RoleService, MenuService],
 })
 export class RbacModule {}

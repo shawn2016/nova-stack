@@ -75,7 +75,7 @@
   })
 
   const form = reactive({
-    id: 0,
+    id: '' as string,
     name: '',
     code: '',
     sort: 0,
@@ -93,7 +93,7 @@
       })
     } else {
       Object.assign(form, {
-        id: 0,
+        id: '',
         name: '',
         code: '',
         sort: 0,

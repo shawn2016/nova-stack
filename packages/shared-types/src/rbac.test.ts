@@ -40,8 +40,8 @@ describe('rbac types', () => {
   });
 
   it('AssignUserRolesDto 包含 roleIds 数组', () => {
-    const dto: AssignUserRolesDto = { roleIds: [1, 2] };
-    expect(dto.roleIds).toEqual([1, 2]);
+    const dto: AssignUserRolesDto = { roleIds: ['1', '2'] };
+    expect(dto.roleIds).toEqual(['1', '2']);
   });
 
   it('CreateRoleDto 与 UpdateRoleDto 包含角色字段', () => {
@@ -66,12 +66,12 @@ describe('rbac types', () => {
 
   it('SysUserDetail 包含角色与审计字段', () => {
     const user: SysUserDetail = {
-      id: 1,
+      id: '1',
       username: 'admin',
       nickname: '管理员',
       avatar: '',
       status: 1,
-      roleIds: [1],
+      roleIds: ['1'],
       roleCodes: ['super_admin'],
       createdAt: '2026-01-01T00:00:00.000Z',
       updatedAt: '2026-01-01T00:00:00.000Z',
@@ -83,7 +83,7 @@ describe('rbac types', () => {
 
   it('SysRoleDetail 包含 permissionCodes', () => {
     const role: SysRoleDetail = {
-      id: 1,
+      id: '1',
       name: '超级管理员',
       code: 'super_admin',
       status: 1,
@@ -96,8 +96,8 @@ describe('rbac types', () => {
 
   it('SysMenuListItem 与 CreateMenuDto 包含完整菜单字段', () => {
     const menu: SysMenuListItem = {
-      id: 1,
-      parentId: 0,
+      id: '1',
+      parentId: '0',
       name: '系统管理',
       path: '/system',
       component: '',
@@ -109,7 +109,7 @@ describe('rbac types', () => {
       status: 1,
     };
     const create: CreateMenuDto = {
-      parentId: 0,
+      parentId: '0',
       name: '新菜单',
       path: '/new',
       type: 'menu',

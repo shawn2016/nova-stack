@@ -16,14 +16,14 @@ describe('Article API (e2e)', () => {
 
   async function loginAdmin(): Promise<string> {
     const res = await request(app.getHttpServer())
-      .post('/auth/login')
+      .post('/api/auth/login')
       .send({ username: 'admin', password: 'admin123' });
     return res.body.data.tokens.accessToken;
   }
 
   async function loginMember(): Promise<string> {
     const res = await request(app.getHttpServer())
-      .post('/member/auth/login')
+      .post('/api/member/auth/login')
       .send({ phone: '13800138000', password: 'member123' });
     return res.body.data.tokens.accessToken;
   }
@@ -46,7 +46,7 @@ describe('Article API (e2e)', () => {
 
     it('GET /articles 应返回分页列表（含 seed 数据）', async () => {
       const res = await request(app.getHttpServer())
-        .get('/articles')
+        .get('/api/articles')
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
@@ -61,7 +61,7 @@ describe('Article API (e2e)', () => {
 
     it('GET /articles?status=1 应只返回已发布文章', async () => {
       const res = await request(app.getHttpServer())
-        .get('/articles?status=1')
+        .get('/api/articles?status=1')
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
@@ -72,7 +72,7 @@ describe('Article API (e2e)', () => {
 
     it('POST /articles 应创建草稿文章', async () => {
       const res = await request(app.getHttpServer())
-        .post('/articles')
+        .post('/api/articles')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           title: 'E2E 测试文章',
@@ -90,7 +90,7 @@ describe('Article API (e2e)', () => {
 
     it('GET /articles/:id 应返回文章详情', async () => {
       const res = await request(app.getHttpServer())
-        .get(`/articles/${createdId}`)
+        .get(`/api/articles/${createdId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
@@ -100,7 +100,7 @@ describe('Article API (e2e)', () => {
 
     it('PUT /articles/:id 应更新文章', async () => {
       const res = await request(app.getHttpServer())
-        .put(`/articles/${createdId}`)
+        .put(`/api/articles/${createdId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({ title: 'E2E 测试文章（已更新）', summary: '新摘要' })
         .expect(200);
@@ -111,7 +111,7 @@ describe('Article API (e2e)', () => {
 
     it('PATCH /articles/:id/publish 应发布文章', async () => {
       const res = await request(app.getHttpServer())
-        .patch(`/articles/${createdId}/publish`)
+        .patch(`/api/articles/${createdId}/publish`)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
@@ -121,27 +121,27 @@ describe('Article API (e2e)', () => {
 
     it('DELETE /articles/:id 应删除文章', async () => {
       const res = await request(app.getHttpServer())
-        .delete(`/articles/${createdId}`)
+        .delete(`/api/articles/${createdId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
       expect(res.body.data.success).toBe(true);
 
       await request(app.getHttpServer())
-        .get(`/articles/${createdId}`)
+        .get(`/api/articles/${createdId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(404);
     });
 
     it('无 content:article:list 权限的用户应返回 403', async () => {
       const loginRes = await request(app.getHttpServer())
-        .post('/auth/login')
+        .post('/api/auth/login')
         .send({ username: 'limited', password: 'limited123' });
 
       const limitedToken = loginRes.body.data.tokens.accessToken;
 
       const res = await request(app.getHttpServer())
-        .get('/articles')
+        .get('/api/articles')
         .set('Authorization', `Bearer ${limitedToken}`)
         .expect(403);
 
@@ -150,7 +150,7 @@ describe('Article API (e2e)', () => {
 
     it('无 token 访问 GET /articles 应返回 401', async () => {
       const res = await request(app.getHttpServer())
-        .get('/articles')
+        .get('/api/articles')
         .expect(401);
 
       expect(res.body.code).toBe(ErrorCode.UNAUTHORIZED);
@@ -158,12 +158,12 @@ describe('Article API (e2e)', () => {
 
     it('无 publish 权限的用户 PUT status 不能发布文章', async () => {
       const loginRes = await request(app.getHttpServer())
-        .post('/auth/login')
+        .post('/api/auth/login')
         .send({ username: 'editor', password: 'editor123' });
       const editorToken = loginRes.body.data.tokens.accessToken;
 
       const createRes = await request(app.getHttpServer())
-        .post('/articles')
+        .post('/api/articles')
         .set('Authorization', `Bearer ${editorToken}`)
         .send({
           title: '编辑员草稿',
@@ -174,13 +174,13 @@ describe('Article API (e2e)', () => {
       const articleId = createRes.body.data.id;
 
       await request(app.getHttpServer())
-        .put(`/articles/${articleId}`)
+        .put(`/api/articles/${articleId}`)
         .set('Authorization', `Bearer ${editorToken}`)
         .send({ title: '尝试附带 status', status: 1 })
-        .expect(200);
+        .expect(400);
 
       const detailRes = await request(app.getHttpServer())
-        .get(`/articles/${articleId}`)
+        .get(`/api/articles/${articleId}`)
         .set('Authorization', `Bearer ${editorToken}`)
         .expect(200);
 
@@ -190,12 +190,12 @@ describe('Article API (e2e)', () => {
 
     it('无 publish 权限的用户 PATCH publish 应返回 403', async () => {
       const loginRes = await request(app.getHttpServer())
-        .post('/auth/login')
+        .post('/api/auth/login')
         .send({ username: 'editor', password: 'editor123' });
       const editorToken = loginRes.body.data.tokens.accessToken;
 
       const createRes = await request(app.getHttpServer())
-        .post('/articles')
+        .post('/api/articles')
         .set('Authorization', `Bearer ${editorToken}`)
         .send({
           title: '编辑员待发布',
@@ -204,7 +204,7 @@ describe('Article API (e2e)', () => {
         .expect(201);
 
       const res = await request(app.getHttpServer())
-        .patch(`/articles/${createRes.body.data.id}/publish`)
+        .patch(`/api/articles/${createRes.body.data.id}/publish`)
         .set('Authorization', `Bearer ${editorToken}`)
         .expect(403);
 
@@ -213,7 +213,7 @@ describe('Article API (e2e)', () => {
 
     it('member token 访问 GET /articles 应返回 403', async () => {
       const res = await request(app.getHttpServer())
-        .get('/articles')
+        .get('/api/articles')
         .set('Authorization', `Bearer ${memberToken}`)
         .expect(403);
 
@@ -224,7 +224,7 @@ describe('Article API (e2e)', () => {
   describe('C 端 Member /member/articles', () => {
     it('GET /member/articles 应只返回已发布文章', async () => {
       const res = await request(app.getHttpServer())
-        .get('/member/articles')
+        .get('/api/member/articles')
         .set('Authorization', `Bearer ${memberToken}`)
         .expect(200);
 
@@ -247,13 +247,13 @@ describe('Article API (e2e)', () => {
 
     it('GET /member/articles/:id 已发布文章应返回详情', async () => {
       const listRes = await request(app.getHttpServer())
-        .get('/member/articles')
+        .get('/api/member/articles')
         .set('Authorization', `Bearer ${memberToken}`);
 
       const publishedId = listRes.body.data.list[0].id;
 
       const res = await request(app.getHttpServer())
-        .get(`/member/articles/${publishedId}`)
+        .get(`/api/member/articles/${publishedId}`)
         .set('Authorization', `Bearer ${memberToken}`)
         .expect(200);
 
@@ -264,7 +264,7 @@ describe('Article API (e2e)', () => {
 
     it('GET /member/articles/:id 草稿文章应返回 404', async () => {
       const adminListRes = await request(app.getHttpServer())
-        .get('/articles?status=0')
+        .get('/api/articles?status=0')
         .set('Authorization', `Bearer ${adminToken}`);
 
       const draft = adminListRes.body.data.list.find(
@@ -273,7 +273,7 @@ describe('Article API (e2e)', () => {
       expect(draft).toBeDefined();
 
       const res = await request(app.getHttpServer())
-        .get(`/member/articles/${draft.id}`)
+        .get(`/api/member/articles/${draft.id}`)
         .set('Authorization', `Bearer ${memberToken}`)
         .expect(404);
 
@@ -282,7 +282,7 @@ describe('Article API (e2e)', () => {
 
     it('无 token 访问 GET /member/articles 应返回 401', async () => {
       const res = await request(app.getHttpServer())
-        .get('/member/articles')
+        .get('/api/member/articles')
         .expect(401);
 
       expect(res.body.code).toBe(ErrorCode.UNAUTHORIZED);
@@ -290,7 +290,7 @@ describe('Article API (e2e)', () => {
 
     it('admin token 访问 GET /member/articles 应返回 403', async () => {
       const res = await request(app.getHttpServer())
-        .get('/member/articles')
+        .get('/api/member/articles')
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(403);
 

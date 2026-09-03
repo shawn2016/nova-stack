@@ -7,7 +7,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import type { PaginationResult, SysMenuListItem } from '@nova/shared-types';
 import { Repository } from 'typeorm';
 import { SysMenuEntity } from '../../../database/entities';
+import { toApiId } from '../../../common/utils/to-api-id';
 import { CreateMenuDto } from './dto/create-menu.dto';
+import { ListMenusDto } from './dto/list-menus.dto';
 import { UpdateMenuDto } from './dto/update-menu.dto';
 
 @Injectable()
@@ -17,19 +19,32 @@ export class MenuService {
     private readonly menuRepo: Repository<SysMenuEntity>,
   ) {}
 
-  async list(): Promise<PaginationResult<SysMenuListItem>> {
-    const list = await this.menuRepo.find({ order: { sort: 'ASC' } });
+  async list(query: ListMenusDto): Promise<PaginationResult<SysMenuListItem>> {
+    const { page = 1, pageSize = 10, keyword } = query;
+    const qb = this.menuRepo.createQueryBuilder('m').orderBy('m.sort', 'ASC');
+
+    if (keyword?.trim()) {
+      qb.andWhere('(m.name LIKE :kw OR m.path LIKE :kw)', {
+        kw: `%${keyword.trim()}%`,
+      });
+    }
+
+    const [menus, total] = await qb
+      .skip((page - 1) * pageSize)
+      .take(pageSize)
+      .getManyAndCount();
+
     return {
-      list: list.map((menu) => this.toListItem(menu)),
-      total: list.length,
-      page: 1,
-      pageSize: list.length || 1,
+      list: menus.map((menu) => this.toListItem(menu)),
+      total,
+      page,
+      pageSize,
     };
   }
 
   async create(dto: CreateMenuDto): Promise<SysMenuListItem> {
     const menu = this.menuRepo.create({
-      parentId: String(dto.parentId ?? 0),
+      parentId: dto.parentId ?? '0',
       name: dto.name,
       path: dto.path ?? null,
       component: dto.component ?? null,
@@ -47,7 +62,7 @@ export class MenuService {
   async update(id: string, dto: UpdateMenuDto): Promise<SysMenuListItem> {
     const menu = await this.findEntityById(id);
 
-    if (dto.parentId !== undefined) menu.parentId = String(dto.parentId);
+    if (dto.parentId !== undefined) menu.parentId = dto.parentId;
     if (dto.name !== undefined) menu.name = dto.name;
     if (dto.path !== undefined) menu.path = dto.path;
     if (dto.component !== undefined) menu.component = dto.component;
@@ -86,8 +101,8 @@ export class MenuService {
 
   private toListItem(menu: SysMenuEntity): SysMenuListItem {
     return {
-      id: Number(menu.id),
-      parentId: Number(menu.parentId),
+      id: toApiId(menu.id),
+      parentId: toApiId(menu.parentId),
       name: menu.name,
       path: menu.path ?? '',
       component: menu.component ?? '',

@@ -49,22 +49,8 @@ export const useUserStore = defineStore(
 
     const isLogin = computed(() => !!accessToken.value)
     const permissions = computed(() => adminInfo.value?.permissions ?? [])
-    const info = computed(() => {
-      const current = adminInfo.value
-      if (!current) {
-        return {} as Partial<Api.Auth.UserInfo>
-      }
-      return {
-        userId: current.id,
-        userName: current.username,
-        nickName: current.nickname,
-        avatar: current.avatar,
-        roles: current.roles,
-        buttons: current.permissions,
-      } satisfies Partial<Api.Auth.UserInfo>
-    })
-
-    const getUserInfo = computed(() => info.value)
+    const info = computed(() => adminInfo.value)
+    const getUserInfo = computed(() => adminInfo.value)
     const getSettingState = computed(() => useSettingStore().$state)
     const getWorktabState = computed(() => useWorktabStore().$state)
 
@@ -147,7 +133,7 @@ export const useUserStore = defineStore(
     }
 
     function logOut() {
-      const currentUserId = info.value.userId
+      const currentUserId = adminInfo.value?.id
       if (currentUserId) {
         localStorage.setItem(StorageConfig.LAST_USER_ID_KEY, String(currentUserId))
       }
@@ -169,7 +155,7 @@ export const useUserStore = defineStore(
 
     function checkAndClearWorktabs() {
       const lastUserId = localStorage.getItem(StorageConfig.LAST_USER_ID_KEY)
-      const currentUserId = info.value.userId
+      const currentUserId = adminInfo.value?.id
       if (!currentUserId) return
       if (!lastUserId) return
 

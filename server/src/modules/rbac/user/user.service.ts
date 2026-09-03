@@ -13,8 +13,10 @@ import {
   SysUserEntity,
   SysUserRoleEntity,
 } from '../../../database/entities';
+import { toApiId } from '../../../common/utils/to-api-id';
 import { AssignUserRolesDto } from './dto/assign-user-roles.dto';
 import { CreateUserDto } from './dto/create-user.dto';
+import { ListUsersDto } from './dto/list-users.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
@@ -28,15 +30,23 @@ export class UserService {
     private readonly roleRepo: Repository<SysRoleEntity>,
   ) {}
 
-  async list(): Promise<PaginationResult<SysUserListItem>> {
-    const users = await this.userRepo.find({ order: { id: 'ASC' } });
+  async list(query: ListUsersDto): Promise<PaginationResult<SysUserListItem>> {
+    const { page = 1, pageSize = 10, keyword } = query;
+    const qb = this.userRepo.createQueryBuilder('u').orderBy('u.id', 'ASC');
+
+    if (keyword?.trim()) {
+      qb.andWhere('(u.username LIKE :kw OR u.nickname LIKE :kw)', {
+        kw: `%${keyword.trim()}%`,
+      });
+    }
+
+    const [users, total] = await qb
+      .skip((page - 1) * pageSize)
+      .take(pageSize)
+      .getManyAndCount();
     const list = await Promise.all(users.map((user) => this.toListItem(user)));
-    return {
-      list,
-      total: list.length,
-      page: 1,
-      pageSize: list.length || 1,
-    };
+
+    return { list, total, page, pageSize };
   }
 
   async findById(id: string): Promise<SysUserDetail> {
@@ -116,7 +126,7 @@ export class UserService {
   }
 
   private async loadRoleInfo(userId: string): Promise<{
-    roleIds: number[];
+    roleIds: string[];
     roleCodes: string[];
   }> {
     const links = await this.userRoleRepo.find({ where: { userId } });
@@ -127,7 +137,7 @@ export class UserService {
     const roleIds = links.map((link) => link.roleId);
     const roles = await this.roleRepo.find({ where: { id: In(roleIds) } });
     return {
-      roleIds: roles.map((role) => Number(role.id)),
+      roleIds: roles.map((role) => toApiId(role.id)),
       roleCodes: roles.map((role) => role.code),
     };
   }
@@ -135,7 +145,7 @@ export class UserService {
   private async toListItem(user: SysUserEntity): Promise<SysUserListItem> {
     const { roleIds, roleCodes } = await this.loadRoleInfo(user.id);
     return {
-      id: Number(user.id),
+      id: toApiId(user.id),
       username: user.username,
       nickname: user.nickname,
       avatar: user.avatar ?? '',

@@ -28,10 +28,10 @@
           />
           <div class="w-[calc(100%-60px)] h-full">
             <span class="block text-sm font-medium text-g-800 truncate">{{
-              userInfo.userName
+              userInfo?.username
             }}</span>
             <span class="block mt-0.5 text-xs text-g-500 truncate">{{
-              userInfo.nickName || userInfo.userName
+              userInfo?.nickname || userInfo?.username
             }}</span>
           </div>
         </div>
@@ -78,7 +78,7 @@
   const userStore = useUserStore()
 
   const { getUserInfo: userInfo } = storeToRefs(userStore)
-  const avatarUrl = computed(() => userInfo.value.avatar || defaultAvatar)
+  const avatarUrl = computed(() => userInfo.value?.avatar || defaultAvatar)
   const userMenuPopover = ref()
 
   /**

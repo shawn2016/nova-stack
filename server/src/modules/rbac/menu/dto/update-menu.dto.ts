@@ -4,8 +4,8 @@ import { IsIn, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 export class UpdateMenuDto {
   @ApiPropertyOptional()
   @IsOptional()
-  @IsInt()
-  parentId?: number;
+  @IsString()
+  parentId?: string;
 
   @ApiPropertyOptional({ maxLength: 64 })
   @IsOptional()

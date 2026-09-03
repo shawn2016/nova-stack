@@ -1,7 +1,7 @@
 import type { MenuNode } from '@nova/shared-types';
 import type { AppRouteRecord } from '@/types/router';
 import { RoutesAlias } from './routesAlias';
-import { normalizeComponentPath } from './menusToRoutes';
+import { normalizeComponentPath } from './componentPath';
 
 function routeNameFromPath(path: string): string {
   return path.replace(/^\//, '').replace(/\//g, '-') || 'root';

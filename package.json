@@ -3,12 +3,15 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build": "pnpm -r build",
     "build:shared-types": "pnpm --filter @nova/shared-types build",
-    "predev": "pnpm run build:shared-types",
-    "predev:all": "pnpm run build:shared-types",
-    "dev": "concurrently \"pnpm --filter @nova/server dev\" \"pnpm --filter @nova/admin dev\"",
+    "test": "pnpm --filter @nova/shared-types test && pnpm --filter @nova/server test && pnpm --filter @nova/server test:e2e",
+    "postinstall": "pnpm run build:shared-types",
+    "predev": "pnpm run build:shared-types && rm -f server/*.tsbuildinfo && pnpm --filter @nova/server build",
+    "predev:all": "pnpm run predev",
+    "dev": "concurrently \"pnpm --filter @nova/shared-types dev\" \"pnpm --filter @nova/server dev\" \"pnpm --filter @nova/admin dev\"",
     "dev:all": "concurrently \"pnpm --filter @nova/server dev\" \"pnpm --filter @nova/admin dev\" \"pnpm --filter @nova/uni-app dev:h5\"",
-    "lint": "eslint .",
+    "lint": "eslint server/src packages/shared-types/src",
     "format": "prettier --write .",
     "seed": "pnpm --filter @nova/server seed"
   },
@@ -16,8 +19,10 @@
     "@eslint/js": "^9.17.0",
     "concurrently": "^9.1.2",
     "eslint": "^9.17.0",
+    "globals": "^15.14.0",
     "prettier": "^3.4.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.9.0"
   },
   "engines": {
     "node": ">=20"

@@ -1,11 +1,11 @@
 /** 系统用户列表项 */
 export interface SysUserListItem {
-  id: number;
+  id: string;
   username: string;
   nickname: string;
   avatar: string;
   status: 0 | 1;
-  roleIds: number[];
+  roleIds: string[];
   roleCodes: string[];
 }
 
@@ -31,12 +31,12 @@ export interface UpdateUserDto {
 
 /** 分配用户角色请求 */
 export interface AssignUserRolesDto {
-  roleIds: number[];
+  roleIds: string[];
 }
 
 /** 角色列表项 */
 export interface SysRoleListItem {
-  id: number;
+  id: string;
   name: string;
   code: string;
   status: 0 | 1;
@@ -71,8 +71,8 @@ export interface AssignRolePermissionsDto {
 
 /** 菜单管理列表项 */
 export interface SysMenuListItem {
-  id: number;
-  parentId: number;
+  id: string;
+  parentId: string;
   name: string;
   path: string;
   component: string;
@@ -86,7 +86,7 @@ export interface SysMenuListItem {
 
 /** 创建菜单请求 */
 export interface CreateMenuDto {
-  parentId?: number;
+  parentId?: string;
   name: string;
   path?: string;
   component?: string;
@@ -100,7 +100,7 @@ export interface CreateMenuDto {
 
 /** 更新菜单请求 */
 export interface UpdateMenuDto {
-  parentId?: number;
+  parentId?: string;
   name?: string;
   path?: string;
   component?: string;

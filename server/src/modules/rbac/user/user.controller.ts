@@ -8,12 +8,14 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser, AuthUser } from '../../auth/decorators/current-user.decorator';
 import { RequirePermission } from '../decorators/require-permission.decorator';
 import { AssignUserRolesDto } from './dto/assign-user-roles.dto';
 import { CreateUserDto } from './dto/create-user.dto';
+import { ListUsersDto } from './dto/list-users.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserService } from './user.service';
 
@@ -26,8 +28,8 @@ export class UserController {
   @Get()
   @RequirePermission('system:user:list')
   @ApiOperation({ summary: '用户列表' })
-  list() {
-    return this.userService.list();
+  list(@Query() query: ListUsersDto) {
+    return this.userService.list(query);
   }
 
   @Get(':id')

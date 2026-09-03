@@ -75,7 +75,7 @@
 
   const formRef = ref<FormInstance>()
   const submitting = ref(false)
-  const roleOptions = ref<{ id: number; name: string }[]>([])
+  const roleOptions = ref<{ id: string; name: string }[]>([])
 
   const dialogVisible = computed({
     get: () => props.visible,
@@ -89,7 +89,7 @@
     password: '',
     nickname: '',
     status: 1 as 0 | 1,
-    roleIds: [] as number[],
+    roleIds: [] as string[],
   })
 
   const rules = computed<FormRules>(() => ({
@@ -108,7 +108,7 @@
   }))
 
   async function loadRoleOptions() {
-    const result = await fetchRoleList()
+    const result = await fetchRoleList({ current: 1, size: 100 })
     roleOptions.value = result.records.map((role) => ({ id: role.id, name: role.name }))
   }
 

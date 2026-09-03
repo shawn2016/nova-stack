@@ -98,7 +98,7 @@
     loadMenuList()
   })
 
-  function buildMenuTree(items: SysMenuListItem[], parentId = 0): MenuTreeItem[] {
+  function buildMenuTree(items: SysMenuListItem[], parentId = '0'): MenuTreeItem[] {
     return items
       .filter((item) => item.parentId === parentId)
       .sort((a, b) => a.sort - b.sort)
@@ -211,9 +211,9 @@
     flatMenuList.value.forEach((item) => {
       if (idSet.has(item.id)) {
         let parentId = item.parentId
-        while (parentId) {
+        while (parentId && parentId !== '0') {
           idSet.add(parentId)
-          parentId = flatMenuList.value.find((menu) => menu.id === parentId)?.parentId ?? 0
+          parentId = flatMenuList.value.find((menu) => menu.id === parentId)?.parentId ?? '0'
         }
       }
     })

@@ -24,9 +24,6 @@ export * from './constants'
 // 存储相关
 export * from './storage'
 
-// HTTP 相关
-export * from './http'
-
 // 表单相关
 export * from './form'
 

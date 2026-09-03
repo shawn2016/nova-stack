@@ -66,9 +66,7 @@
   const userStore = useUserStore()
 
   const searchForm = ref<RoleListQuery>({
-    name: undefined,
-    code: undefined,
-    status: undefined,
+    keyword: undefined,
   })
 
   const showSearchBar = ref(false)

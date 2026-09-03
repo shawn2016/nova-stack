@@ -7,7 +7,7 @@ export interface TokenPair {
 
 /** B 端管理员信息 */
 export interface AdminInfo {
-  id: number;
+  id: string;
   username: string;
   nickname: string;
   avatar: string;
@@ -17,7 +17,7 @@ export interface AdminInfo {
 
 /** C 端会员信息 */
 export interface MemberInfo {
-  id: number;
+  id: string;
   phone: string;
   nickname: string;
   avatar: string;
@@ -25,7 +25,7 @@ export interface MemberInfo {
 
 /** 菜单树节点 */
 export interface MenuNode {
-  id: number;
+  id: string;
   name: string;
   path: string;
   component: string;
@@ -36,7 +36,7 @@ export interface MenuNode {
 
 /** JWT 载荷 */
 export interface JwtPayload {
-  sub: number;
+  sub: string;
   type: 'admin' | 'member';
   jti: string;
   iat: number;

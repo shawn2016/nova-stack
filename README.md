@@ -1,22 +1,15 @@
 # nova-stack
 
-基于 pnpm monorepo 的全栈多端脚手架，包含管理后台、移动端应用与后端服务。
+基于 pnpm monorepo 的全栈多端项目：NestJS 后端 + Vue3 Admin + uni-app C 端，共享类型包 `@nova/shared-types`。
 
 ## Monorepo 结构
 
-```
-nova-stack/
-├── admin/                  # @nova/admin — Vue3 + Vite 管理后台
-├── uni-app/                # @nova/uni-app — uni-app 多端应用
-├── server/                 # @nova/server — NestJS 后端服务
-├── packages/
-│   └── shared-types/       # @nova/shared-types — 三端共享 TypeScript 类型
-├── pnpm-workspace.yaml     # pnpm workspace 配置
-├── package.json            # 根脚本与开发依赖
-├── tsconfig.base.json      # 共享 TypeScript 配置
-├── eslint.config.js        # ESLint 扁平配置
-└── README.md
-```
+| 路径 | 包名 | 说明 |
+|------|------|------|
+| `server/` | `@nova/server` | NestJS API、TypeORM、JWT/RBAC |
+| `admin/` | `@nova/admin` | Vue3 + Vite 管理后台 |
+| `uni-app/` | `@nova/uni-app` | uni-app H5/小程序 |
+| `packages/shared-types/` | `@nova/shared-types` | 三端共享 TypeScript 类型 |
 
 ## 前置依赖
 
@@ -25,9 +18,9 @@ nova-stack/
 | Node.js | 20+ | 运行时 |
 | pnpm | 最新稳定版 | 包管理与 workspace |
 | MySQL | 8.x | 后端数据库 |
-| Redis | 6+ | 缓存与会话 |
+| Redis | 7+ | JWT 黑名单与缓存 |
 
-## 本地开发
+## 快速开始
 
 ### 1. 安装依赖
 
@@ -35,45 +28,90 @@ nova-stack/
 pnpm install
 ```
 
-### 2. 配置环境变量
+### 2. 启动基础设施（可选）
 
-各子包提供 `.env.example`，复制为 `.env` 并按需修改：
+使用 Docker Compose 启动 MySQL 8 与 Redis 7：
+
+```bash
+docker compose up -d
+```
+
+默认映射：`3306`（MySQL）、`6379`（Redis），数据库名 `nova_stack`。
+
+### 3. 配置环境变量
 
 ```bash
 cp server/.env.example server/.env
 cp admin/.env.example admin/.env
+cp uni-app/.env.example uni-app/.env   # 如需 C 端
 ```
 
-### 3. 启动服务
+**关键配置：**
 
-确保 MySQL 与 Redis 已运行，然后：
+- 后端 `PORT=3001`，全局 API 前缀 `/api`（Swagger：`/api/docs`）
+- Admin 开发环境 `VITE_API_BASE_URL=/api`，Vite 仅代理 `/api` → `http://localhost:3001`
+- `CORS_ORIGINS` 需包含 Admin 开发地址（默认 `http://localhost:5173`）
+
+> 非 `production` 环境 TypeORM `synchronize=true` 会自动同步表结构；生产/staging 务必关闭（见 `server/.env.staging.example`）。
+
+### 4. 初始化数据
 
 ```bash
-# 并行启动 server + admin（predev 会自动构建 @nova/shared-types）
+pnpm seed
+```
+
+### 5. 启动开发服务
+
+```bash
+# shared-types watch + server + admin
 pnpm dev
 
-# 并行启动 server + admin + uni-app (H5)
+# 含 uni-app H5
 pnpm dev:all
 ```
 
-> `@nova/shared-types` 产物位于 `dist/`（已 gitignore），根级 `predev` 会在 `dev` / `dev:all` 前自动执行 `pnpm --filter @nova/shared-types build`。
+| 服务 | 地址 |
+|------|------|
+| Admin | http://localhost:5173 |
+| API | http://localhost:3001/api |
+| Swagger | http://localhost:3001/api/docs |
 
-### 4. 代码规范
+### 本地账号（seed 后）
+
+| 端 | 账号 | 密码 |
+|----|------|------|
+| Admin | `admin` | `admin123` |
+| 会员 | `13800138000` | `member123` |
+
+## 常用命令
 
 ```bash
-pnpm lint      # ESLint 检查
-pnpm format    # Prettier 格式化
+pnpm build          # 构建全部 workspace 包
+pnpm test           # shared-types 单测 + server 单测 + e2e
+pnpm seed           # 初始化 RBAC 与示例数据
+pnpm lint           # ESLint（server + shared-types）
+pnpm format         # Prettier 格式化
+
+pnpm --filter @nova/server test
+pnpm --filter @nova/server test:e2e
+pnpm --filter @nova/admin build
 ```
 
 ## 技术栈
 
 | 端 | 技术 |
 |----|------|
-| server | NestJS, TypeORM, MySQL, Redis, Swagger, JWT/RBAC 占位 |
-| admin | Vue3, Vite, Arco Design, Pinia, UnoCSS, Axios |
+| server | NestJS, TypeORM, MySQL, Redis, Swagger, JWT/RBAC |
+| admin | Vue3, Vite, Element Plus, Pinia |
 | uni-app | Vue3, Vite, uview-plus, Pinia |
-| packages | TypeScript 共享类型 |
+| packages | TypeScript 共享契约 |
 
-## 包命名
+## 开发说明
 
-所有 workspace 子包使用 `@nova/*` 命名空间，例如 `@nova/server`、`@nova/admin`。
+- 修改 `@nova/shared-types` 后，`pnpm dev` 会并行 `tsc --watch`，三端类型自动更新
+- Admin 请求统一走 `admin/src/api/request.ts`，勿再使用已删除的 `utils/http`
+- 若 `nest start --watch` 报 `dist/main` 缺失：`rm -f server/*.tsbuildinfo && pnpm --filter @nova/server build`
+
+## Comet 工作流
+
+默认 Classic 工作流，入口 `/comet`。状态查询：`comet status`、`comet dashboard`。

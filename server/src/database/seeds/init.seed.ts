@@ -68,6 +68,7 @@ const PERMISSION_SEEDS: PermissionSeed[] = [
   { name: '站点配置删除', code: 'system:config:delete', type: 'api' },
   { name: '登录日志列表', code: 'system:audit:login:list', type: 'api' },
   { name: '操作日志列表', code: 'system:audit:oper:list', type: 'api' },
+  { name: '文件上传', code: 'system:file:upload', type: 'api' },
 ];
 
 const MENU_SEEDS: MenuSeed[] = [

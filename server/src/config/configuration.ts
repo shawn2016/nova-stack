@@ -4,6 +4,9 @@ export default registerAs('app', () => ({
   nodeEnv: process.env.NODE_ENV ?? 'development',
   port: parseInt(process.env.PORT ?? '3000', 10),
   skipExternalServices: process.env.SKIP_EXTERNAL_SERVICES === 'true',
+  corsOrigins:
+    process.env.CORS_ORIGINS ??
+    'http://localhost:5173,http://localhost:5174',
 }));
 
 export const databaseConfig = registerAs('database', () => ({

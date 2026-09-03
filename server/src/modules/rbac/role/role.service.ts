@@ -12,8 +12,10 @@ import {
   SysRoleEntity,
   SysRolePermissionEntity,
 } from '../../../database/entities';
+import { toApiId } from '../../../common/utils/to-api-id';
 import { AssignRolePermissionsDto } from './dto/assign-role-permissions.dto';
 import { CreateRoleDto } from './dto/create-role.dto';
+import { ListRolesDto } from './dto/list-roles.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 
 const SUPER_ADMIN_ROLE_CODE = 'super_admin';
@@ -29,13 +31,26 @@ export class RoleService {
     private readonly permissionRepo: Repository<SysPermissionEntity>,
   ) {}
 
-  async list(): Promise<PaginationResult<SysRoleListItem>> {
-    const list = await this.roleRepo.find({ order: { sort: 'ASC' } });
+  async list(query: ListRolesDto): Promise<PaginationResult<SysRoleListItem>> {
+    const { page = 1, pageSize = 10, keyword } = query;
+    const qb = this.roleRepo.createQueryBuilder('r').orderBy('r.sort', 'ASC');
+
+    if (keyword?.trim()) {
+      qb.andWhere('(r.name LIKE :kw OR r.code LIKE :kw)', {
+        kw: `%${keyword.trim()}%`,
+      });
+    }
+
+    const [roles, total] = await qb
+      .skip((page - 1) * pageSize)
+      .take(pageSize)
+      .getManyAndCount();
+
     return {
-      list: list.map((role) => this.toListItem(role)),
-      total: list.length,
-      page: 1,
-      pageSize: list.length || 1,
+      list: roles.map((role) => this.toListItem(role)),
+      total,
+      page,
+      pageSize,
     };
   }
 
@@ -129,7 +144,7 @@ export class RoleService {
 
   private toListItem(role: SysRoleEntity): SysRoleListItem {
     return {
-      id: Number(role.id),
+      id: toApiId(role.id),
       name: role.name,
       code: role.code,
       status: role.status as 0 | 1,

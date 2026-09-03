@@ -32,7 +32,7 @@ describe('auth types', () => {
 
   it('AdminInfo 包含 id、username、nickname、avatar、roles 与 permissions', () => {
     const admin: AdminInfo = {
-      id: 1,
+      id: '1',
       username: 'admin',
       nickname: '管理员',
       avatar: 'https://example.com/avatar.png',
@@ -40,7 +40,7 @@ describe('auth types', () => {
       permissions: ['user:read', 'user:write'],
     };
 
-    expect(admin.id).toBe(1);
+    expect(admin.id).toBe('1');
     expect(admin.username).toBe('admin');
     expect(admin.roles).toEqual(['super_admin']);
     expect(admin.permissions).toEqual(['user:read', 'user:write']);
@@ -48,20 +48,20 @@ describe('auth types', () => {
 
   it('MemberInfo 包含 id、phone、nickname 与 avatar', () => {
     const member: MemberInfo = {
-      id: 2,
+      id: '2',
       phone: '13800138000',
       nickname: '会员',
       avatar: 'https://example.com/member.png',
     };
 
-    expect(member.id).toBe(2);
+    expect(member.id).toBe('2');
     expect(member.phone).toBe('13800138000');
     expect(member.nickname).toBe('会员');
   });
 
   it('MenuNode 支持 directory、menu、button 类型与嵌套 children', () => {
     const menu: MenuNode = {
-      id: 1,
+      id: '1',
       name: '系统管理',
       path: '/system',
       component: 'Layout',
@@ -69,7 +69,7 @@ describe('auth types', () => {
       type: 'directory',
       children: [
         {
-          id: 2,
+          id: '2',
           name: '用户管理',
           path: '/system/user',
           component: 'system/user/index',
@@ -77,7 +77,7 @@ describe('auth types', () => {
           type: 'menu',
         },
         {
-          id: 3,
+          id: '3',
           name: '新增用户',
           path: '',
           component: '',
@@ -95,14 +95,14 @@ describe('auth types', () => {
 
   it('JwtPayload 包含 sub、type、jti、iat 与 exp', () => {
     const payload: JwtPayload = {
-      sub: 1,
+      sub: '1',
       type: 'admin',
       jti: 'unique-jti',
       iat: 1700000000,
       exp: 1700003600,
     };
 
-    expect(payload.sub).toBe(1);
+    expect(payload.sub).toBe('1');
     expect(payload.type).toBe('admin');
     expect(payload.jti).toBe('unique-jti');
   });
@@ -150,7 +150,7 @@ describe('auth types', () => {
         expiresIn: 3600,
       },
       user: {
-        id: 1,
+        id: '1',
         username: 'admin',
         nickname: '管理员',
         avatar: '',
@@ -171,7 +171,7 @@ describe('auth types', () => {
         expiresIn: 3600,
       },
       user: {
-        id: 2,
+        id: '2',
         phone: '13800138000',
         nickname: '会员',
         avatar: '',
@@ -192,7 +192,7 @@ describe('auth types', () => {
 
   it('AdminMeResponse 与 AdminInfo 结构一致', () => {
     const me: AdminMeResponse = {
-      id: 1,
+      id: '1',
       username: 'admin',
       nickname: '管理员',
       avatar: '',

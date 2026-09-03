@@ -52,8 +52,7 @@
   const currentUserData = ref<Partial<SysUserListItem>>({})
 
   const searchForm = ref<UserListQuery>({
-    username: undefined,
-    status: undefined,
+    keyword: undefined,
   })
 
   const {

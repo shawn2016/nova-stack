@@ -14,14 +14,14 @@ describe('Dict API (e2e)', () => {
 
   async function loginAdmin(): Promise<string> {
     const res = await request(app.getHttpServer())
-      .post('/auth/login')
+      .post('/api/auth/login')
       .send({ username: 'admin', password: 'admin123' });
     return res.body.data.tokens.accessToken;
   }
 
   async function loginMember(): Promise<string> {
     const res = await request(app.getHttpServer())
-      .post('/member/auth/login')
+      .post('/api/member/auth/login')
       .send({ phone: '13800138000', password: 'member123' });
     return res.body.data.tokens.accessToken;
   }
@@ -42,7 +42,7 @@ describe('Dict API (e2e)', () => {
 
     it('GET /dict/types 应返回类型列表', async () => {
       const res = await request(app.getHttpServer())
-        .get('/dict/types')
+        .get('/api/dict/types')
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
@@ -53,7 +53,7 @@ describe('Dict API (e2e)', () => {
 
     it('POST /dict/types 应创建字典类型', async () => {
       const res = await request(app.getHttpServer())
-        .post('/dict/types')
+        .post('/api/dict/types')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           name: 'E2E 测试类型',
@@ -72,7 +72,7 @@ describe('Dict API (e2e)', () => {
 
     it('POST /dict/types 重复 code 应返回 400', async () => {
       const res = await request(app.getHttpServer())
-        .post('/dict/types')
+        .post('/api/dict/types')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           name: '重复类型',
@@ -85,7 +85,7 @@ describe('Dict API (e2e)', () => {
 
     it('PUT /dict/types/:id 应更新字典类型', async () => {
       const res = await request(app.getHttpServer())
-        .put(`/dict/types/${createdTypeId}`)
+        .put(`/api/dict/types/${createdTypeId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({ name: 'E2E 测试类型（已更新）', status: 0 })
         .expect(200);
@@ -96,7 +96,7 @@ describe('Dict API (e2e)', () => {
 
     it('DELETE /dict/types/:id 无字典项时应删除', async () => {
       const createRes = await request(app.getHttpServer())
-        .post('/dict/types')
+        .post('/api/dict/types')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({ name: '临时类型', code: 'temp_type', status: 1 })
         .expect(201);
@@ -104,7 +104,7 @@ describe('Dict API (e2e)', () => {
       const tempId = createRes.body.data.id;
 
       const res = await request(app.getHttpServer())
-        .delete(`/dict/types/${tempId}`)
+        .delete(`/api/dict/types/${tempId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
@@ -118,7 +118,7 @@ describe('Dict API (e2e)', () => {
 
     beforeAll(async () => {
       const res = await request(app.getHttpServer())
-        .get('/dict/types')
+        .get('/api/dict/types')
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
@@ -131,7 +131,7 @@ describe('Dict API (e2e)', () => {
 
     it('POST /dict/data 应创建字典项', async () => {
       const res = await request(app.getHttpServer())
-        .post('/dict/data')
+        .post('/api/dict/data')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           typeId,
@@ -149,7 +149,7 @@ describe('Dict API (e2e)', () => {
 
     it('POST /dict/data 同 type 重复 value 应返回 400', async () => {
       const res = await request(app.getHttpServer())
-        .post('/dict/data')
+        .post('/api/dict/data')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           typeId,
@@ -163,7 +163,7 @@ describe('Dict API (e2e)', () => {
 
     it('GET /dict/data 应返回字典项列表', async () => {
       await request(app.getHttpServer())
-        .post('/dict/data')
+        .post('/api/dict/data')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           typeId,
@@ -174,7 +174,7 @@ describe('Dict API (e2e)', () => {
         });
 
       const res = await request(app.getHttpServer())
-        .get('/dict/data')
+        .get('/api/dict/data')
         .query({ typeId })
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
@@ -186,7 +186,7 @@ describe('Dict API (e2e)', () => {
 
     it('PUT /dict/data/:id 应更新字典项', async () => {
       const res = await request(app.getHttpServer())
-        .put(`/dict/data/${createdDataId}`)
+        .put(`/api/dict/data/${createdDataId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({ label: 'E2E 测试项（已更新）', sort: 0 })
         .expect(200);
@@ -197,7 +197,7 @@ describe('Dict API (e2e)', () => {
 
     it('GET /dict/data/by-type/:code 应仅返回启用项且按 sort 升序', async () => {
       await request(app.getHttpServer())
-        .post('/dict/data')
+        .post('/api/dict/data')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           typeId,
@@ -208,7 +208,7 @@ describe('Dict API (e2e)', () => {
         });
 
       const res = await request(app.getHttpServer())
-        .get('/dict/data/by-type/article_status')
+        .get('/api/dict/data/by-type/article_status')
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
@@ -223,7 +223,7 @@ describe('Dict API (e2e)', () => {
 
     it('GET /dict/data/by-type/:code 未知 code 应返回 404', async () => {
       const res = await request(app.getHttpServer())
-        .get('/dict/data/by-type/unknown_code')
+        .get('/api/dict/data/by-type/unknown_code')
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(404);
 
@@ -232,7 +232,7 @@ describe('Dict API (e2e)', () => {
 
     it('DELETE /dict/data/:id 应删除字典项', async () => {
       const createRes = await request(app.getHttpServer())
-        .post('/dict/data')
+        .post('/api/dict/data')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           typeId,
@@ -242,7 +242,7 @@ describe('Dict API (e2e)', () => {
         .expect(201);
 
       const res = await request(app.getHttpServer())
-        .delete(`/dict/data/${createRes.body.data.id}`)
+        .delete(`/api/dict/data/${createRes.body.data.id}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
@@ -255,14 +255,14 @@ describe('Dict API (e2e)', () => {
 
     beforeAll(async () => {
       const typeRes = await request(app.getHttpServer())
-        .post('/dict/types')
+        .post('/api/dict/types')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({ name: '不可删类型', code: 'blocked_delete', status: 1 });
 
       typeWithDataId = typeRes.body.data.id;
 
       await request(app.getHttpServer())
-        .post('/dict/data')
+        .post('/api/dict/data')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           typeId: typeWithDataId,
@@ -273,7 +273,7 @@ describe('Dict API (e2e)', () => {
 
     it('DELETE /dict/types/:id 存在字典项时应返回 400', async () => {
       const res = await request(app.getHttpServer())
-        .delete(`/dict/types/${typeWithDataId}`)
+        .delete(`/api/dict/types/${typeWithDataId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(400);
 
@@ -283,7 +283,7 @@ describe('Dict API (e2e)', () => {
 
     it('member token 访问 GET /dict/types 应返回 403', async () => {
       const res = await request(app.getHttpServer())
-        .get('/dict/types')
+        .get('/api/dict/types')
         .set('Authorization', `Bearer ${memberToken}`)
         .expect(403);
 
@@ -292,7 +292,7 @@ describe('Dict API (e2e)', () => {
 
     it('member token 访问 GET /dict/data/by-type/:code 应返回 403', async () => {
       const res = await request(app.getHttpServer())
-        .get('/dict/data/by-type/article_status')
+        .get('/api/dict/data/by-type/article_status')
         .set('Authorization', `Bearer ${memberToken}`)
         .expect(403);
 

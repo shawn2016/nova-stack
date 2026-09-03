@@ -16,6 +16,7 @@ import type {
 } from '@nova/shared-types';
 import { In, Repository } from 'typeorm';
 import { JwtService } from '../../common/jwt/jwt.service';
+import { toApiId } from '../../common/utils/to-api-id';
 import {
   SysMenuEntity,
   SysPermissionEntity,
@@ -249,10 +250,10 @@ export class AuthService {
     const activeRoles = roles.filter((role) => role.status === 1);
     const roleCodes = activeRoles.map((role) => role.code);
 
-    const rolePermissions = await this.rolePermissionRepo.find();
-    const permissionIds = rolePermissions
-      .filter((link) => roleIds.includes(link.roleId))
-      .map((link) => link.permissionId);
+    const rolePermissions = await this.rolePermissionRepo.find({
+      where: { roleId: In(roleIds) },
+    });
+    const permissionIds = rolePermissions.map((link) => link.permissionId);
 
     if (!permissionIds.length) {
       return { roles: roleCodes, permissions: [] };
@@ -272,7 +273,7 @@ export class AuthService {
     permissions: string[],
   ): AdminInfo {
     return {
-      id: Number(user.id),
+      id: toApiId(user.id),
       username: user.username,
       nickname: user.nickname,
       avatar: user.avatar ?? '',
@@ -288,7 +289,7 @@ export class AuthService {
       .map((menu) => {
         const children = this.buildMenuTree(menus, menu.id);
         const node: MenuNode = {
-          id: Number(menu.id),
+          id: toApiId(menu.id),
           name: menu.name,
           path: menu.path ?? '',
           component: menu.component ?? '',

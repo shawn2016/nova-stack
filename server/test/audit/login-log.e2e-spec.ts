@@ -36,7 +36,7 @@ describe('Login log (e2e)', () => {
       const before = await countLoginLogs();
 
       await request(app.getHttpServer())
-        .post('/auth/login')
+        .post('/api/auth/login')
         .set('User-Agent', 'NovaE2E/1.0')
         .set('X-Forwarded-For', '203.0.113.10')
         .send({ username: 'admin', password: 'admin123' })
@@ -59,7 +59,7 @@ describe('Login log (e2e)', () => {
       const before = await countLoginLogs();
 
       await request(app.getHttpServer())
-        .post('/auth/login')
+        .post('/api/auth/login')
         .set('User-Agent', 'NovaE2E-Fail/1.0')
         .send({ username: 'admin', password: 'wrong-password' })
         .expect(401);
@@ -80,7 +80,7 @@ describe('Login log (e2e)', () => {
       const before = await countLoginLogs();
 
       await request(app.getHttpServer())
-        .post('/auth/login')
+        .post('/api/auth/login')
         .send({ username: 'ghost-user', password: 'any' })
         .expect(401);
 

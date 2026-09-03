@@ -21,16 +21,13 @@
   import '@wangeditor/editor/dist/css/style.css'
   import { onBeforeUnmount, onMounted, shallowRef, computed } from 'vue'
   import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
-  import { useUserStore } from '@/store/modules/user'
   import EmojiText from '@/utils/ui/emojo'
   import { IDomEditor, IToolbarConfig, IEditorConfig } from '@wangeditor/editor'
-  import request from '@/utils/http'
+  import { uploadFile } from '@/api/upload'
 
   defineOptions({ name: 'ArtWangEditor' })
 
   type InsertFnType = (url: string, alt: string, href: string) => void
-
-  const { VITE_API_URL } = import.meta.env
 
   // Props 定义
   interface Props {
@@ -50,9 +47,6 @@
     uploadConfig?: {
       maxFileSize?: number
       maxNumberOfFiles?: number
-      server?: string
-      // 是否开启自定义上传
-      isCustomUpload?: boolean
     }
   }
 
@@ -60,15 +54,13 @@
     height: '500px',
     mode: 'default',
     placeholder: '请输入内容...',
-    excludeKeys: () => ['fontFamily'],
-    isCustomUpload: false
+    excludeKeys: () => ['fontFamily']
   })
 
   const modelValue = defineModel<string>({ required: true })
 
   // 编辑器实例
   const editorRef = shallowRef<IDomEditor>()
-  const userStore = useUserStore()
 
   // 常量配置
   const DEFAULT_UPLOAD_CONFIG = {
@@ -77,11 +69,6 @@
     fieldName: 'file',
     allowedFileTypes: ['image/*']
   } as const
-
-  // 计算属性：上传服务器地址
-  const uploadServer = computed(
-    () => props.uploadConfig?.server || `${VITE_API_URL}/api/common/upload/wangeditor`
-  )
 
   // 合并上传配置
   const mergedUploadConfig = computed(() => ({
@@ -120,48 +107,21 @@
         maxFileSize: mergedUploadConfig.value.maxFileSize,
         maxNumberOfFiles: mergedUploadConfig.value.maxNumberOfFiles,
         allowedFileTypes: mergedUploadConfig.value.allowedFileTypes,
-        server: uploadServer.value,
-        headers: {
-          Authorization: userStore.accessToken
-        },
-        onSuccess() {
-          ElMessage.success(`图片上传成功 ${EmojiText[200]}`)
-        },
-        onError(file: File, err: any, res: any) {
-          console.error('图片上传失败:', err, res)
-          ElMessage.error(`图片上传失败 ${EmojiText[500]}`)
-        }
-      }
-    }
-  }
+        customUpload: async (file: File, insertFn: InsertFnType) => {
+          try {
+            const result = await uploadFile(file)
 
-  // 自定义上传
-  if (props.uploadConfig?.isCustomUpload && props.uploadConfig?.server && editorConfig.MENU_CONF) {
-    editorConfig.MENU_CONF.uploadImage.customUpload = async (file: File, insertFn: InsertFnType) => {
-      try {
-        const formData = new FormData()
-        formData.append(mergedUploadConfig.value.fieldName, file)
+            if (!result.url) {
+              throw new Error('上传失败，请检查服务端配置')
+            }
 
-        const response = await request.post<{ url: string; alt: string; href: string }>({
-          url: props.uploadConfig?.server,
-          data: formData,
-          headers: {
-            'Content-Type':'multipart/form-data',
-            Authorization: userStore.accessToken
+            insertFn(result.url, '', result.url)
+            ElMessage.success(`图片上传成功 ${EmojiText[200]}`)
+          } catch (error) {
+            console.error('图片上传失败:', error)
+            ElMessage.error(`图片上传失败 ${EmojiText[500]}`)
           }
-        })
-
-        const { url, alt, href } = response
-
-        if (!url) {
-          throw new Error('上传失败，请检查服务端配置')
         }
-
-        insertFn(url, alt, href)
-        ElMessage.success(`图片上传成功 ${EmojiText[200]}`)
-      } catch (error) {
-        console.error('图片上传失败:', error)
-        ElMessage.error(`图片上传失败 ${EmojiText[500]}`)
       }
     }
   }

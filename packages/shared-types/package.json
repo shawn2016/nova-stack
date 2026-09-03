@@ -18,7 +18,9 @@
   ],
   "scripts": {
     "build": "tsc",
-    "test": "vitest run"
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "lint": "eslint src"
   },
   "devDependencies": {
     "typescript": "^5.7.2",
