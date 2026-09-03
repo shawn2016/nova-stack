@@ -1,0 +1,8 @@
+{
+  "openspec_proposal": "openspec/changes/system-dept/proposal.md",
+  "openspec_design": "openspec/changes/system-dept/design.md",
+  "openspec_tasks": "openspec/changes/system-dept/tasks.md",
+  "openspec_delta_spec": "openspec/changes/system-dept/specs/dept-admin-ui/spec.md",
+  "handoff_context": "openspec/changes/system-dept/.comet/handoff/design-context.json",
+  "handoff_markdown": "openspec/changes/system-dept/.comet/handoff/design-context.md"
+}

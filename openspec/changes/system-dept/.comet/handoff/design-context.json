@@ -1,0 +1,15 @@
+{
+  "change": "system-dept",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "12c9e630ee4d1d6ab5696e0d1535d949081ab11a364b7114f646dcaed6a6d09a",
+  "files": [
+    { "path": "openspec/changes/system-dept/proposal.md", "sha256": "d76e8db817330d3b9b0860734958ba496ae9025beeb1dce755547ce837ab22c1" },
+    { "path": "openspec/changes/system-dept/design.md", "sha256": "38aedfa6f918e490798db7ee1b5868f1ba5d0f5873b950a5300feeab7f541573" },
+    { "path": "openspec/changes/system-dept/tasks.md", "sha256": "1d0a1f5f2dda07c0ac53e4d400e719265adb4805dcc62a42230bfab1ccbc1674" },
+    { "path": "openspec/changes/system-dept/specs/dept-admin-ui/spec.md", "sha256": "4725ed75cebf927d4b505aaba33c6cc90b52bdf0f8aa7c5e4f53056d7ae2554a" },
+    { "path": "openspec/changes/system-dept/specs/dept-api/spec.md", "sha256": "8bf4c505997b25f282d8eb183c76c76a50dbf50c255775a217d5f38171dc980c" }
+  ]
+}
