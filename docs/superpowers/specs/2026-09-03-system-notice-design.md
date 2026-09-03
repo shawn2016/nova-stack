@@ -2,6 +2,8 @@
 comet_change: system-notice
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-09-03-system-notice
+status: final
 ---
 
 # system-notice 深度技术设计

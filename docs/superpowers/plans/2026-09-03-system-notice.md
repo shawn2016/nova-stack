@@ -1,3 +1,7 @@
+---
+archived-with: 2026-09-03-system-notice
+status: final
+---
 # system-notice 实施计划
 
 base-ref: 22133c5d7c3bfc1512ff71c86b67d5f220202e74

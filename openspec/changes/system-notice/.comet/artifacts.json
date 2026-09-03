@@ -1,8 +1,0 @@
-{
-  "openspec_proposal": "openspec/changes/system-notice/proposal.md",
-  "openspec_design": "openspec/changes/system-notice/design.md",
-  "openspec_tasks": "openspec/changes/system-notice/tasks.md",
-  "openspec_delta_spec": "openspec/changes/system-notice/specs/notice-admin-ui/spec.md",
-  "handoff_context": "openspec/changes/system-notice/.comet/handoff/design-context.json",
-  "handoff_markdown": "openspec/changes/system-notice/.comet/handoff/design-context.md"
-}
