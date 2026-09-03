@@ -10,7 +10,7 @@
 
 ## 3. Seed
 
-- [ ] 3.1 permissions + 菜单 + 示例配置 — 验证：seed 测试
+- [x] 3.1 permissions + 菜单 + 示例配置 — 验证：seed 测试
 
 ## 4. Admin 站点配置 UI
 

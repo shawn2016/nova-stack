@@ -35,7 +35,7 @@ base-ref: 7a7af2d5732709c6239470e942ac69246865dcc9
 
 ## Task 3: Seed
 
-- [ ] 3.1 permissions + 菜单 + 示例配置 — 验证：seed 测试
+- [x] 3.1 permissions + 菜单 + 示例配置 — 验证：seed 测试
 
 ## Task 4: Admin 站点配置 UI
 
