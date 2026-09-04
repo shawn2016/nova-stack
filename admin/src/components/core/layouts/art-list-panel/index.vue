@@ -2,20 +2,29 @@
 <template>
   <div class="art-list-panel art-full-height">
     <ElCard class="art-list-panel__card art-table-card">
-      <nav v-if="tabs.length" class="art-list-panel__tabs" role="tablist">
-        <button
-          v-for="tab in tabs"
-          :key="tab.name"
-          type="button"
-          role="tab"
-          class="art-list-panel__tab"
-          :class="{ 'is-active': activeTab === tab.name }"
-          :aria-selected="activeTab === tab.name"
-          @click="handleTabChange(tab.name)"
-        >
-          {{ tab.label }}
-        </button>
-      </nav>
+      <header
+        v-if="tabs.length"
+        class="art-list-panel__head art-list-panel__head--tabs"
+        :class="`is-size-${componentSize}`"
+      >
+        <nav class="art-list-panel__tabs" role="tablist">
+          <button
+            v-for="tab in tabs"
+            :key="tab.name"
+            type="button"
+            role="tab"
+            class="art-list-panel__tab"
+            :class="{ 'is-active': activeTab === tab.name }"
+            :aria-selected="activeTab === tab.name"
+            @click="handleTabChange(tab.name)"
+          >
+            {{ tab.label }}
+          </button>
+        </nav>
+        <div v-if="$slots['head-actions']" class="art-list-panel__head-actions">
+          <slot name="head-actions" />
+        </div>
+      </header>
 
       <header v-else-if="title" class="art-list-panel__head" :class="`is-size-${componentSize}`">
         <h2 class="art-list-panel__title">{{ title }}</h2>
@@ -163,12 +172,12 @@
 
     &__tabs {
       display: flex;
+      flex: 1;
       flex-shrink: 0;
       gap: 0;
       align-items: stretch;
+      min-width: 0;
       padding: 0;
-      background: var(--el-fill-color-lighter);
-      border-bottom: 1px solid var(--el-border-color-lighter);
     }
 
     &__head {
@@ -179,6 +188,12 @@
       min-height: 48px;
       background: var(--el-fill-color-lighter);
       border-bottom: 1px solid var(--el-border-color-lighter);
+
+      &--tabs {
+        .art-list-panel__head-actions {
+          align-self: center;
+        }
+      }
 
       &.is-size-small {
         min-height: 56px;

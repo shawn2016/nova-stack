@@ -208,7 +208,7 @@ async function main() {
   writeFileSync(localPath, JSON.stringify(report, null, 2));
   console.log(`\n本地报告: ${localPath}`);
   console.log(
-    `覆盖: 模块 ${coverage.modules.tested}/${coverage.modules.total} · API 用例 ${coverage.apis.testCases} 条 · 目录接口 ${coverage.apis.totalInCatalog} 个`,
+    `覆盖: 模块 ${coverage.modules.tested}/${coverage.modules.total} · API 用例 ${coverage.apis.testCases} 条 · 场景 ${coverage.scenarios?.summary?.totalTested ?? 0}/${coverage.scenarios?.summary?.totalExpected ?? 0}（${coverage.scenarios?.summary?.coveragePct ?? 0}%）`,
   );
 
   try {

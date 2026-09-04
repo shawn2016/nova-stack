@@ -555,6 +555,107 @@ ${moduleList}
           </details>`;
       }
 
+      function buildScenarioGapMarkdown(run, scenarios) {
+        const items = scenarios?.items ?? [];
+        const sum = scenarios?.summary ?? {};
+        const lines = items
+          .filter((p) => p.gaps?.length)
+          .map((p) => {
+            const gapList = p.gaps.map((g) => `\`${g.id}\` ${g.name}`).join('、');
+            const tested = p.tested.map((t) => `\`${t.id}\``).join('、') || '无';
+            return `### ${p.name} (\`${p.path}\`)
+- 模块：${p.moduleId}
+- 源码：\`${p.viewFile}\`
+- 已测场景：${tested}
+- **待补场景**：${gapList}`;
+          })
+          .join('\n\n');
+
+        return `# Browser E2E 场景缺口补全
+
+## 背景
+- Run ID：\`${run.runId}\`
+- 页面数：${sum.pages ?? 0} · 期望场景 ${sum.totalExpected ?? 0} · 已测 ${sum.totalTested ?? 0} · **缺口 ${sum.totalGaps ?? 0}**
+- 场景覆盖率：**${sum.coveragePct ?? 0}%**（当前 smoke 多为 \`list\`，CRUD 场景需逐步补）
+
+## 说明
+- **期望场景**：扫描 Admin Vue 源码推断（搜索/新增/编辑/删除按钮等）
+- **已测场景**：spec 中 \`@page\` + \`@scenario\` 标签
+- 写 spec 规范见 \`docs/standards/e2e-scenarios.md\`
+
+## 待补页面
+
+${lines || '暂无场景缺口'}
+
+## 单页能力扫描
+\`\`\`bash
+pnpm verify:scan-pages --path /system/user
+\`\`\`
+
+## 复测
+\`\`\`bash
+pnpm verify --tier browser-smoke
+\`\`\`
+`;
+      }
+
+      function renderScenarioMatrix(scenarios) {
+        if (!scenarios?.items?.length) return '';
+        const sum = scenarios.summary ?? {};
+        const rows = scenarios.items
+          .map((p) => {
+            const expected = p.expected
+              .map((e) => {
+                const hit = p.tested.find((t) => t.id === e.id);
+                return hit
+                  ? `<span class="tag ok" title="${escapeHtml(p.tested.find((t) => t.id === e.id)?.testTitle ?? '')}">${e.name}✓</span>`
+                  : `<span class="tag missing">${e.name}</span>`;
+              })
+              .join(' ');
+            const testedOnly = p.tested
+              .filter((t) => !p.expected.some((e) => e.id === t.id))
+              .map((t) => `<span class="tag">${t.name}?</span>`)
+              .join(' ');
+            return `
+            <tr>
+              <td>${p.name}<div class="mono" style="color:var(--muted);font-size:11px;">${p.path}</div></td>
+              <td>${p.moduleId}</td>
+              <td>${expected}${testedOnly}</td>
+              <td>${p.tested.length}/${p.expected.length}</td>
+              <td><strong style="color:${p.coveragePct >= 80 ? 'var(--pass)' : p.coveragePct >= 40 ? 'var(--warn)' : 'var(--fail)'}">${p.coveragePct}%</strong></td>
+            </tr>`;
+          })
+          .join('');
+
+        return `
+          <details class="section" open>
+            <summary>
+              <span>页面场景矩阵（${sum.pages ?? 0} 页 · 覆盖 ${sum.coveragePct ?? 0}%）</span>
+              <span style="color:var(--muted);font-size:12px;font-weight:400;">Vue 扫描期望 vs @scenario 已测</span>
+            </summary>
+            <div class="section-body">
+              <div class="gap-banner">
+                期望场景 <strong>${sum.totalExpected ?? 0}</strong> 个 ·
+                已测 <strong>${sum.totalTested ?? 0}</strong> ·
+                缺口 <strong style="color:var(--warn)">${sum.totalGaps ?? 0}</strong>
+                <span style="color:var(--muted);margin-left:8px;">${sum.note ?? ''}</span>
+              </div>
+              <div style="display:flex;justify-content:flex-end;margin-bottom:8px;">
+                <button class="secondary" type="button" id="btn-copy-scenario-gaps">一键复制场景缺口（发给 AI）</button>
+              </div>
+              <div class="table-wrap" style="max-height:360px;">
+                <table>
+                  <thead><tr><th>页面</th><th>模块</th><th>场景（绿=已测 红=待补）</th><th>已测/期望</th><th>覆盖</th></tr></thead>
+                  <tbody>${rows}</tbody>
+                </table>
+              </div>
+              <p style="color:var(--muted);font-size:11px;margin:8px 0 0;">
+                写页 / 写 E2E 前运行 <code>pnpm verify:scan-pages</code> 查看单页能力清单
+              </p>
+            </div>
+          </details>`;
+      }
+
       function renderCumulative() {
         if (!cumulativeMatrix?.modules?.length) return '';
         const rows = cumulativeMatrix.modules
@@ -598,6 +699,38 @@ ${moduleList}
           </details>`;
       }
 
+      function formatCaseDetailHtml(c) {
+        const tags = (c.tags ?? []).filter((t) => t.startsWith('@page:') || t.startsWith('@scenario:')).join(' ');
+        const loc = c.error?.location;
+        const locHtml = loc
+          ? `<p style="color:var(--muted);font-size:12px;margin:0 0 10px;">📍 ${escapeHtml(loc.file ?? '')}:${loc.line ?? '?'}</p>`
+          : '';
+        const snippet = c.error?.snippet
+          ? `<details open><summary style="cursor:pointer;color:var(--accent);margin:8px 0;">代码片段</summary><pre>${escapeHtml(c.error.snippet)}</pre></details>`
+          : '';
+        const attachments = (c.attachments ?? [])
+          .map(
+            (a) =>
+              `<li><span class="mono">${escapeHtml(a.name)}</span> · <span class="mono">${escapeHtml(a.path)}</span></li>`,
+          )
+          .join('');
+        const attachHtml = attachments
+          ? `<details><summary style="cursor:pointer;color:var(--accent);margin:8px 0;">附件（trace / 上下文）</summary><ul style="margin:8px 0;padding-left:18px;font-size:12px;">${attachments}</ul><p style="color:var(--muted);font-size:11px;">本地查看 trace：<code>npx playwright show-trace &lt;path&gt;</code></p></details>`
+          : '';
+
+        return `
+          <div style="margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+            <span class="badge ${c.status}">${c.status}</span>
+            ${tags ? `<span style="color:var(--muted);font-size:12px;">${escapeHtml(tags)}</span>` : ''}
+          </div>
+          ${locHtml}
+          ${c.error?.message ? `<pre>${escapeHtml(c.error.message)}</pre>` : '<p style="color:var(--muted)">无错误信息（请重新跑 pnpm verify 以采集 Playwright 错误详情）</p>'}
+          ${snippet}
+          ${c.error?.stack ? `<details><summary style="cursor:pointer;color:var(--accent);margin:8px 0;">完整 Stack</summary><pre>${escapeHtml(c.error.stack)}</pre></details>` : ''}
+          ${attachHtml}
+        `;
+      }
+
       function bindCaseActions(run, bundles) {
         document.querySelectorAll('[data-case-view]').forEach((btn) => {
           btn.addEventListener('click', () => {
@@ -607,19 +740,18 @@ ${moduleList}
             if (!c) return;
             openModal(
               c.title ?? c.id,
-              `${c.tierId} · ${c.module ?? '-'} · ${c.durationMs ?? 0}ms`,
+              `${c.tierId} · ${c.module ?? '-'} · ${c.page ?? ''} · ${c.durationMs ?? 0}ms`,
+              formatCaseDetailHtml(c),
               `
-                <div style="margin-bottom:10px;"><span class="badge ${c.status}">${c.status}</span></div>
-                ${c.error?.message ? `<pre>${escapeHtml(c.error.message)}</pre>` : '<p style="color:var(--muted)">无错误信息</p>'}
-                ${c.error?.stack ? `<details><summary style="cursor:pointer;color:var(--accent);margin:8px 0;">Stack</summary><pre>${escapeHtml(c.error.stack)}</pre></details>` : ''}
-              `,
-              `
-                ${c.status === 'fail' && bundle ? `<button data-modal-copy>复制 AI 上下文</button>` : ''}
+                ${c.status === 'fail' ? `<button data-modal-copy>复制 AI 上下文</button>` : ''}
                 <button class="secondary" data-modal-retest>复测 ${c.tierId ?? 'tier'}</button>
                 <button class="secondary" id="modal-close-btn">关闭</button>
               `,
             );
-            document.querySelector('[data-modal-copy]')?.addEventListener('click', () => copyText(bundle.markdown));
+            document.querySelector('[data-modal-copy]')?.addEventListener('click', () => {
+              if (bundle?.markdown) copyText(bundle.markdown);
+              else copyText(`${c.title}\n\n${c.error?.message ?? ''}\n\n${c.error?.stack ?? ''}`);
+            });
             document.querySelector('[data-modal-retest]')?.addEventListener('click', () =>
               retest({ tier: c.tierId, command: c.retestCommand }),
             );
@@ -657,6 +789,7 @@ ${moduleList}
         const apis = cov.apis ?? {};
         const tc = cov.testCases ?? {};
         const gaps = cov.gaps ?? {};
+        const scenarios = cov.scenarios ?? {};
         const detail = document.getElementById('detail');
         const failedTiers = [...new Set((run.cases ?? []).filter((c) => c.status === 'fail').map((c) => c.tierId))];
 
@@ -726,6 +859,11 @@ ${moduleList}
               <div class="sub">目录 ${apis.totalInCatalog ?? 0} 接口</div>
             </div>
             <div class="coverage-card">
+              <div class="label">场景覆盖</div>
+              <div class="value">${scenarios.summary?.coveragePct ?? 0}%</div>
+              <div class="sub">已测 ${scenarios.summary?.totalTested ?? 0}/${scenarios.summary?.totalExpected ?? 0} · 缺 ${scenarios.summary?.totalGaps ?? 0}</div>
+            </div>
+            <div class="coverage-card">
               <div class="label">Browser 缺口</div>
               <div class="value" style="color:var(--warn)">${(gaps.modulesMissingBrowserSpec ?? []).length}</div>
               <div class="sub">Admin 缺 ${gaps.adminPages?.untested ?? 0} 页</div>
@@ -737,6 +875,7 @@ ${moduleList}
             </div>
           </div>
 
+          ${renderScenarioMatrix(scenarios)}
           ${renderGaps(gaps, mod)}
           ${renderCumulative()}
 
@@ -813,11 +952,11 @@ ${moduleList}
                           <span class="badge ${c.status}">${c.status}</span>
                           <strong style="margin-left:6px;font-size:13px;">${c.title ?? c.id}</strong>
                           <div style="color:var(--muted);font-size:11px;margin-top:4px;">${c.module ?? '-'} · ${c.durationMs ?? 0}ms</div>
-                          ${c.status === 'fail' && c.error?.message ? `<pre style="margin-top:8px;max-height:80px;">${escapeHtml(c.error.message.slice(0, 400))}${c.error.message.length > 400 ? '…' : ''}</pre>` : ''}
+                          ${c.status === 'fail' && c.error?.message ? `<pre style="margin-top:8px;max-height:80px;">${escapeHtml((c.error.message || '').slice(0, 400))}${(c.error.message || '').length > 400 ? '…' : ''}</pre>` : ''}
                         </div>
                         <div class="case-actions">
                           <button class="secondary" data-case-view="${c.id}">查看</button>
-                          ${c.status === 'fail' && bundle ? `<button data-case-copy="${c.id}">复制</button>` : ''}
+                          ${c.status === 'fail' ? `<button data-case-copy="${c.id}">复制</button>` : ''}
                           <button class="secondary" data-case-retest data-tier="${c.tierId}" data-cmd="${c.retestCommand ?? 'pnpm verify'}">复测</button>
                         </div>
                       </div>`;
@@ -841,6 +980,9 @@ ${moduleList}
         });
         detail.querySelector('#btn-copy-browser-gaps')?.addEventListener('click', () => {
           copyText(buildBrowserGapMarkdown(run, gaps));
+        });
+        detail.querySelector('#btn-copy-scenario-gaps')?.addEventListener('click', () => {
+          copyText(buildScenarioGapMarkdown(run, scenarios));
         });
 
         bindCaseActions(run, bundles);

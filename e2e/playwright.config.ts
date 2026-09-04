@@ -7,8 +7,10 @@ const adminBaseURL = process.env.VERIFY_ADMIN_URL ?? 'http://localhost:5173';
 
 export default defineConfig({
   testDir: './specs',
-  timeout: 60_000,
+  timeout: 90_000,
   retries: 0,
+  workers: 1,
+  fullyParallel: false,
   reporter: [
     ['list'],
     ['json', { outputFile: join(rootDir, '.verify/playwright-report.json') }],

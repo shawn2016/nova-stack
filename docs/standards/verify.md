@@ -72,7 +72,8 @@ Hub 报告中的 **覆盖概览** 包含：
 ## 写用例
 
 - **API**：继续写在 `server/test/**/*.e2e-spec.ts`（规范见 `server.md`）
-- **浏览器**：写在 `e2e/specs/`，用 `@smoke`、`@module:xxx` 标签
+- **浏览器**：写在 `e2e/specs/`，用 `@smoke`、`@module:xxx`、**`@page:`、`@scenario:`** 标签
+- **场景规范**：[`e2e-scenarios.md`](./e2e-scenarios.md) · 扫描页面能力 `pnpm verify:scan-pages`
 
 ## AI 修复流程
 

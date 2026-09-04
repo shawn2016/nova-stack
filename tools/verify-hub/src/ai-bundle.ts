@@ -49,6 +49,8 @@ export function buildAiFixBundle(report: VerifyReport, caseItem: VerifyCase): st
 ${caseItem.error?.message ?? '未知错误'}
 ${caseItem.error?.stack ?? ''}
 \`\`\`
+${caseItem.error?.snippet ? `\n### 代码片段\n\`\`\`\n${caseItem.error.snippet}\n\`\`\`` : ''}
+${caseItem.error?.location ? `\n### 定位\n\`${caseItem.error.location.file}:${caseItem.error.location.line}\`` : ''}
 
 ## 建议查看文件
 ${files}

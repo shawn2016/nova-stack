@@ -11,6 +11,7 @@
     "verify:tier:static": "pnpm --filter @nova/shared-types test && pnpm run build:shared-types",
     "verify:tier:api-e2e": "pnpm --filter @nova/server exec jest --config ./test/jest-e2e.json --runInBand --json --outputFile=../.verify/jest-e2e-report.json",
     "verify:tier:browser-smoke": "pnpm exec playwright test -c e2e/playwright.config.ts",
+    "verify:scan-pages": "node scripts/verify-page-scan.mjs",
     "postinstall": "pnpm run build:shared-types",
     "predev": "pnpm run build:shared-types && rm -f server/*.tsbuildinfo && pnpm --filter @nova/server build",
     "predev:all": "pnpm run predev",
