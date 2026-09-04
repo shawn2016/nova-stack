@@ -33,6 +33,7 @@
 | `uni-app/` | `@nova/uni-app` | uni-app H5/小程序 |
 | `packages/shared-types/` | `@nova/shared-types` | 三端共享 TypeScript 类型 |
 | `openspec/` | — | OpenSpec 规格与变更 |
+| `docs/standards/` | — | 编码规范（写码必查） |
 | `docs/superpowers/` | — | 设计文档、计划、验证报告 |
 
 ### 常用命令
@@ -65,8 +66,10 @@ pnpm --filter @nova/server test:e2e
 
 ### Agent 协作约定
 
+- **AI 写码流程**：[`docs/standards/ai-checklist.md`](./docs/standards/ai-checklist.md) → [`AGENTS.md`](./AGENTS.md)
+- **新需求分支**：从 `main` 自动建分支，禁止 worktree，不问分支名；归档 merge 到 `main`（[`docs/standards/git.md`](./docs/standards/git.md)）
 - **与用户沟通使用简体中文**
-- **commit message 使用中文**，格式：`feat:` / `fix:` / `chore:` + 简短描述
-- 仅在被要求时创建 commit / push / PR
-- 修改前先读周边代码，保持现有风格；避免过度工程
-- `server` 开发若 `nest start --watch` 报 `dist/main` 缺失，可先 `rm -f server/*.tsbuildinfo && pnpm --filter @nova/server build` 再启动
+- **commit message 使用中文**，格式见 [`docs/standards/git.md`](./docs/standards/git.md)
+- 仅在被要求时 commit / push / PR
+- 修改前先读周边代码；避免过度工程
+- `server` 开发若 `nest start --watch` 报 `dist/main` 缺失：`rm -f server/*.tsbuildinfo && pnpm --filter @nova/server build`

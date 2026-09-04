@@ -168,6 +168,10 @@ comet state transition <change-name> verify-fail
   - Option B: After user selects B, run `comet state transition <change-name> verify-fail`, then invoke `/comet-build`; `/comet-build`'s Spec Incremental Update rules will load the Superpowers `brainstorming` skill to update Design Doc + delta spec
   - Option C: Confirm deviation is acceptable, continue verification (design doc will be marked as `superseded-by-main-spec` during archiving)
 
+### 2c. 编码规范自检（本项目 MUST）
+
+Verify 报告须增加 **「编码规范」** 一节：对照 [`docs/standards/ai-checklist.md`](../../../docs/standards/ai-checklist.md) 写码后清单，列出已勾选项。若改动涉及 Entity/Admin/Server 但未满足 MUST 项，且用户未明确豁免 → 不得判定 Verify 通过。
+
 ### 3. Record Verification Evidence
 
 Save the verification report and record it in `.comet.yaml`. Do not handle, merge, or discard branches in verify and do not write `branch_status: handled`: archive creates spec and metadata changes that belong in the final commit, so `/comet-archive` owns branch finishing after that commit. Do not set `verify_result: pass` manually; use the phase guard.

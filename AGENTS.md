@@ -20,53 +20,71 @@
 
 ---
 
-## 项目说明
+# nova-stack Agent 协作与编码规范
 
-**nova-stack** 是基于 pnpm monorepo 的全栈多端项目：NestJS 后端 + Vue3 Admin + uni-app C 端，共享类型包 `@nova/shared-types`。
+**AI 写码主流程**：[`docs/standards/ai-checklist.md`](./docs/standards/ai-checklist.md) → 专题 → 标杆文件 → 写码后勾选。
 
-### 目录结构
+项目概览：[`CLAUDE.md`](./CLAUDE.md)。细则索引：[`docs/standards/README.md`](./docs/standards/README.md)。
 
-| 路径 | 包名 | 说明 |
-|------|------|------|
-| `server/` | `@nova/server` | NestJS API、TypeORM、JWT/RBAC |
-| `admin/` | `@nova/admin` | Vue3 + Vite 管理后台 |
-| `uni-app/` | `@nova/uni-app` | uni-app H5/小程序 |
-| `packages/shared-types/` | `@nova/shared-types` | 三端共享 TypeScript 类型 |
-| `openspec/` | — | OpenSpec 规格与变更 |
-| `docs/superpowers/` | — | 设计文档、计划、验证报告 |
+## 项目速览
 
-### 常用命令
+| 路径 | 说明 |
+|------|------|
+| `server/` | NestJS API、TypeORM、JWT/RBAC |
+| `admin/` | Vue3 Admin |
+| `uni-app/` | C 端 |
+| `packages/shared-types/` | 三端类型（**改 API 先改这里**） |
+| `docs/standards/` | 编码规范 |
 
 ```bash
-pnpm install
-pnpm dev              # server + admin（predev 自动构建 shared-types）
-pnpm dev:all          # server + admin + uni-app H5
-pnpm seed             # 初始化 RBAC + 示例数据（需 MySQL）
-pnpm --filter @nova/server test
-pnpm --filter @nova/server test:e2e
+pnpm install && pnpm dev    # 需 .env + MySQL seed
+pnpm lint                   # server + shared-types
 ```
 
-各子包环境变量：复制 `server/.env.example`、`admin/.env.example`、`uni-app/.env.example` 为 `.env`。
+Admin `admin/admin123` · 会员 `13800138000/member123`（seed 后）
 
-### 本地开发账号（seed 后）
+---
 
-| 端 | 账号 | 密码 |
-|----|------|------|
-| Admin | `admin` | `admin123` |
-| 会员 | `13800138000` | `member123` |
+## 铁律（MUST）
 
-### Comet 工作流
+| # | 规则 |
+|---|------|
+| 1 | 改 API → 先 `@nova/shared-types`，再 server/admin |
+| 2 | 新权限 → `@RequirePermission` + `PERMISSION_SEEDS`（+ `MENU_SEEDS` 若有页） |
+| 3 | Entity 状态/外键/可空 → JSDoc + `@Column({ comment })` |
+| 4 | Admin CRUD → `ArtListPanel` + `useTable` + 独立 `*-dialog.vue` |
+| 5 | Admin 写按钮 → `v-permission` 与后端码一致 |
+| 6 | 导出 util / 复杂逻辑 → 一行中文 JSDoc |
+| 7 | 最小 diff；改前读相邻文件 |
+| 8 | 完成前跑 [ai-checklist.md §写码后](./docs/standards/ai-checklist.md#写码后完成前勾选) |
 
-- 默认工作流：**Classic**（`default_workflow: classic`）
-- 入口：`/comet` → 解析后进入 `/comet-classic`
-- 其他：`/comet-hotfix`（快速修复）、`/comet-tweak`（小改动）
-- 产物语言：项目级 `language: zh-CN`；Classic 子配置 `classic.language` 见 `.comet/config.yaml`
-- 状态查询：`comet status`、`comet dashboard`
+标杆：`admin/src/views/system/user/index.vue`、`user/modules/user-dialog.vue`
 
-### Agent 协作约定
+---
 
-- **与用户沟通使用简体中文**
-- **commit message 使用中文**，格式：`feat:` / `fix:` / `chore:` + 简短描述
-- 仅在被要求时创建 commit / push / PR
-- 修改前先读周边代码，保持现有风格；避免过度工程
-- `server` 开发若 `nest start --watch` 报 `dist/main` 缺失，可先 `rm -f server/*.tsbuildinfo && pnpm --filter @nova/server build` 再启动
+## Git / 分支（MUST — 勿问用户）
+
+- **新需求**：`git checkout main` → `git checkout -b comet/<change-name>`（或 `feat/` / `fix/`）
+- **禁止** `git worktree`；只在主仓库目录开发
+- **不要询问**「用什么分支」
+- **Archive 完成**：merge 到 `main`；push/PR 仅在被要求时
+
+详见 [`docs/standards/git.md`](./docs/standards/git.md)。
+
+---
+
+## 提交前验证
+
+```bash
+pnpm lint
+pnpm --filter @nova/shared-types build   # 若改了 shared-types
+pnpm --filter @nova/server test          # 若改了 server
+pnpm --filter @nova/admin build          # 若改了 admin
+```
+
+---
+
+## Comet
+
+`/comet` · `/comet-hotfix` · `/comet-tweak` · `comet status`  
+分支：`comet/<change-name>`，**不用 worktree**；Verify 附 [ai-checklist](./docs/standards/ai-checklist.md)；Archive 后 **merge 到 `main`**

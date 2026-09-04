@@ -1,0 +1,29 @@
+---
+description: nova-stack 编码规范 — AI 写码前读 checklist，按路径读专题
+alwaysApply: true
+---
+
+# 编码规范（AI）
+
+写/改 **业务代码** 前：
+
+1. 打开 [`docs/standards/ai-checklist.md`](docs/standards/ai-checklist.md)，完成对应「写码前」项
+2. 完成前勾选「写码后」适用项；未勾满不得声称完成
+
+按路径读专题（细则勿凭记忆）：
+
+| 路径 | 专题 |
+|------|------|
+| `server/src/database/entities/**` | `docs/standards/database.md` |
+| `server/src/modules/**` | `docs/standards/server.md` |
+| `admin/src/views/**` | `docs/standards/admin-ui.md` |
+| `admin/src/utils/**`、`server/src/common/**` | `docs/standards/comments.md` |
+| `packages/shared-types/**` | `docs/standards/server.md` §类型 |
+
+**Admin 新 CRUD 页**：先读 `user/index.vue` + `user-dialog.vue` 再写。
+
+**新 API**：必须同步 `shared-types` + `init.seed.ts` 权限（+ 菜单若有页面）。
+
+铁律摘要见 [`AGENTS.md`](AGENTS.md)。
+
+**Git（项目约定）**：新需求从 `main` 自动建分支，禁止 worktree，不问分支名；Archive 后 merge 到 `main`（[`docs/standards/git.md`](docs/standards/git.md)）。
