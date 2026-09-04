@@ -1,0 +1,33 @@
+{
+  "$schema": "./schema.json",
+  "title": "nova.verify-report.v1",
+  "type": "object",
+  "required": ["schema", "runId", "project", "startedAt", "finishedAt", "summary", "tiers", "cases"],
+  "properties": {
+    "schema": { "const": "nova.verify-report.v1" },
+    "runId": { "type": "string" },
+    "project": { "type": "string" },
+    "startedAt": { "type": "string" },
+    "finishedAt": { "type": "string" },
+    "durationMs": { "type": "number" },
+    "git": {
+      "type": "object",
+      "properties": {
+        "branch": { "type": "string" },
+        "commit": { "type": "string" },
+        "dirty": { "type": "boolean" }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "total": { "type": "number" },
+        "passed": { "type": "number" },
+        "failed": { "type": "number" },
+        "skipped": { "type": "number" }
+      }
+    },
+    "tiers": { "type": "array" },
+    "cases": { "type": "array" }
+  }
+}

@@ -1,0 +1,22 @@
+project: nova-stack
+hub:
+  url: http://localhost:9470
+  token: dev-local-token
+tiers:
+  - id: static
+    title: 静态检查
+    command: pnpm run verify:tier:static
+  - id: api-e2e
+    title: Server API E2E
+    command: pnpm run verify:tier:api-e2e
+  - id: browser-smoke
+    title: 浏览器 Smoke
+    command: pnpm run verify:tier:browser-smoke
+    skipEnv: VERIFY_SKIP_BROWSER
+modules:
+  static:
+    tags: ['@static']
+  api:
+    tags: ['@api-e2e']
+  auth:
+    tags: ['@smoke', '@module:auth']

@@ -1,0 +1,16 @@
+{
+  "change": "verify-loop-mvp",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "1dd8b4fbe9d4dc86c76c8fd40b4283c71b6b263f66784d34a353409ba048615f",
+  "files": [
+    { "path": "openspec/changes/verify-loop-mvp/proposal.md", "sha256": "92fc89b9b07c0efb3cf9678207e57aba92e1f65d74397dcc9a807597e724b513" },
+    { "path": "openspec/changes/verify-loop-mvp/design.md", "sha256": "a0d3376878edf8e04968758eb1ba2d0f5ccf21ba8456a6426660083d3b25ea9a" },
+    { "path": "openspec/changes/verify-loop-mvp/tasks.md", "sha256": "35f2a7714a8de42862ecb3859ffd92458ca649ec36f77edcf135091924074fee" },
+    { "path": "openspec/changes/verify-loop-mvp/specs/monorepo-workspace/spec.md", "sha256": "2c6dc7431d17cde1fb162930aa87adf4103c5bfa78b32edc3b3d44bf11e33ec7" },
+    { "path": "openspec/changes/verify-loop-mvp/specs/verify-hub/spec.md", "sha256": "99ff66c9786325bffb16f562ac5ae92d08117381bafb5aa07c5a013d77cb4446" },
+    { "path": "openspec/changes/verify-loop-mvp/specs/verify-runner/spec.md", "sha256": "509d3baf24e0a9ad792b3e206d5e76501161eeb0dd6b5f4109a492521869a10d" }
+  ]
+}

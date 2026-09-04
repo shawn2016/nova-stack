@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Verify Hub · nova-stack</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #0f1419;
+        --card: #1a2332;
+        --border: #2d3a4f;
+        --text: #e7ecf3;
+        --muted: #8b98a9;
+        --pass: #3dd68c;
+        --fail: #ff6b6b;
+        --skip: #f0b429;
+        --accent: #5b9cff;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.5;
+      }
+      header {
+        padding: 20px 24px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+      }
+      h1 { margin: 0; font-size: 20px; }
+      .stats {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .stats strong { color: var(--text); }
+      main { display: grid; grid-template-columns: 360px 1fr; min-height: calc(100vh - 73px); }
+      @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+      .panel { border-right: 1px solid var(--border); overflow: auto; }
+      .panel:last-child { border-right: none; }
+      .panel-head { padding: 16px 20px; border-bottom: 1px solid var(--border); font-weight: 600; }
+      .run-item {
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--border);
+        cursor: pointer;
+      }
+      .run-item:hover, .run-item.active { background: rgba(91, 156, 255, 0.08); }
+      .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .badge.pass { background: rgba(61, 214, 140, 0.15); color: var(--pass); }
+      .badge.fail { background: rgba(255, 107, 107, 0.15); color: var(--fail); }
+      .detail { padding: 20px 24px; }
+      .tier {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+        background: var(--card);
+      }
+      .case {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+        background: rgba(255, 255, 255, 0.02);
+      }
+      button {
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 8px 12px;
+        cursor: pointer;
+        font-size: 13px;
+      }
+      button.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
+      pre {
+        background: #0b1017;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 12px;
+        overflow: auto;
+        font-size: 12px;
+        white-space: pre-wrap;
+      }
+      .empty { padding: 40px 24px; color: var(--muted); }
+      .coverage-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      .coverage-card {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 12px 14px;
+        background: var(--card);
+      }
+      .coverage-card .label { color: var(--muted); font-size: 12px; }
+      .coverage-card .value { font-size: 22px; font-weight: 700; margin-top: 4px; }
+      .table-wrap {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 16px;
+      }
+      table { width: 100%; border-collapse: collapse; font-size: 13px; }
+      th, td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; }
+      th { background: rgba(255,255,255,0.03); color: var(--muted); font-weight: 600; }
+      tr:last-child td { border-bottom: none; }
+      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+      details { margin-bottom: 16px; }
+      details summary { cursor: pointer; color: var(--accent); margin-bottom: 8px; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Verify Hub</h1>
+      <div class="stats" id="stats">加载统计中…</div>
+    </header>
+    <main>
+      <section class="panel">
+        <div class="panel-head">最近运行</div>
+        <div id="run-list" class="empty">加载中…</div>
+      </section>
+      <section class="panel detail" id="detail">
+        <div class="empty">选择左侧一次运行查看详情</div>
+      </section>
+    </main>
+    <script>
+      const params = new URLSearchParams(location.search);
+      let selectedId = params.get('run');
+
+      async function loadStats() {
+        const res = await fetch('/api/stats');
+        const data = await res.json();
+        document.getElementById('stats').innerHTML = `
+          <span>总运行 <strong>${data.totalRuns}</strong></span>
+          <span>近 20 次通过率 <strong>${data.recentPassRate}%</strong></span>
+          <span>平均耗时 <strong>${(data.avgDurationMs / 1000).toFixed(1)}s</strong></span>
+        `;
+      }
+
+      async function loadRuns() {
+        const res = await fetch('/api/runs?limit=30');
+        const data = await res.json();
+        const list = document.getElementById('run-list');
+        if (!data.items?.length) {
+          list.className = 'empty';
+          list.textContent = '暂无运行记录。请先执行 pnpm verify';
+          return;
+        }
+        list.className = '';
+        list.innerHTML = data.items
+          .map(
+            (run) => `
+          <div class="run-item ${run.id === selectedId ? 'active' : ''}" data-id="${run.id}">
+            <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;">
+              <span class="badge ${run.status}">${run.status === 'pass' ? '通过' : '失败'}</span>
+              <span style="color:var(--muted);font-size:12px;">${(run.durationMs / 1000).toFixed(1)}s</span>
+            </div>
+            <div style="margin-top:6px;font-size:13px;">${run.project}</div>
+            <div style="color:var(--muted);font-size:12px;">${run.startedAt}</div>
+            <div style="font-size:12px;margin-top:4px;">${run.summary.passed}/${run.summary.total} 通过</div>
+          </div>`,
+          )
+          .join('');
+        list.querySelectorAll('.run-item').forEach((el) => {
+          el.addEventListener('click', () => {
+            selectedId = el.dataset.id;
+            history.replaceState({}, '', `?run=${selectedId}`);
+            loadRuns();
+            loadDetail(selectedId);
+          });
+        });
+        if (selectedId) loadDetail(selectedId);
+      }
+
+      async function copyText(text) {
+        await navigator.clipboard.writeText(text);
+        alert('已复制到剪贴板');
+      }
+
+      async function loadDetail(id) {
+        const res = await fetch(`/api/runs/${id}`);
+        if (!res.ok) return;
+        const run = await res.json();
+        const bundles = run.aiFixBundles ?? [];
+        const cov = run.coverage ?? {};
+        const mod = cov.modules ?? {};
+        const apis = cov.apis ?? {};
+        const tc = cov.testCases ?? {};
+        const detail = document.getElementById('detail');
+
+        const moduleRows = (mod.items ?? [])
+          .map(
+            (m) => `
+          <tr>
+            <td>${m.name}</td>
+            <td><span class="badge ${m.status === 'pass' ? 'pass' : m.status === 'fail' ? 'fail' : 'skip'}">${m.status}</span></td>
+            <td>${m.testCount}</td>
+            <td>${(m.layers ?? []).join(', ') || '-'}</td>
+          </tr>`,
+          )
+          .join('');
+
+        const apiModuleRows = (apis.byModule ?? [])
+          .slice(0, 12)
+          .map((row) => `<tr><td>${row.module}</td><td>${row.endpoints} 个接口</td></tr>`)
+          .join('');
+
+        const apiEndpointRows = (apis.items ?? [])
+          .slice(0, 80)
+          .map(
+            (api) => `
+          <tr>
+            <td class="mono">${api.method}</td>
+            <td class="mono">${api.path}</td>
+            <td>${api.module}</td>
+          </tr>`,
+          )
+          .join('');
+
+        const caseGroups = {};
+        for (const c of run.cases ?? []) {
+          const key = c.tierId ?? 'other';
+          if (!caseGroups[key]) caseGroups[key] = [];
+          caseGroups[key].push(c);
+        }
+
+        detail.innerHTML = `
+          <h2 style="margin:0 0 8px;">Run ${run.runId}</h2>
+          <p style="color:var(--muted);margin:0 0 16px;">
+            ${run.git?.branch ?? ''} @ ${(run.git?.commit ?? '').slice(0, 8)} · ${run.startedAt}
+          </p>
+
+          <h3>覆盖概览</h3>
+          <div class="coverage-grid">
+            <div class="coverage-card">
+              <div class="label">业务模块</div>
+              <div class="value">${mod.tested ?? 0}/${mod.total ?? 0}</div>
+            </div>
+            <div class="coverage-card">
+              <div class="label">API 用例</div>
+              <div class="value">${apis.testCases ?? 0}</div>
+            </div>
+            <div class="coverage-card">
+              <div class="label">接口目录</div>
+              <div class="value">${apis.totalInCatalog ?? 0}</div>
+            </div>
+            <div class="coverage-card">
+              <div class="label">总用例</div>
+              <div class="value">${tc.total ?? run.summary?.total ?? 0}</div>
+            </div>
+          </div>
+
+          <h3>模块覆盖</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>模块</th><th>状态</th><th>用例数</th><th>覆盖层</th></tr></thead>
+              <tbody>${moduleRows || '<tr><td colspan="4">暂无数据</td></tr>'}</tbody>
+            </table>
+          </div>
+
+          <h3>API 接口</h3>
+          <p style="color:var(--muted);font-size:13px;margin:0 0 8px;">
+            目录中共 ${apis.totalInCatalog ?? 0} 个唯一接口；本次 API E2E 执行 ${apis.testCases ?? 0} 条用例。
+          </p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>API 套件</th><th>接口数</th></tr></thead>
+              <tbody>${apiModuleRows || '<tr><td colspan="2">暂无</td></tr>'}</tbody>
+            </table>
+          </div>
+          <details>
+            <summary>展开全部接口目录（${apis.totalInCatalog ?? 0}）</summary>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>方法</th><th>路径</th><th>模块</th></tr></thead>
+                <tbody>${apiEndpointRows}</tbody>
+              </table>
+            </div>
+          </details>
+
+          <h3>Tier</h3>
+          ${(run.tiers ?? [])
+            .map(
+              (t) => `
+            <div class="tier">
+              <strong>${t.id}</strong>
+              <span class="badge ${t.status}">${t.status}</span>
+              <span style="color:var(--muted);font-size:12px;margin-left:8px;">${(t.durationMs / 1000).toFixed(1)}s</span>
+              <span style="color:var(--muted);font-size:12px;margin-left:8px;">${(caseGroups[t.id] ?? []).length} 用例</span>
+            </div>`,
+            )
+            .join('')}
+
+          <h3>用例明细</h3>
+          ${Object.entries(caseGroups)
+            .map(
+              ([tierId, items]) => `
+            <details ${items.some((c) => c.status === 'fail') ? 'open' : ''}>
+              <summary>${tierId}（${items.length}）</summary>
+              ${items
+                .map((c, idx) => {
+                  const bundle = bundles.find((b) => b.caseId === c.id);
+                  return `
+                <div class="case">
+                  <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+                    <div>
+                      <span class="badge ${c.status}">${c.status}</span>
+                      <strong style="margin-left:8px;">${c.title ?? c.id}</strong>
+                    </div>
+                    ${
+                      c.status === 'fail' && bundle
+                        ? `<button data-case-id="${c.id}">复制 AI 修复上下文</button>`
+                        : ''
+                    }
+                  </div>
+                  <div style="color:var(--muted);font-size:12px;margin-top:6px;">module: ${c.module ?? '-'} · ${c.durationMs ?? 0}ms</div>
+                  ${c.error?.message ? `<pre>${c.error.message.slice(0, 1500)}</pre>` : ''}
+                </div>`;
+                })
+                .join('')}
+            </details>`,
+            )
+            .join('')}
+        `;
+
+        detail.querySelectorAll('button[data-case-id]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const bundle = bundles.find((b) => b.caseId === btn.dataset.caseId);
+            copyText(bundle?.markdown ?? '');
+          });
+        });
+      }
+
+      loadStats();
+      loadRuns();
+      setInterval(loadStats, 15000);
+      setInterval(loadRuns, 15000);
+    </script>
+  </body>
+</html>

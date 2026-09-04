@@ -5,6 +5,12 @@ node_modules/
 dist/
 *.tsbuildinfo
 
+# Verify loop runtime data
+.verify/reports/
+.verify/playwright-report.json
+.verify/jest-e2e-report.json
+tools/verify-hub/data/
+
 # Environment
 .env
 .env.local

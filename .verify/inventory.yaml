@@ -1,0 +1,51 @@
+# 项目模块与 API 测试套件清单（用于覆盖率统计）
+modules:
+  - id: scaffold
+    name: 脚手架 / 健康检查
+    apiSuites: [app]
+  - id: auth
+    name: 认证
+    apiSuites: [auth, member-auth]
+    browserTags: ['@module:auth']
+  - id: rbac
+    name: RBAC（用户/角色/菜单）
+    apiSuites: [rbac]
+  - id: article
+    name: 文章
+    apiSuites: [article]
+  - id: audit
+    name: 审计日志
+    apiSuites: [audit]
+  - id: dept
+    name: 部门
+    apiSuites: [dept]
+  - id: dict
+    name: 字典
+    apiSuites: [dict]
+  - id: region
+    name: 地区
+    apiSuites: [region]
+  - id: notice
+    name: 通知公告 / 消息
+    apiSuites: [notice]
+  - id: online-session
+    name: 在线用户
+    apiSuites: [online-session]
+  - id: data-scope
+    name: 数据权限
+    apiSuites: [data-scope]
+  - id: upload
+    name: 文件上传
+    apiSuites: [upload]
+  - id: site-config
+    name: 站点配置
+    apiSuites: [site-config]
+  - id: job
+    name: 定时任务
+    apiSuites: [job]
+  - id: sms
+    name: 短信
+    apiSuites: [sms]
+  - id: email
+    name: 邮件
+    apiSuites: [email]
