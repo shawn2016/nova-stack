@@ -32,7 +32,7 @@
     </ArtListPanel>
 
     <SiteConfigDialog
-      v-model="dialogVisible"
+      v-model:visible="dialogVisible"
       :dialog-type="dialogType"
       :config-data="currentConfigData"
       @success="refreshData"

@@ -39,7 +39,7 @@
   import { createDictData, updateDictData } from '@/api/dict'
 
   interface Props {
-    modelValue: boolean
+    visible: boolean
     dialogType: 'add' | 'edit'
     typeId: string
     typeName: string
@@ -47,12 +47,12 @@
   }
 
   interface Emits {
-    (e: 'update:modelValue', value: boolean): void
+    (e: 'update:visible', value: boolean): void
     (e: 'success'): void
   }
 
   const props = withDefaults(defineProps<Props>(), {
-    modelValue: false,
+    visible: false,
     dialogType: 'add',
     typeId: '',
     typeName: '',
@@ -65,8 +65,8 @@
   const submitting = ref(false)
 
   const visible = computed({
-    get: () => props.modelValue,
-    set: (value) => emit('update:modelValue', value),
+    get: () => props.visible,
+    set: (value) => emit('update:visible', value),
   })
 
   const rules = reactive<FormRules>({
@@ -112,7 +112,7 @@
   }
 
   watch(
-    () => props.modelValue,
+    () => props.visible,
     (newVal) => {
       if (newVal) initForm()
     },
@@ -121,7 +121,7 @@
   watch(
     () => props.dataItem,
     () => {
-      if (props.modelValue) initForm()
+      if (props.visible) initForm()
     },
     { deep: true },
   )

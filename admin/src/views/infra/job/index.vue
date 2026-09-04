@@ -28,31 +28,14 @@
     </ArtListPanel>
 
     <JobDialog
-      v-model="dialogVisible"
+      v-model:visible="dialogVisible"
       :dialog-type="dialogType"
       :job-data="currentJob"
       :handlers="handlers"
       @success="refreshData"
     />
 
-    <ElDrawer v-model="logVisible" title="执行日志" size="640px">
-      <ElTable v-loading="logLoading" :data="logData" size="small">
-        <ElTableColumn prop="startTime" label="开始时间" min-width="160">
-          <template #default="{ row }">
-            {{ new Date(row.startTime).toLocaleString('zh-CN') }}
-          </template>
-        </ElTableColumn>
-        <ElTableColumn prop="status" label="状态" width="80">
-          <template #default="{ row }">
-            <ElTag :type="row.status === 1 ? 'success' : 'danger'">
-              {{ row.status === 1 ? '成功' : '失败' }}
-            </ElTag>
-          </template>
-        </ElTableColumn>
-        <ElTableColumn prop="durationMs" label="耗时(ms)" width="100" />
-        <ElTableColumn prop="message" label="消息" min-width="140" />
-      </ElTable>
-    </ElDrawer>
+    <JobLogDrawer v-model:visible="logVisible" :job-id="logJobId" />
   </div>
 </template>
 
@@ -64,13 +47,13 @@
     deleteJob,
     fetchJobHandlers,
     fetchJobList,
-    fetchJobLogList,
     runJob,
     updateJobStatus,
   } from '@/api/job'
-  import type { JobHandlerInfo, JobListItem, JobLogListItem } from '@nova/shared-types'
+  import type { JobHandlerInfo, JobListItem } from '@nova/shared-types'
   import { ElMessageBox, ElTag } from 'element-plus'
   import JobDialog from './modules/job-dialog.vue'
+  import JobLogDrawer from './modules/job-log-drawer.vue'
 
   defineOptions({ name: 'InfraJob' })
 
@@ -79,8 +62,6 @@
   const dialogType = ref<'add' | 'edit'>('add')
   const currentJob = ref<JobListItem | undefined>(undefined)
   const logVisible = ref(false)
-  const logLoading = ref(false)
-  const logData = ref<JobLogListItem[]>([])
   const logJobId = ref('')
 
   const statusTag: Record<0 | 1, { type: 'info' | 'success'; label: string }> = {
@@ -188,7 +169,6 @@
       case 'logs':
         logJobId.value = row.id
         logVisible.value = true
-        await loadLogs()
         break
       case 'delete':
         await ElMessageBox.confirm(`确定删除任务「${row.name}」吗？`, '删除确认', {
@@ -198,16 +178,6 @@
         ElMessage.success('删除成功')
         refreshData()
         break
-    }
-  }
-
-  async function loadLogs() {
-    logLoading.value = true
-    try {
-      const result = await fetchJobLogList({ jobId: logJobId.value, current: 1, size: 50 })
-      logData.value = result.records
-    } finally {
-      logLoading.value = false
     }
   }
 </script>

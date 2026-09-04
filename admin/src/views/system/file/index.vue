@@ -85,93 +85,7 @@
       </div>
     </ArtListPanel>
 
-    <ElDialog v-model="settingsVisible" title="存储配置" width="640px" align-center>
-      <ElForm label-width="140px">
-        <ElFormItem label="存储方式">
-          <ElRadioGroup v-model="settingsForm.provider">
-            <ElRadio value="local">本地存储</ElRadio>
-            <ElRadio value="aliyun_oss">阿里云 OSS</ElRadio>
-            <ElRadio value="tencent_cos">腾讯云 COS</ElRadio>
-          </ElRadioGroup>
-        </ElFormItem>
-        <ElFormItem label="上传大小上限">
-          <ElInputNumber
-            v-model="settingsForm.maxSize"
-            :min="1024"
-            :step="1024 * 1024"
-            controls-position="right"
-          />
-          <span class="settings-hint">字节，当前约 {{ formatSize(settingsForm.maxSize) }}</span>
-        </ElFormItem>
-
-        <template v-if="settingsForm.provider === 'local'">
-          <ElFormItem label="访问域名">
-            <ElInput v-model="settingsForm.local.appPublicUrl" placeholder="http://localhost:3000" />
-          </ElFormItem>
-          <ElFormItem label="上传目录">
-            <ElInput v-model="settingsForm.local.uploadsDir" placeholder="/path/to/uploads" />
-          </ElFormItem>
-        </template>
-
-        <template v-if="settingsForm.provider === 'aliyun_oss'">
-          <ElFormItem label="Region">
-            <ElInput v-model="settingsForm.aliyun.region" placeholder="oss-cn-hangzhou" />
-          </ElFormItem>
-          <ElFormItem label="Bucket">
-            <ElInput v-model="settingsForm.aliyun.bucket" />
-          </ElFormItem>
-          <ElFormItem label="AccessKeyId">
-            <ElInput v-model="settingsForm.aliyun.accessKeyId" />
-          </ElFormItem>
-          <ElFormItem label="AccessKeySecret">
-            <ElInput
-              v-model="settingsForm.aliyun.accessKeySecret"
-              type="password"
-              show-password
-              placeholder="留空则不修改"
-            />
-          </ElFormItem>
-          <ElFormItem label="CDN 域名">
-            <ElInput
-              v-model="settingsForm.aliyun.publicBaseUrl"
-              placeholder="可选，如 https://cdn.example.com"
-            />
-          </ElFormItem>
-        </template>
-
-        <template v-if="settingsForm.provider === 'tencent_cos'">
-          <ElFormItem label="Region">
-            <ElInput v-model="settingsForm.tencent.region" placeholder="ap-guangzhou" />
-          </ElFormItem>
-          <ElFormItem label="Bucket">
-            <ElInput v-model="settingsForm.tencent.bucket" />
-          </ElFormItem>
-          <ElFormItem label="SecretId">
-            <ElInput v-model="settingsForm.tencent.secretId" />
-          </ElFormItem>
-          <ElFormItem label="SecretKey">
-            <ElInput
-              v-model="settingsForm.tencent.secretKey"
-              type="password"
-              show-password
-              placeholder="留空则不修改"
-            />
-          </ElFormItem>
-          <ElFormItem label="CDN 域名">
-            <ElInput
-              v-model="settingsForm.tencent.publicBaseUrl"
-              placeholder="可选，如 https://cdn.example.com"
-            />
-          </ElFormItem>
-        </template>
-      </ElForm>
-      <template #footer>
-        <ElButton @click="settingsVisible = false">取消</ElButton>
-        <ElButton type="primary" :loading="settingsSaving" @click="handleSaveSettings">
-          保存
-        </ElButton>
-      </template>
-    </ElDialog>
+    <StorageSettingsDialog v-model:visible="settingsVisible" />
   </div>
 </template>
 
@@ -181,18 +95,14 @@
     UPLOAD_STORAGE_PROVIDER_LABELS,
     type FileListItem,
     type FileStorageType,
-    type UploadSettings,
-    type UploadStorageProvider,
   } from '@nova/shared-types'
   import type { UploadRequestOptions } from 'element-plus'
   import { deleteFile, fetchFileList } from '@/api/file'
-  import { fetchUploadSettings, updateUploadSettings } from '@/api/upload-settings'
   import { uploadFile } from '@/api/upload'
   import { ElMessageBox } from 'element-plus'
+  import StorageSettingsDialog from './modules/storage-settings-dialog.vue'
 
   defineOptions({ name: 'SystemFile' })
-
-  const SECRET_MASK = '******'
 
   const showSearchBar = ref(true)
   const loading = ref(false)
@@ -201,7 +111,6 @@
   const total = ref(0)
   const pagination = reactive({ current: 1, size: 24 })
   const settingsVisible = ref(false)
-  const settingsSaving = ref(false)
 
   const searchForm = reactive<{ keyword: string; storage?: FileStorageType }>({
     keyword: '',
@@ -213,28 +122,9 @@
     storage: undefined,
   })
 
-  const settingsForm = reactive<UploadSettings>({
-    provider: 'local',
-    maxSize: 5 * 1024 * 1024,
-    local: {
-      appPublicUrl: 'http://localhost:3000',
-      uploadsDir: '',
-    },
-    aliyun: {
-      region: '',
-      bucket: '',
-      accessKeyId: '',
-      accessKeySecret: '',
-      publicBaseUrl: '',
-    },
-    tencent: {
-      region: '',
-      bucket: '',
-      secretId: '',
-      secretKey: '',
-      publicBaseUrl: '',
-    },
-  })
+  function openSettings() {
+    settingsVisible.value = true
+  }
 
   const formItems = computed(() => [
     {
@@ -291,49 +181,6 @@
       ElMessage.error(error instanceof Error ? error.message : '加载失败')
     } finally {
       loading.value = false
-    }
-  }
-
-  async function openSettings() {
-    try {
-      const settings = await fetchUploadSettings()
-      Object.assign(settingsForm, settings)
-      settingsVisible.value = true
-    } catch (error) {
-      ElMessage.error(error instanceof Error ? error.message : '加载配置失败')
-    }
-  }
-
-  async function handleSaveSettings() {
-    settingsSaving.value = true
-    try {
-      const payload = {
-        provider: settingsForm.provider as UploadStorageProvider,
-        maxSize: settingsForm.maxSize,
-        local: { ...settingsForm.local },
-        aliyun: {
-          ...settingsForm.aliyun,
-          ...(settingsForm.aliyun.accessKeySecret === SECRET_MASK ||
-          !settingsForm.aliyun.accessKeySecret
-            ? { accessKeySecret: undefined }
-            : {}),
-        },
-        tencent: {
-          ...settingsForm.tencent,
-          ...(settingsForm.tencent.secretKey === SECRET_MASK ||
-          !settingsForm.tencent.secretKey
-            ? { secretKey: undefined }
-            : {}),
-        },
-      }
-      const updated = await updateUploadSettings(payload)
-      Object.assign(settingsForm, updated)
-      ElMessage.success('存储配置已保存')
-      settingsVisible.value = false
-    } catch (error) {
-      ElMessage.error(error instanceof Error ? error.message : '保存失败')
-    } finally {
-      settingsSaving.value = false
     }
   }
 
@@ -466,11 +313,5 @@
     display: flex;
     justify-content: flex-end;
     margin-top: 16px;
-  }
-
-  .settings-hint {
-    margin-left: 12px;
-    font-size: 12px;
-    color: var(--el-text-color-secondary);
   }
 </style>

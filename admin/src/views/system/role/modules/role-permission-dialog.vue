@@ -97,17 +97,17 @@
   } from '@/utils/permission-tree'
 
   interface Props {
-    modelValue: boolean
+    visible: boolean
     roleData?: SysRoleListItem
   }
 
   interface Emits {
-    (e: 'update:modelValue', value: boolean): void
+    (e: 'update:visible', value: boolean): void
     (e: 'success'): void
   }
 
   const props = withDefaults(defineProps<Props>(), {
-    modelValue: false,
+    visible: false,
     roleData: undefined,
   })
 
@@ -122,8 +122,8 @@
   const customDeptIds = ref<string[]>([])
 
   const visible = computed({
-    get: () => props.modelValue,
-    set: (value) => emit('update:modelValue', value),
+    get: () => props.visible,
+    set: (value) => emit('update:visible', value),
   })
 
   const isSuperAdmin = computed(() => props.roleData?.code === 'super_admin')
@@ -170,7 +170,7 @@
   }
 
   watch(
-    () => props.modelValue,
+    () => props.visible,
     (newVal) => {
       if (newVal && props.roleData) {
         void loadRolePermissions()

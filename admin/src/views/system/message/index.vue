@@ -41,7 +41,7 @@
       />
     </ArtListPanel>
 
-    <SendDialog v-model="sendVisible" @success="loadData" />
+    <SendDialog v-model:visible="sendVisible" @success="loadData" />
   </div>
 </template>
 

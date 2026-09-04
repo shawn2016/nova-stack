@@ -36,11 +36,11 @@
   import { fetchUserList } from '@/api/system-manage'
 
   interface Props {
-    modelValue: boolean
+    visible: boolean
   }
 
   interface Emits {
-    (e: 'update:modelValue', value: boolean): void
+    (e: 'update:visible', value: boolean): void
     (e: 'success'): void
   }
 
@@ -52,8 +52,8 @@
   const userOptions = ref<{ id: string; username: string; nickname: string }[]>([])
 
   const visible = computed({
-    get: () => props.modelValue,
-    set: (value) => emit('update:modelValue', value),
+    get: () => props.visible,
+    set: (value) => emit('update:visible', value),
   })
 
   const rules = reactive<FormRules>({
@@ -69,7 +69,7 @@
   })
 
   watch(
-    () => props.modelValue,
+    () => props.visible,
     async (val) => {
       if (!val) return
       Object.assign(form, { receiverId: '', title: '', content: '' })

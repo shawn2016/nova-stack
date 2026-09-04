@@ -78,18 +78,18 @@
   import { fetchDeptTreeAll } from '@/api/dept'
 
   interface Props {
-    modelValue: boolean
+    visible: boolean
     dialogType: 'add' | 'edit'
     roleData?: SysRoleListItem
   }
 
   interface Emits {
-    (e: 'update:modelValue', value: boolean): void
+    (e: 'update:visible', value: boolean): void
     (e: 'success'): void
   }
 
   const props = withDefaults(defineProps<Props>(), {
-    modelValue: false,
+    visible: false,
     dialogType: 'add',
     roleData: undefined,
   })
@@ -103,8 +103,8 @@
   const dataScopeOptions = DATA_SCOPE_LABELS
 
   const visible = computed({
-    get: () => props.modelValue,
-    set: (value) => emit('update:modelValue', value),
+    get: () => props.visible,
+    set: (value) => emit('update:visible', value),
   })
 
   const rules = reactive<FormRules>({
@@ -173,7 +173,7 @@
   }
 
   watch(
-    () => props.modelValue,
+    () => props.visible,
     (newVal) => {
       if (newVal) void initForm()
     },
@@ -182,7 +182,7 @@
   watch(
     () => props.roleData,
     () => {
-      if (props.modelValue) void initForm()
+      if (props.visible) void initForm()
     },
     { deep: true },
   )

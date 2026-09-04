@@ -49,19 +49,19 @@
   import { createJob, updateJob } from '@/api/job'
 
   interface Props {
-    modelValue: boolean
+    visible: boolean
     dialogType: 'add' | 'edit'
     jobData?: JobListItem
     handlers: JobHandlerInfo[]
   }
 
   interface Emits {
-    (e: 'update:modelValue', value: boolean): void
+    (e: 'update:visible', value: boolean): void
     (e: 'success'): void
   }
 
   const props = withDefaults(defineProps<Props>(), {
-    modelValue: false,
+    visible: false,
     dialogType: 'add',
     jobData: undefined,
     handlers: () => [],
@@ -73,8 +73,8 @@
   const submitting = ref(false)
 
   const visible = computed({
-    get: () => props.modelValue,
-    set: (value) => emit('update:modelValue', value),
+    get: () => props.visible,
+    set: (value) => emit('update:visible', value),
   })
 
   const rules = reactive<FormRules>({
@@ -121,7 +121,7 @@
   }
 
   watch(
-    () => props.modelValue,
+    () => props.visible,
     (val) => {
       if (val) initForm()
     },

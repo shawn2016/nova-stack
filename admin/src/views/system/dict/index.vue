@@ -93,14 +93,14 @@
     </ElRow>
 
     <DictTypeDialog
-      v-model="typeDialogVisible"
+      v-model:visible="typeDialogVisible"
       :dialog-type="typeDialogMode"
       :type-data="currentTypeData"
       @success="handleTypeSaved"
     />
 
     <DictDataDialog
-      v-model="dataDialogVisible"
+      v-model:visible="dataDialogVisible"
       :dialog-type="dataDialogMode"
       :type-id="selectedType?.id ?? ''"
       :type-name="selectedType?.name ?? ''"

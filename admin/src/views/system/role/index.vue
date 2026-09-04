@@ -32,14 +32,14 @@
     </ArtListPanel>
 
     <RoleEditDialog
-      v-model="dialogVisible"
+      v-model:visible="dialogVisible"
       :dialog-type="dialogType"
       :role-data="currentRoleData"
       @success="refreshData"
     />
 
     <RolePermissionDialog
-      v-model="permissionDialog"
+      v-model:visible="permissionDialog"
       :role-data="currentRoleData"
       @success="refreshData"
     />

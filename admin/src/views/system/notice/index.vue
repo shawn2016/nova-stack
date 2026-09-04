@@ -39,7 +39,7 @@
     </ArtListPanel>
 
     <NoticeDialog
-      v-model="dialogVisible"
+      v-model:visible="dialogVisible"
       :dialog-type="dialogType"
       :notice-data="currentNotice"
       @success="refreshData"
