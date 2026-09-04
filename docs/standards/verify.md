@@ -29,6 +29,17 @@ VERIFY_SKIP_BROWSER=1 pnpm verify
 | api-e2e | server test:e2e | API 全量回归 |
 | browser-smoke | Playwright `@smoke` | 登录进后台（需 `pnpm dev` + seed；含滑块验证） |
 
+### 性能说明
+
+全量 `pnpm verify` 默认分两阶段执行：
+
+1. **static** 先跑（确保 shared-types 构建就绪）
+2. **api-e2e** 与 **browser-smoke** 并行
+
+browser-smoke 通过 `e2e/global-setup.ts` 登录一次并写入 `.verify/admin-auth.json`，各用例复用 `storageState`，避免 70+ 次重复滑块登录。本地串行 workers=1；如需调试并发可设 `VERIFY_PW_WORKERS=4`（需确保 dev 服务扛得住）。
+
+Tier 控制台输出会附带耗时，例如 `✓ pass (87.9s)`。
+
 ## 复测
 
 ```bash

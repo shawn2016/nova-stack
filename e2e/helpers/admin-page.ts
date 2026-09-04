@@ -1,12 +1,10 @@
 import { expect, type Page } from '@playwright/test';
-import { loginAsAdmin } from './admin-login';
 
-/** 登录后打开 Admin hash 路由页 */
+/** 打开 Admin hash 路由页（依赖 globalSetup storageState，不再重复登录） */
 export async function openAdminPage(page: Page, hashPath: string): Promise<void> {
-  await loginAsAdmin(page);
   const path = hashPath.startsWith('/') ? hashPath : `/${hashPath}`;
   await page.goto(`/#${path}`, { waitUntil: 'domcontentloaded' });
-  await expect(page.locator('#app-sidebar')).toBeVisible({ timeout: 15_000 });
+  await expect(page.locator('#app-sidebar')).toBeVisible({ timeout: 30_000 });
 }
 
 /** 断言 ArtListPanel 标题 */

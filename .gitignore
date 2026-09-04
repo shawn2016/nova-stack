@@ -7,6 +7,7 @@ dist/
 
 # Verify loop runtime data
 .verify/reports/
+.verify/admin-auth.json
 .verify/playwright-report.json
 .verify/jest-e2e-report.json
 tools/verify-hub/data/

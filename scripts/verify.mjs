@@ -2,7 +2,7 @@
 /**
  * Verify Runner：按 tier 执行验证、生成 verify-report.v1 并上报 Hub
  */
-import { execSync, spawnSync } from 'node:child_process';
+import { execSync, spawn } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { dirname, join } from 'node:path';
@@ -80,23 +80,42 @@ function resolveChangeId(explicitChangeId, git) {
 }
 
 function runCommand(command, cwd = rootDir) {
-  const started = Date.now();
-  const result = spawnSync(command, {
-    cwd,
-    shell: true,
-    encoding: 'utf8',
-    env: process.env,
+  return new Promise((resolve) => {
+    const started = Date.now();
+    const child = spawn(command, {
+      cwd,
+      shell: true,
+      env: process.env,
+    });
+    let stdout = '';
+    let stderr = '';
+    child.stdout?.on('data', (chunk) => {
+      stdout += chunk;
+    });
+    child.stderr?.on('data', (chunk) => {
+      stderr += chunk;
+    });
+    child.on('error', (error) => {
+      resolve({
+        status: 'fail',
+        disposition: 'blocked',
+        durationMs: Date.now() - started,
+        output: error.message,
+        exitCode: 1,
+      });
+    });
+    child.on('close', (code) => {
+      const durationMs = Date.now() - started;
+      const output = `${stdout}${stderr}`.trim();
+      resolve({
+        status: code === 0 ? 'pass' : 'fail',
+        disposition: 'executed',
+        durationMs,
+        output,
+        exitCode: code ?? 1,
+      });
+    });
   });
-  const durationMs = Date.now() - started;
-  const output = `${result.stdout ?? ''}${result.stderr ?? ''}`.trim();
-  const status = result.status === 0 ? 'pass' : 'fail';
-  return {
-    status,
-    disposition: result.error ? 'blocked' : 'executed',
-    durationMs,
-    output,
-    exitCode: result.status ?? 1,
-  };
 }
 
 function summarizeCases(cases) {
@@ -127,6 +146,93 @@ async function uploadReport(config, report) {
     throw new Error(`Hub upload failed (${response.status}): ${text}`);
   }
   return response.json();
+}
+
+function buildTierPhases(tiers) {
+  if (tiers.length <= 1) return [tiers];
+  const byId = new Map(tiers.map((tier) => [tier.id, tier]));
+  const phases = [];
+  if (byId.has('static')) phases.push([byId.get('static')]);
+  const parallelSlow = ['api-e2e', 'browser-smoke'].flatMap((id) => (byId.has(id) ? [byId.get(id)] : []));
+  if (parallelSlow.length) phases.push(parallelSlow);
+  const scheduled = new Set(phases.flat().map((tier) => tier.id));
+  const rest = tiers.filter((tier) => !scheduled.has(tier.id));
+  if (rest.length) phases.push(rest);
+  return phases.length ? phases : [tiers];
+}
+
+function formatDuration(durationMs) {
+  return durationMs >= 1000 ? `${(durationMs / 1000).toFixed(1)}s` : `${durationMs}ms`;
+}
+
+async function executeTier(tier) {
+  if (tier.skipEnv && process.env[tier.skipEnv] === '1') {
+    return {
+      executed: false,
+      tierReport: {
+        id: tier.id,
+        title: tier.title,
+        status: 'skip',
+        disposition: 'skipped',
+        skipReason: tier.skipEnv,
+        durationMs: 0,
+        command: tier.command,
+      },
+      cases: [
+        {
+          id: `${tier.id}:skipped`,
+          tierId: tier.id,
+          module: tier.id,
+          title: `${tier.title ?? tier.id}（已跳过）`,
+          status: 'skip',
+          disposition: 'skipped',
+          skipReason: tier.skipEnv,
+          durationMs: 0,
+          retestCommand: `pnpm verify --tier ${tier.id}`,
+        },
+      ],
+    };
+  }
+
+  console.log(`\n▶ Tier [${tier.id}] ${tier.title ?? ''}`);
+  const result = await runCommand(tier.command);
+  console.log(`${result.status === 'pass' ? '  ✓ pass' : '  ✗ fail'} (${formatDuration(result.durationMs)})`);
+  return {
+    executed: true,
+    tierReport: {
+      id: tier.id,
+      title: tier.title,
+      status: result.status,
+      disposition: result.disposition,
+      durationMs: result.durationMs,
+      command: tier.command,
+      exitCode: result.exitCode,
+      evidence: [{ kind: 'command', command: tier.command, exitCode: result.exitCode }],
+    },
+    cases: collectTierCases(tier, result),
+  };
+}
+
+async function runTierPhases(tiers) {
+  const reportTiers = [];
+  const cases = [];
+  const executedTierIds = [];
+  const phases = buildTierPhases(tiers);
+
+  for (const phase of phases) {
+    const results =
+      phase.length === 1
+        ? [await executeTier(phase[0])]
+        : await Promise.all(phase.map((tier) => executeTier(tier)));
+
+    for (const result of results) {
+      reportTiers.push(result.tierReport);
+      cases.push(...result.cases);
+      if (result.executed) executedTierIds.push(result.tierReport.id);
+    }
+  }
+
+  return { reportTiers, cases, executedTierIds };
 }
 
 function collectTierCases(tier, result) {
@@ -196,52 +302,8 @@ async function main() {
   const changeId = resolveChangeId(args.changeId, git);
   const contract = loadVerificationContract(changeId, rootDir);
 
-  const reportTiers = [];
-  const cases = [];
-  const executedTierIds = [];
-
-  for (const tier of tiers) {
-    if (tier.skipEnv && process.env[tier.skipEnv] === '1') {
-      reportTiers.push({
-        id: tier.id,
-        title: tier.title,
-        status: 'skip',
-        disposition: 'skipped',
-        skipReason: tier.skipEnv,
-        durationMs: 0,
-        command: tier.command,
-      });
-      cases.push({
-        id: `${tier.id}:skipped`,
-        tierId: tier.id,
-        module: tier.id,
-        title: `${tier.title ?? tier.id}（已跳过）`,
-        status: 'skip',
-        disposition: 'skipped',
-        skipReason: tier.skipEnv,
-        durationMs: 0,
-        retestCommand: `pnpm verify --tier ${tier.id}`,
-      });
-      continue;
-    }
-
-    console.log(`\n▶ Tier [${tier.id}] ${tier.title ?? ''}`);
-    const result = runCommand(tier.command);
-    executedTierIds.push(tier.id);
-    reportTiers.push({
-      id: tier.id,
-      title: tier.title,
-      status: result.status,
-      disposition: result.disposition,
-      durationMs: result.durationMs,
-      command: tier.command,
-      exitCode: result.exitCode,
-      evidence: [{ kind: 'command', command: tier.command, exitCode: result.exitCode }],
-    });
-
-    cases.push(...collectTierCases(tier, result));
-    console.log(result.status === 'pass' ? '  ✓ pass' : '  ✗ fail');
-  }
+  const runStarted = Date.now();
+  const { reportTiers, cases, executedTierIds } = await runTierPhases(tiers);
 
   const coverage = buildCoverage(inventory, cases, apiCatalog, executedTierIds);
   const acceptance = evaluateAcceptance(contract, reportTiers, cases);
@@ -249,7 +311,7 @@ async function main() {
   const requiredTierIds = config.tiers.filter((tier) => tier.required !== false).map((tier) => tier.id);
   const conclusion = deriveConclusion({ summary, tiers: reportTiers, acceptance, requiredTierIds });
   const finishedAt = new Date().toISOString();
-  const durationMs = reportTiers.reduce((sum, t) => sum + (t.durationMs ?? 0), 0);
+  const durationMs = Date.now() - runStarted;
   const report = {
     schema: 'nova.verify-report.v1',
     runId,
