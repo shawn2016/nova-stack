@@ -149,6 +149,30 @@
       button.danger, .btn.danger { background: rgba(255, 107, 107, 0.2); color: var(--fail); border: 1px solid rgba(255, 107, 107, 0.35); }
       button.ghost, .btn.ghost { background: transparent; border: none; color: var(--muted); padding: 4px 6px; }
       button.ghost:hover { color: var(--text); }
+      .linked-cases { font-size: 12px; }
+      .linked-cases > summary {
+        cursor: pointer;
+        color: var(--accent);
+        list-style: none;
+        user-select: none;
+      }
+      .linked-cases > summary::-webkit-details-marker { display: none; }
+      .linked-cases-list {
+        margin: 8px 0 0;
+        padding-left: 18px;
+        max-height: 220px;
+        overflow: auto;
+      }
+      .linked-cases-list li { margin: 4px 0; line-height: 1.45; }
+      .linked-case-chip {
+        display: inline-block;
+        margin: 2px 4px 2px 0;
+        padding: 2px 8px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: rgba(255,255,255,0.03);
+        font-size: 12px;
+      }
       pre {
         background: #0b1017;
         border: 1px solid var(--border);
@@ -226,6 +250,7 @@
       }
       .tag.missing { background: rgba(255, 107, 107, 0.12); color: var(--fail); }
       .tag.ok { background: rgba(61, 214, 140, 0.12); color: var(--pass); }
+      .tag.warn { background: rgba(240, 180, 41, 0.12); color: var(--warn, #f0b429); }
       .modal-backdrop {
         position: fixed;
         inset: 0;
@@ -834,6 +859,54 @@ ${failed.length ? failed.map((item) => `- ${item.id}: ${item.status}`).join('\n'
 `;
       }
 
+      function caseDisplayTitle(caseId, cases) {
+        const found = cases?.find((c) => c.id === caseId);
+        if (found?.title) return found.title;
+        const parts = String(caseId).split(':');
+        return parts.length > 2 ? parts.slice(2).join(':') : parts[parts.length - 1];
+      }
+
+      /** tier 级或大量用例：摘要 + 可展开列表；少量场景用例：chip 展示 */
+      function renderLinkedCases(item, cases) {
+        const linkedIds = item.linkedCases ?? [];
+        if (!linkedIds.length) return '-';
+
+        const tierEvidence = (item.evidence ?? []).find((entry) => entry.selector?.type === 'tier');
+        const useSummary = Boolean(tierEvidence) || linkedIds.length > 5;
+
+        if (useSummary) {
+          const tierId = tierEvidence?.selector?.tierId;
+          const status = tierEvidence?.status ?? item.status;
+          const failed = linkedIds.filter((id) => cases?.find((c) => c.id === id)?.status === 'fail').length;
+          const skipped = linkedIds.filter((id) => cases?.find((c) => c.id === id)?.status === 'skip').length;
+          const label = tierId
+            ? `${tierId} · ${linkedIds.length} 条用例 · ${status}${failed ? `（${failed} 失败）` : ''}${skipped ? `（${skipped} 跳过）` : ''}`
+            : `${linkedIds.length} 条关联用例 · ${item.status}`;
+
+          const listItems = linkedIds
+            .map((id) => {
+              const match = cases?.find((c) => c.id === id);
+              const st = match?.status ?? '?';
+              const title = caseDisplayTitle(id, cases);
+              return `<li><button class="ghost" data-case-view="${escapeHtml(id)}">${escapeHtml(title)}</button> <span class="tag ${st === 'pass' ? 'ok' : st === 'skip' ? 'warn' : 'missing'}">${escapeHtml(st)}</span></li>`;
+            })
+            .join('');
+
+          return `
+            <details class="linked-cases">
+              <summary>${escapeHtml(label)}</summary>
+              <ul class="linked-cases-list">${listItems}</ul>
+            </details>`;
+        }
+
+        return linkedIds
+          .map(
+            (id) =>
+              `<button class="ghost linked-case-chip" data-case-view="${escapeHtml(id)}">${escapeHtml(caseDisplayTitle(id, cases))}</button>`,
+          )
+          .join('');
+      }
+
       function renderAcceptance(run) {
         const acceptance = run.acceptance;
         if (!acceptance?.items?.length) {
@@ -845,15 +918,16 @@ ${failed.length ? failed.map((item) => `- ${item.id}: ${item.status}`).join('\n'
         }
         const rows = acceptance.items
           .map((item) => {
-            const linked = (item.linkedCases ?? [])
-              .map((caseId) => `<button class="ghost" data-case-view="${escapeHtml(caseId)}">${escapeHtml(caseId.split(':').pop())}</button>`)
-              .join('');
+            const linked = renderLinkedCases(item, run.cases);
             const selectors = (item.evidence ?? [])
               .map((entry) => {
                 const selector = entry.selector ?? {};
-                const target = selector.type === 'tier'
-                  ? selector.tierId
-                  : selector.type === 'scenario'
+                if (selector.type === 'tier') {
+                  const count = entry.linkedCases?.length ?? item.linkedCases?.length ?? 0;
+                  return `<span class="tag ${entry.status === 'pass' ? 'ok' : 'missing'}">tier:${escapeHtml(selector.tierId)} · ${count} cases · ${entry.status}</span>`;
+                }
+                const target =
+                  selector.type === 'scenario'
                     ? `${selector.page}#${selector.scenario}`
                     : selector.caseId ?? selector.tag ?? selector.type;
                 return `<span class="tag ${entry.status === 'pass' ? 'ok' : 'missing'}">${escapeHtml(target ?? '?')} · ${entry.status}</span>`;
@@ -876,9 +950,9 @@ ${failed.length ? failed.map((item) => `- ${item.id}: ${item.status}`).join('\n'
               <span style="color:var(--muted);font-size:12px;font-weight:400;">合同 ${escapeHtml(acceptance.contractPath ?? '-')}</span>
             </summary>
             <div class="section-body">
-              <div class="table-wrap">
+              <div class="table-wrap" style="max-height:420px;">
                 <table>
-                  <thead><tr><th>验收标准</th><th>状态</th><th>证据选择器</th><th>关联用例</th></tr></thead>
+                  <thead><tr><th>验收标准</th><th>状态</th><th>证据</th><th>关联用例</th></tr></thead>
                   <tbody>${rows}</tbody>
                 </table>
               </div>
