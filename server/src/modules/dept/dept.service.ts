@@ -1,8 +1,10 @@
 import {
   BadRequestException,
   ForbiddenException,
+  Inject,
   Injectable,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type {
@@ -19,6 +21,7 @@ import {
   SysUserEntity,
 } from '../../database/entities';
 import { toApiId } from '../../common/utils/to-api-id';
+import { DataScopeService } from '../data-scope/data-scope.service';
 import { CreateDeptDto } from './dto/create-dept.dto';
 import { ListDeptsDto } from './dto/list-depts.dto';
 import { UpdateDeptDto } from './dto/update-dept.dto';
@@ -41,18 +44,44 @@ export class DeptService {
     private readonly configRepo: Repository<SysConfigEntity>,
     @InjectRepository(SysUserEntity)
     private readonly userRepo: Repository<SysUserEntity>,
+    @Inject(forwardRef(() => DataScopeService))
+    private readonly dataScopeService: DataScopeService,
   ) {}
 
-  async tree(enabledOnly = true): Promise<DeptTreeNode[]> {
+  async tree(enabledOnly = true, currentUserId?: string): Promise<DeptTreeNode[]> {
     const where = enabledOnly ? { status: 1 } : {};
     const depts = await this.deptRepo.find({
       where,
       order: { sort: 'ASC', id: 'ASC' },
     });
-    return this.buildTree(depts.map((dept) => this.toListItem(dept)));
+
+    if (!currentUserId) {
+      return this.buildTree(depts.map((dept) => this.toListItem(dept)));
+    }
+
+    const filter = await this.dataScopeService.resolveForUser(currentUserId);
+    const user = await this.userRepo.findOne({ where: { id: currentUserId } });
+    const userDeptId = user?.deptId ? toApiId(user.deptId) : null;
+    const allowedDeptIds = this.dataScopeService.resolveDeptIdsForDeptApi(
+      filter,
+      userDeptId,
+    );
+
+    if (allowedDeptIds === null) {
+      return this.buildTree(depts.map((dept) => this.toListItem(dept)));
+    }
+
+    const expandedIds = new Set(
+      this.dataScopeService.expandDeptIdsWithAncestors(allowedDeptIds, depts),
+    );
+    const scoped = depts.filter((dept) => expandedIds.has(toApiId(dept.id)));
+    return this.buildTree(scoped.map((dept) => this.toListItem(dept)));
   }
 
-  async list(query: ListDeptsDto): Promise<PaginationResult<DeptListItem>> {
+  async list(
+    query: ListDeptsDto,
+    currentUserId?: string,
+  ): Promise<PaginationResult<DeptListItem>> {
     const { page = 1, pageSize = 10, keyword, status, parentId } = query;
     const qb = this.deptRepo
       .createQueryBuilder('d')
@@ -69,6 +98,13 @@ export class DeptService {
     }
     if (parentId !== undefined) {
       qb.andWhere('d.parent_id = :parentId', { parentId });
+    }
+
+    if (currentUserId) {
+      const filter = await this.dataScopeService.resolveForUser(currentUserId);
+      const user = await this.userRepo.findOne({ where: { id: currentUserId } });
+      const userDeptId = user?.deptId ? toApiId(user.deptId) : null;
+      this.dataScopeService.applyDeptFilter(qb, 'd', filter, userDeptId);
     }
 
     const [rows, total] = await qb

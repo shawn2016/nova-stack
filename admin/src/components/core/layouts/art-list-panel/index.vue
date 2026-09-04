@@ -185,7 +185,7 @@
 
         .art-list-panel__title {
           padding: 16px 20px;
-          font-size: 15px;
+          font-size: 17px;
         }
 
         .art-list-panel__head-actions {
@@ -198,7 +198,7 @@
 
         .art-list-panel__title {
           padding: 14px 20px;
-          font-size: 15px;
+          font-size: 17px;
         }
 
         .art-list-panel__head-actions {
@@ -212,7 +212,7 @@
       align-items: center;
       margin: 0;
       padding: 13px 20px;
-      font-size: 14px;
+      font-size: 16px;
       font-weight: 500;
       line-height: 1;
       color: var(--el-text-color-primary);
@@ -230,7 +230,7 @@
     &__tab {
       position: relative;
       padding: 13px 20px;
-      font-size: 14px;
+      font-size: 16px;
       font-weight: 400;
       line-height: 1;
       color: var(--el-text-color-regular);

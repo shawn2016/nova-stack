@@ -1,6 +1,7 @@
 <template>
   <div class="content-articles-page art-full-height">
     <ArtListPanel
+      title="文章管理"
       v-model:show-search-bar="showSearchBar"
       v-model:columns="columnChecks"
       :loading="loading"
@@ -9,17 +10,15 @@
       <template #search>
         <ArticleSearch v-model="searchForm" @search="handleSearch" @reset="resetSearchParams" />
       </template>
-      <template #toolbar-left>
-        <ElSpace wrap>
-          <ElButton
-            v-permission="'content:article:create'"
-            type="primary"
-            @click="goCreate"
-            v-ripple
-          >
-            新建文章
-          </ElButton>
-        </ElSpace>
+      <template #head-actions>
+        <ElButton
+          v-permission="'content:article:create'"
+          type="primary"
+          @click="goCreate"
+          v-ripple
+        >
+          新建文章
+        </ElButton>
       </template>
 
       <ArtTable

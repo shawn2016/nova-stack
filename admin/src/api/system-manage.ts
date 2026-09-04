@@ -6,6 +6,7 @@ import type {
   CreateUserDto,
   PaginationResult,
   SysMenuListItem,
+  SysPermissionOption,
   SysRoleDetail,
   SysRoleListItem,
   SysUserDetail,
@@ -109,6 +110,13 @@ export function fetchRoleList(params: RoleListQuery = {}) {
 export function fetchRoleDetail(id: string) {
   return request<SysRoleDetail>({
     url: `/roles/${id}`,
+    method: 'GET',
+  })
+}
+
+export function fetchPermissionOptions() {
+  return request<SysPermissionOption[]>({
+    url: '/roles/permission-options',
     method: 'GET',
   })
 }

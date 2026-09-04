@@ -81,6 +81,12 @@ export interface AssignRolePermissionsDto {
   permissionCodes: string[];
 }
 
+/** 可分配权限项（与 sys_permission 对齐） */
+export interface SysPermissionOption {
+  code: string;
+  name: string;
+}
+
 /** 菜单管理列表项 */
 export interface SysMenuListItem {
   id: string;

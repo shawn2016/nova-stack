@@ -56,6 +56,7 @@ export type {
 
 export type {
   AssignRolePermissionsDto,
+  SysPermissionOption,
   AssignUserRolesDto,
   CreateMenuDto,
   CreateRoleDto,
@@ -134,6 +135,20 @@ export {
   DATA_SCOPE_LABELS,
   DATA_SCOPE_SELF,
 } from './data-scope.js';
+
+export type {
+  FileListItem,
+  FileStorageType,
+  ListFilesQuery,
+  UpdateUploadSettingsDto,
+  UploadAliyunSettings,
+  UploadLocalSettings,
+  UploadSettings,
+  UploadStorageProvider,
+  UploadTencentSettings,
+} from './file.js';
+
+export { FILE_STORAGE_LABELS, UPLOAD_STORAGE_PROVIDER_LABELS } from './file.js';
 
 export type {
   KickOnlineSessionResult,

@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import type { OperLogListItem, PaginationResult } from '@nova/shared-types';
 import { Repository } from 'typeorm';
 import { SysOperLogEntity, SysUserEntity } from '../../database/entities';
+import { DataScopeService } from '../data-scope/data-scope.service';
 import { ListOperLogDto } from './dto/list-oper-log.dto';
 
 export interface WriteOperLogParams {
@@ -25,6 +26,7 @@ export class OperLogService {
     private readonly operLogRepo: Repository<SysOperLogEntity>,
     @InjectRepository(SysUserEntity)
     private readonly userRepo: Repository<SysUserEntity>,
+    private readonly dataScopeService: DataScopeService,
   ) {}
 
   async write(params: WriteOperLogParams): Promise<void> {
@@ -48,11 +50,21 @@ export class OperLogService {
     await this.operLogRepo.save(entity);
   }
 
-  async list(query: ListOperLogDto): Promise<PaginationResult<OperLogListItem>> {
+  async list(
+    query: ListOperLogDto,
+    currentUserId: string,
+  ): Promise<PaginationResult<OperLogListItem>> {
     const { page, pageSize, username, module, status, startTime, endTime } = query;
     const qb = this.operLogRepo
       .createQueryBuilder('log')
       .orderBy('log.createdAt', 'DESC');
+
+    const filter = await this.dataScopeService.resolveForUser(currentUserId);
+    const user = await this.userRepo.findOne({ where: { id: currentUserId } });
+    this.dataScopeService.applyAuditLogFilter(qb, 'log', filter, {
+      userId: currentUserId,
+      username: user?.username ?? '',
+    });
 
     if (username) {
       qb.andWhere('log.username LIKE :username', { username: `%${username}%` });

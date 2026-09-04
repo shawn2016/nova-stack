@@ -1,6 +1,7 @@
 <template>
   <div class="art-full-height">
     <ArtListPanel
+      title="在线会话"
       v-model:show-search-bar="showSearchBar"
       v-model:columns="columnChecks"
       :loading="loading"

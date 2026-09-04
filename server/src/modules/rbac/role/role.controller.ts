@@ -31,6 +31,13 @@ export class RoleController {
     return this.roleService.list(query);
   }
 
+  @Get('permission-options')
+  @RequirePermission('system:role:list')
+  @ApiOperation({ summary: '可分配权限列表' })
+  listPermissionOptions() {
+    return this.roleService.listPermissionOptions();
+  }
+
   @Get(':id')
   @RequirePermission('system:role:list')
   @ApiOperation({ summary: '角色详情' })

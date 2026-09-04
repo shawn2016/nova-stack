@@ -1,6 +1,7 @@
 <template>
   <div class="art-full-height">
     <ArtListPanel
+      title="公告管理"
       v-model:show-search-bar="showSearchBar"
       v-model:columns="columnChecks"
       :loading="loading"
@@ -16,8 +17,13 @@
           @search="handleSearch"
         />
       </template>
-      <template #toolbar-left>
-        <ElButton v-permission="'system:notice:create'" @click="showDialog('add')" v-ripple>
+      <template #head-actions>
+        <ElButton
+          v-permission="'system:notice:create'"
+          type="primary"
+          @click="showDialog('add')"
+          v-ripple
+        >
           新增公告
         </ElButton>
       </template>

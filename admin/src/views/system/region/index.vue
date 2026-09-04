@@ -1,6 +1,7 @@
 <template>
   <div class="region-page art-full-height">
     <ArtListPanel
+      title="地区管理"
       v-model:show-search-bar="showSearchBar"
       v-model:columns="columnChecks"
       :loading="loading"
@@ -17,8 +18,8 @@
           @search="handleSearch"
         />
       </template>
-      <template #toolbar-left>
-        <ElButton v-permission="'system:region:create'" @click="handleAdd" v-ripple>
+      <template #head-actions>
+        <ElButton v-permission="'system:region:create'" type="primary" @click="handleAdd" v-ripple>
           新增地区
         </ElButton>
         <ElButton @click="toggleExpand" v-ripple>

@@ -1,6 +1,7 @@
 <template>
   <div class="art-full-height">
     <ArtListPanel
+      title="角色管理"
       v-model:show-search-bar="showSearchBar"
       v-model:columns="columnChecks"
       :loading="loading"
@@ -9,12 +10,15 @@
       <template #search>
         <RoleSearch v-model="searchForm" @search="handleSearch" @reset="resetSearchParams" />
       </template>
-      <template #toolbar-left>
-        <ElSpace wrap>
-          <ElButton v-permission="'system:role:create'" @click="showDialog('add')" v-ripple>
-            新增角色
-          </ElButton>
-        </ElSpace>
+      <template #head-actions>
+        <ElButton
+          v-permission="'system:role:create'"
+          type="primary"
+          @click="showDialog('add')"
+          v-ripple
+        >
+          新增角色
+        </ElButton>
       </template>
 
       <ArtTable
@@ -49,6 +53,7 @@
   import { deleteRole as deleteRoleApi, fetchRoleList } from '@/api/system-manage'
   import type { RoleListQuery } from '@/api/system-manage'
   import type { SysRoleListItem } from '@nova/shared-types'
+  import { DATA_SCOPE_LABELS, type DataScope } from '@nova/shared-types'
   import RoleSearch from './modules/role-search.vue'
   import RoleEditDialog from './modules/role-edit-dialog.vue'
   import RolePermissionDialog from './modules/role-permission-dialog.vue'
@@ -89,6 +94,13 @@
         { prop: 'id', label: 'ID', width: 80 },
         { prop: 'name', label: '角色名称', minWidth: 120 },
         { prop: 'code', label: '角色编码', minWidth: 140 },
+        {
+          prop: 'dataScope',
+          label: '数据范围',
+          minWidth: 120,
+          formatter: (row) =>
+            DATA_SCOPE_LABELS[(row.dataScope ?? 1) as DataScope] ?? '-',
+        },
         { prop: 'sort', label: '排序', width: 80 },
         {
           prop: 'status',
@@ -106,7 +118,7 @@
         {
           prop: 'operation',
           label: '操作',
-          width: 180,
+          width: 220,
           fixed: 'right',
           formatter: (row) => {
             const items: TableActionItem[] = [

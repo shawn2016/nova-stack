@@ -1,42 +1,47 @@
 import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import OSS from 'ali-oss';
 import type { UploadResult } from '@nova/shared-types';
-import type { StorageService } from './storage.interface';
+import type { UploadAliyunSettings } from '../upload-settings.types';
+
+type AliyunRuntimeConfig = UploadAliyunSettings & { accessKeySecret: string };
 
 @Injectable()
-export class OssStorageService implements StorageService {
-  private client: OSS | null = null;
+export class OssStorageService {
+  private clientCache: { key: string; client: OSS } | null = null;
 
-  constructor(private readonly configService: ConfigService) {}
+  private getClient(config: AliyunRuntimeConfig): OSS {
+    const cacheKey = [
+      config.region,
+      config.bucket,
+      config.accessKeyId,
+      config.accessKeySecret,
+    ].join(':');
 
-  private getClient(): OSS {
-    if (!this.client) {
-      this.client = new OSS({
-        region: this.configService.get<string>('upload.ossRegion')!,
-        accessKeyId: this.configService.get<string>('upload.ossAccessKeyId')!,
-        accessKeySecret: this.configService.get<string>(
-          'upload.ossAccessKeySecret',
-        )!,
-        bucket: this.configService.get<string>('upload.ossBucket')!,
-      });
+    if (this.clientCache?.key === cacheKey) {
+      return this.clientCache.client;
     }
 
-    return this.client;
+    const client = new OSS({
+      region: config.region,
+      accessKeyId: config.accessKeyId,
+      accessKeySecret: config.accessKeySecret,
+      bucket: config.bucket,
+    });
+    this.clientCache = { key: cacheKey, client };
+    return client;
   }
 
-  async upload(file: Express.Multer.File, key: string): Promise<UploadResult> {
-    await this.getClient().put(key, file.buffer);
+  async upload(
+    file: Express.Multer.File,
+    key: string,
+    config: AliyunRuntimeConfig,
+  ): Promise<UploadResult> {
+    await this.getClient(config).put(key, file.buffer);
 
-    const publicBaseUrl = this.configService.get<string>(
-      'upload.ossPublicBaseUrl',
-    );
-    const region = this.configService.get<string>('upload.ossRegion')!;
-    const bucket = this.configService.get<string>('upload.ossBucket')!;
     const baseUrl =
-      publicBaseUrl && publicBaseUrl.length > 0
-        ? publicBaseUrl.replace(/\/$/, '')
-        : `https://${bucket}.${region}.aliyuncs.com`;
+      config.publicBaseUrl && config.publicBaseUrl.length > 0
+        ? config.publicBaseUrl.replace(/\/$/, '')
+        : `https://${config.bucket}.${config.region}.aliyuncs.com`;
 
     return {
       url: `${baseUrl}/${key}`,
@@ -44,5 +49,9 @@ export class OssStorageService implements StorageService {
       size: file.size,
       mimeType: file.mimetype,
     };
+  }
+
+  async delete(key: string, config: AliyunRuntimeConfig): Promise<void> {
+    await this.getClient(config).delete(key);
   }
 }

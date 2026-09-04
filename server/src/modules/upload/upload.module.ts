@@ -1,31 +1,32 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import {
+  SysConfigEntity,
+  SysFileEntity,
+  SysUserEntity,
+} from '../../database/entities';
 import { UploadController } from './upload.controller';
 import { UploadService } from './upload.service';
+import { CosStorageService } from './storage/cos-storage.service';
 import { LocalStorageService } from './storage/local-storage.service';
 import { OssStorageService } from './storage/oss-storage.service';
-import { STORAGE_SERVICE } from './storage/storage.interface';
+import { UploadSettingsService } from './upload-settings.service';
+import { UploadStorageAdapter } from './upload-storage.adapter';
 
 @Module({
-  imports: [ConfigModule],
+  imports: [
+    ConfigModule,
+    TypeOrmModule.forFeature([SysFileEntity, SysUserEntity, SysConfigEntity]),
+  ],
   controllers: [UploadController],
   providers: [
     UploadService,
+    UploadSettingsService,
+    UploadStorageAdapter,
     LocalStorageService,
     OssStorageService,
-    {
-      provide: STORAGE_SERVICE,
-      inject: [ConfigService, LocalStorageService, OssStorageService],
-      useFactory: (
-        configService: ConfigService,
-        localStorageService: LocalStorageService,
-        ossStorageService: OssStorageService,
-      ) => {
-        return configService.get<boolean>('upload.ossEnabled')
-          ? ossStorageService
-          : localStorageService;
-      },
-    },
+    CosStorageService,
   ],
 })
 export class UploadModule {}

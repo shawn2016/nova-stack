@@ -108,4 +108,45 @@ describe('Upload API (e2e)', () => {
       expect(res.body.code).toBe(ErrorCode.BAD_REQUEST);
     });
   });
+
+  describe('GET /files & DELETE /files/:id', () => {
+    it('上传后应出现在文件列表且可删除', async () => {
+      const uploadRes = await request(app.getHttpServer())
+        .post('/api/files/upload')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .attach('file', Buffer.from('list-test-png'), {
+          filename: 'resource.png',
+          contentType: 'image/png',
+        })
+        .expect(201);
+
+      const listRes = await request(app.getHttpServer())
+        .get('/api/files?pageSize=50')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+
+      expect(listRes.body.data.list.some(
+        (item: { url: string }) => item.url === uploadRes.body.data.url,
+      )).toBe(true);
+
+      const fileItem = listRes.body.data.list.find(
+        (item: { url: string }) => item.url === uploadRes.body.data.url,
+      );
+      expect(fileItem.storage).toBe('local');
+
+      await request(app.getHttpServer())
+        .delete(`/api/files/${fileItem.id}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+
+      const afterDelete = await request(app.getHttpServer())
+        .get('/api/files?pageSize=50')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+
+      expect(afterDelete.body.data.list.some(
+        (item: { id: string }) => item.id === fileItem.id,
+      )).toBe(false);
+    });
+  });
 });

@@ -25,6 +25,7 @@ import { SysSmsLogEntity } from './sys-sms-log.entity';
 import { SysEmailChannelEntity } from './sys-email-channel.entity';
 import { SysEmailTemplateEntity } from './sys-email-template.entity';
 import { SysEmailLogEntity } from './sys-email-log.entity';
+import { SysFileEntity } from './sys-file.entity';
 
 export { ArticleEntity } from './article.entity';
 export { MemberUserEntity } from './member-user.entity';
@@ -53,6 +54,7 @@ export { SysSmsLogEntity } from './sys-sms-log.entity';
 export { SysEmailChannelEntity } from './sys-email-channel.entity';
 export { SysEmailTemplateEntity } from './sys-email-template.entity';
 export { SysEmailLogEntity } from './sys-email-log.entity';
+export { SysFileEntity } from './sys-file.entity';
 
 /** 全部 RBAC / Member / Dict 实体，供 TypeORM 与测试加载 */
 export const entities = [
@@ -83,4 +85,5 @@ export const entities = [
   SysEmailChannelEntity,
   SysEmailTemplateEntity,
   SysEmailLogEntity,
+  SysFileEntity,
 ];

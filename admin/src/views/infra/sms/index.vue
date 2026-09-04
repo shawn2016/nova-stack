@@ -20,17 +20,25 @@
           @search="handleSearch"
         />
       </template>
-      <template #toolbar-left>
+      <template #head-actions>
         <template v-if="activeTab === 'channels'">
-          <ElButton v-permission="'infra:sms:channel:create'" @click="openChannelDialog('add')">
+          <ElButton
+            v-permission="'infra:sms:channel:create'"
+            type="primary"
+            @click="openChannelDialog('add')"
+          >
             新增通道
           </ElButton>
         </template>
         <template v-else-if="activeTab === 'templates'">
-          <ElButton v-permission="'infra:sms:template:create'" @click="openTemplateDialog('add')">
+          <ElButton
+            v-permission="'infra:sms:template:create'"
+            type="primary"
+            @click="openTemplateDialog('add')"
+          >
             新增模板
           </ElButton>
-          <ElButton v-permission="'infra:sms:send'" type="primary" plain @click="sendVisible = true">
+          <ElButton v-permission="'infra:sms:send'" plain @click="sendVisible = true">
             测试发送
           </ElButton>
         </template>

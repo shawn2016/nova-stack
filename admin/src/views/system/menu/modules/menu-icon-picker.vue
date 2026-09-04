@@ -3,7 +3,7 @@
     <ElPopover
       v-model:visible="popoverVisible"
       placement="bottom-start"
-      :width="420"
+      :width="480"
       trigger="click"
       popper-class="menu-icon-picker-popper"
       @show="handlePopoverShow"
@@ -11,7 +11,7 @@
       <template #reference>
         <ElInput
           :model-value="modelValue"
-          placeholder="请选择或输入图标，如 ep:connection"
+          placeholder="请选择或输入图标，如 ri:user-line"
           clearable
           @update:model-value="emit('update:modelValue', $event)"
           @clear="emit('update:modelValue', '')"
@@ -28,10 +28,14 @@
       <div class="menu-icon-picker-panel">
         <ElInput
           v-model="keyword"
-          placeholder="搜索图标..."
+          placeholder="搜索图标名称，如 user、settings"
           clearable
           :prefix-icon="Search"
         />
+
+        <div class="menu-icon-picker-panel__meta">
+          共 {{ filteredIcons.length }} 个图标
+        </div>
 
         <div class="menu-icon-picker-panel__grid">
           <button
@@ -43,7 +47,7 @@
             :title="icon"
             @click="selectIcon(icon)"
           >
-            <ArtSvgIcon :icon="icon" class="text-xl" />
+            <ArtSvgIcon :icon="icon" />
           </button>
         </div>
 
@@ -54,6 +58,7 @@
             v-model:current-page="currentPage"
             :page-size="MENU_ICON_PAGE_SIZE"
             :total="filteredIcons.length"
+            :pager-count="5"
             layout="prev, pager, next"
             small
             background
@@ -127,27 +132,55 @@
     width: 28px;
     height: 28px;
   }
+</style>
+
+<style lang="scss">
+  .menu-icon-picker-popper {
+    padding: 12px !important;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
 
   .menu-icon-picker-panel {
+    &__meta {
+      margin-top: 8px;
+      color: var(--el-text-color-secondary);
+      font-size: 12px;
+      line-height: 1;
+    }
+
     &__grid {
       display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 8px;
-      min-height: 220px;
-      margin: 12px 0 8px;
+      grid-template-columns: repeat(8, minmax(0, 1fr));
+      align-content: start;
+      align-items: start;
+      gap: 6px;
+      min-height: 228px;
+      margin: 10px 0 8px;
     }
 
     &__item {
+      box-sizing: border-box;
       width: 100%;
-      aspect-ratio: 1;
+      min-width: 0;
+      height: 32px;
+      padding: 0;
       border: 1px solid var(--el-border-color-lighter);
       border-radius: calc(var(--custom-radius) / 2 + 2px);
       background: var(--el-fill-color-blank);
+      color: var(--el-text-color-regular);
       cursor: pointer;
       transition:
         border-color 0.2s,
         background-color 0.2s,
         color 0.2s;
+
+      .art-svg-icon,
+      svg {
+        width: 16px;
+        height: 16px;
+        font-size: 16px;
+      }
 
       &:hover,
       &.is-active {
@@ -162,11 +195,5 @@
       justify-content: center;
       padding-top: 4px;
     }
-  }
-</style>
-
-<style lang="scss">
-  .menu-icon-picker-popper {
-    padding: 12px !important;
   }
 </style>

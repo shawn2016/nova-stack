@@ -12,6 +12,7 @@ import { Repository } from 'typeorm';
 import { JwtService } from '../../common/jwt/jwt.service';
 import { SysConfigEntity } from '../../database/entities';
 import { RedisService } from '../../redis/redis.service';
+import { DataScopeService } from '../data-scope/data-scope.service';
 import { ListOnlineSessionsDto } from './dto/list-online-sessions.dto';
 
 const SESSION_KEY_PREFIX = 'online:admin:';
@@ -32,6 +33,7 @@ export class OnlineSessionService {
     private readonly jwtService: JwtService,
     @InjectRepository(SysConfigEntity)
     private readonly configRepo: Repository<SysConfigEntity>,
+    private readonly dataScopeService: DataScopeService,
   ) {}
 
   async register(
@@ -68,6 +70,7 @@ export class OnlineSessionService {
   async list(
     query: ListOnlineSessionsDto,
     currentTokenId: string,
+    currentUserId: string,
   ): Promise<OnlineSessionListResult> {
     const { page = 1, pageSize = 10, keyword } = query;
 
@@ -118,13 +121,19 @@ export class OnlineSessionService {
     );
 
     const kw = keyword?.trim().toLowerCase();
-    const filtered = kw
+    let filtered = kw
       ? items.filter(
           (item) =>
             item.username.toLowerCase().includes(kw) ||
             item.ip.toLowerCase().includes(kw),
         )
       : items;
+
+    const scopeFilter = await this.dataScopeService.resolveForUser(currentUserId);
+    filtered = await this.dataScopeService.filterSessionsByScope(
+      filtered,
+      scopeFilter,
+    );
 
     const start = (page - 1) * pageSize;
     const list = filtered.slice(start, start + pageSize);

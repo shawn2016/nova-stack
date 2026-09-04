@@ -1,12 +1,18 @@
 <template>
   <div class="art-full-height">
     <ArtListPanel
+      title="定时任务"
       v-model:columns="columnChecks"
       :loading="loading"
       @refresh="refreshData"
     >
-      <template #toolbar-left>
-        <ElButton v-permission="'infra:job:create'" @click="openDialog('add')" v-ripple>
+      <template #head-actions>
+        <ElButton
+          v-permission="'infra:job:create'"
+          type="primary"
+          @click="openDialog('add')"
+          v-ripple
+        >
           新增任务
         </ElButton>
       </template>

@@ -1,6 +1,7 @@
 <template>
   <div class="dept-page art-full-height">
     <ArtListPanel
+      title="部门管理"
       v-model:show-search-bar="showSearchBar"
       v-model:columns="columnChecks"
       :loading="loading"
@@ -17,8 +18,8 @@
           @search="handleSearch"
         />
       </template>
-      <template #toolbar-left>
-        <ElButton v-permission="'system:dept:create'" @click="handleAdd" v-ripple>
+      <template #head-actions>
+        <ElButton v-permission="'system:dept:create'" type="primary" @click="handleAdd" v-ripple>
           新增部门
         </ElButton>
         <ElButton v-permission="'system:dept:settings'" @click="settingsVisible = true" v-ripple>

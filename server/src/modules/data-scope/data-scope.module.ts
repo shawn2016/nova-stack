@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {
   SysConfigEntity,
@@ -12,7 +12,7 @@ import { DataScopeService } from './data-scope.service';
 
 @Module({
   imports: [
-    DeptModule,
+    forwardRef(() => DeptModule),
     TypeOrmModule.forFeature([
       SysUserEntity,
       SysUserRoleEntity,

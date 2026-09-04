@@ -363,4 +363,18 @@ export async function initE2eSchema(dataSource: DataSource): Promise<void> {
       created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+  await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS sys_file (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      url VARCHAR(512) NOT NULL,
+      object_key VARCHAR(512) NOT NULL,
+      storage VARCHAR(16) NOT NULL,
+      mime_type VARCHAR(128) NOT NULL,
+      size INT NOT NULL,
+      original_name VARCHAR(255),
+      uploader_id BIGINT NOT NULL,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
 }

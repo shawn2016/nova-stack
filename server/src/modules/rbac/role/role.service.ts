@@ -12,6 +12,7 @@ import {
   type PaginationResult,
   type SysRoleDetail,
   type SysRoleListItem,
+  type SysPermissionOption,
 } from '@nova/shared-types';
 import { In, Repository } from 'typeorm';
 import {
@@ -67,6 +68,16 @@ export class RoleService {
   async findById(id: string): Promise<SysRoleDetail> {
     const role = await this.findEntityById(id);
     return this.toDetail(role);
+  }
+
+  async listPermissionOptions(): Promise<SysPermissionOption[]> {
+    const permissions = await this.permissionRepo.find({
+      order: { code: 'ASC' },
+    });
+    return permissions.map((item) => ({
+      code: item.code,
+      name: item.name,
+    }));
   }
 
   async create(dto: CreateRoleDto): Promise<SysRoleDetail> {

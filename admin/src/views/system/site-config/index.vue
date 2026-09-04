@@ -1,6 +1,7 @@
 <template>
   <div class="art-full-height">
     <ArtListPanel
+      title="站点配置"
       v-model:show-search-bar="showSearchBar"
       v-model:columns="columnChecks"
       :loading="loading"
@@ -9,12 +10,15 @@
       <template #search>
         <SiteConfigSearch v-model="searchForm" @search="handleSearch" @reset="resetSearchParams" />
       </template>
-      <template #toolbar-left>
-        <ElSpace wrap>
-          <ElButton v-permission="'system:config:create'" @click="showDialog('add')" v-ripple>
-            新增配置
-          </ElButton>
-        </ElSpace>
+      <template #head-actions>
+        <ElButton
+          v-permission="'system:config:create'"
+          type="primary"
+          @click="showDialog('add')"
+          v-ripple
+        >
+          新增配置
+        </ElButton>
       </template>
 
       <ArtTable

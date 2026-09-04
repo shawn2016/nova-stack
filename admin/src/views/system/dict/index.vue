@@ -3,6 +3,7 @@
     <ElRow :gutter="12" class="dict-page__row">
       <ElCol :xs="24" :lg="12" class="dict-page__col">
         <ArtListPanel
+          title="字典类型"
           v-model:show-search-bar="showTypeSearchBar"
           v-model:columns="typeColumnChecks"
           :loading="typeLoading"
@@ -19,16 +20,15 @@
               @search="handleTypeSearch"
             />
           </template>
-          <template #toolbar-left>
-            <ElSpace wrap>
-              <ElButton
-                v-permission="'system:dict:type:create'"
-                @click="showTypeDialog('add')"
-                v-ripple
-              >
-                新增类型
-              </ElButton>
-            </ElSpace>
+          <template #head-actions>
+            <ElButton
+              v-permission="'system:dict:type:create'"
+              type="primary"
+              @click="showTypeDialog('add')"
+              v-ripple
+            >
+              新增类型
+            </ElButton>
           </template>
 
           <ArtTable
@@ -47,6 +47,7 @@
 
       <ElCol :xs="24" :lg="12" class="dict-page__col">
         <ArtListPanel
+          title="字典数据"
           v-model:show-search-bar="showDataSearchBar"
           v-model:columns="dataColumnChecks"
           :loading="dataLoading"
@@ -63,21 +64,20 @@
               @search="handleDataSearch"
             />
           </template>
-          <template #toolbar-left>
-            <ElSpace wrap>
-              <ElButton
-                v-permission="'system:dict:data:create'"
-                :disabled="!selectedType"
-                @click="showDataDialog('add')"
-                v-ripple
-              >
-                新增字典项
-              </ElButton>
-              <span v-if="selectedType" class="dict-page__subtitle">
-                {{ selectedType.name }}（{{ selectedType.code }}）
-              </span>
-              <span v-else class="dict-page__subtitle text-g-400">请先选择左侧字典类型</span>
-            </ElSpace>
+          <template #head-actions>
+            <ElButton
+              v-permission="'system:dict:data:create'"
+              type="primary"
+              :disabled="!selectedType"
+              @click="showDataDialog('add')"
+              v-ripple
+            >
+              新增字典项
+            </ElButton>
+            <span v-if="selectedType" class="dict-page__subtitle">
+              {{ selectedType.name }}（{{ selectedType.code }}）
+            </span>
+            <span v-else class="dict-page__subtitle text-g-400">请先选择左侧字典类型</span>
           </template>
 
           <ArtTable

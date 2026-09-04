@@ -11,6 +11,7 @@ import {
   Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { CurrentUser, AuthUser } from '../auth/decorators/current-user.decorator';
 import { RequirePermission } from '../rbac/decorators/require-permission.decorator';
 import { CreateDeptDto } from './dto/create-dept.dto';
 import { ListDeptsDto } from './dto/list-depts.dto';
@@ -28,15 +29,15 @@ export class DeptController {
   @Get('tree/all')
   @RequirePermission('system:dept:list')
   @ApiOperation({ summary: '部门树（含停用）' })
-  treeAll() {
-    return this.deptService.tree(false);
+  treeAll(@CurrentUser() user: AuthUser) {
+    return this.deptService.tree(false, user.userId);
   }
 
   @Get('tree')
   @RequirePermission('system:dept:list')
   @ApiOperation({ summary: '部门树（仅启用）' })
-  tree() {
-    return this.deptService.tree(true);
+  tree(@CurrentUser() user: AuthUser) {
+    return this.deptService.tree(true, user.userId);
   }
 
   @Get('settings')
@@ -56,8 +57,8 @@ export class DeptController {
   @Get()
   @RequirePermission('system:dept:list')
   @ApiOperation({ summary: '部门分页列表' })
-  list(@Query() query: ListDeptsDto) {
-    return this.deptService.list(query);
+  list(@Query() query: ListDeptsDto, @CurrentUser() user: AuthUser) {
+    return this.deptService.list(query, user.userId);
   }
 
   @Get(':id')

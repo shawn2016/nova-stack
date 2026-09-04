@@ -1,6 +1,7 @@
 <template>
   <div class="menu-page art-full-height">
     <ArtListPanel
+      title="菜单管理"
       v-model:show-search-bar="showSearchBar"
       v-model:columns="columnChecks"
       :loading="loading"
@@ -17,8 +18,8 @@
           @search="handleSearch"
         />
       </template>
-      <template #toolbar-left>
-        <ElButton v-permission="'system:menu:create'" @click="handleAddMenu" v-ripple>
+      <template #head-actions>
+        <ElButton v-permission="'system:menu:create'" type="primary" @click="handleAddMenu" v-ripple>
           添加菜单
         </ElButton>
         <ElButton @click="toggleExpand" v-ripple>

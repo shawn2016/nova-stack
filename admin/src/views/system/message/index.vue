@@ -3,6 +3,7 @@
     <ArtListPanel
       v-model:active-tab="activeTab"
       v-model:show-search-bar="showSearchBar"
+      v-model:columns="columnChecks"
       :tabs="MESSAGE_TABS"
       :loading="loading"
       @refresh="loadData"
@@ -18,10 +19,11 @@
           @search="handleSearch"
         />
       </template>
-      <template #toolbar-left>
+      <template #head-actions>
         <ElButton
           v-if="activeTab === 'inbox'"
           v-permission="'system:message:send'"
+          type="primary"
           @click="sendVisible = true"
           v-ripple
         >
@@ -81,7 +83,7 @@
     },
   ])
 
-  const { columns } = useTableColumns(() => [
+  const { columns, columnChecks } = useTableColumns(() => [
     { prop: 'title', label: '标题', minWidth: 160 },
     {
       prop: 'isRead',
@@ -97,6 +99,7 @@
       prop: 'operation',
       label: '操作',
       width: 140,
+      fixed: 'right',
       formatter: (row: MessageListItem) => {
         const items: TableActionItem[] = []
         if (activeTab.value === 'inbox' && row.isRead === 0) {

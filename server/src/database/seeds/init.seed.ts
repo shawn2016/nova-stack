@@ -81,6 +81,9 @@ const PERMISSION_SEEDS: PermissionSeed[] = [
   { name: '登录日志列表', code: 'system:audit:login:list', type: 'api' },
   { name: '操作日志列表', code: 'system:audit:oper:list', type: 'api' },
   { name: '文件上传', code: 'system:file:upload', type: 'api' },
+  { name: '文件列表', code: 'system:file:list', type: 'api' },
+  { name: '文件删除', code: 'system:file:delete', type: 'api' },
+  { name: '文件存储配置', code: 'system:file:settings', type: 'api' },
   { name: '地区列表', code: 'system:region:list', type: 'api' },
   { name: '地区新增', code: 'system:region:create', type: 'api' },
   { name: '地区编辑', code: 'system:region:update', type: 'api' },
@@ -236,6 +239,15 @@ const MENU_SEEDS: MenuSeed[] = [
         type: 'menu',
         permissionCode: 'system:session:list',
         sort: 11,
+      },
+      {
+        name: '文件管理',
+        path: '/system/file',
+        component: 'views/system/file/index',
+        icon: 'ri:folder-image-line',
+        type: 'menu',
+        permissionCode: 'system:file:list',
+        sort: 12,
       },
     ],
   },
@@ -473,6 +485,15 @@ const DEV_DEPT_CONFIG_SEEDS: SiteConfigSeed[] = [
   },
 ];
 
+const DEV_UPLOAD_CONFIG_SEEDS: SiteConfigSeed[] = [
+  {
+    configKey: 'upload.storage.provider',
+    configName: '存储提供商',
+    configValue: 'local',
+    configGroup: 'upload',
+  },
+];
+
 interface DeptSeed {
   name: string;
   parentName?: string;
@@ -553,6 +574,26 @@ async function upsertDevDeptConfigs(
       config.remark = seed.remark ?? null;
     }
     await repo.save(config);
+  }
+}
+
+async function upsertDevUploadConfigs(
+  repo: Repository<SysConfigEntity>,
+): Promise<void> {
+  for (const seed of DEV_UPLOAD_CONFIG_SEEDS) {
+    const exists = await repo.findOne({ where: { configKey: seed.configKey } });
+    if (exists) {
+      continue;
+    }
+    await repo.save(
+      repo.create({
+        configKey: seed.configKey,
+        configName: seed.configName,
+        configValue: seed.configValue,
+        configGroup: seed.configGroup ?? null,
+        remark: seed.remark ?? null,
+      }),
+    );
   }
 }
 
@@ -925,6 +966,7 @@ export async function runInitSeed(dataSource: DataSource): Promise<void> {
   await upsertDevOnlineSessionConfigs(configRepo);
   await upsertDevDataScopeConfigs(configRepo);
   await upsertDevDeptConfigs(configRepo);
+  await upsertDevUploadConfigs(configRepo);
   const deptNameToId = await upsertDevDepts(deptRepo);
   await upsertDevJobs(jobRepo);
   await upsertDevSms(smsChannelRepo, smsTemplateRepo);

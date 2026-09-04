@@ -31,6 +31,30 @@ describe('Data Scope API (e2e)', () => {
       .expect(200);
   }
 
+  async function assignPermissions(
+    roleId: string,
+    permissionCodes: string[],
+  ): Promise<void> {
+    await request(app.getHttpServer())
+      .put(`/api/roles/${roleId}/permissions`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ permissionCodes })
+      .expect(200);
+  }
+
+  function flattenDeptNames(
+    nodes: { name: string; children?: typeof nodes }[],
+  ): string[] {
+    const names: string[] = [];
+    for (const node of nodes) {
+      names.push(node.name);
+      if (node.children?.length) {
+        names.push(...flattenDeptNames(node.children));
+      }
+    }
+    return names;
+  }
+
   async function createUserWithRole(options: {
     username: string;
     password: string;
@@ -279,6 +303,163 @@ describe('Data Scope API (e2e)', () => {
       const usernames = res.body.data.list.map((u: { username: string }) => u.username);
       expect(usernames).toContain('scope_ops_user');
       expect(usernames).not.toContain('scope_rnd_user');
+      expect(usernames).not.toContain('admin');
+    });
+  });
+
+  describe('Dept tree/list filtering', () => {
+    let rndDeptId: string;
+    let deptRoleId: string;
+
+    beforeAll(async () => {
+      const treeRes = await request(app.getHttpServer())
+        .get('/api/depts/tree/all')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+
+      rndDeptId = findDeptByName(treeRes.body.data, '研发部')!;
+      expect(rndDeptId).toBeDefined();
+
+      const deptRoleRes = await request(app.getHttpServer())
+        .post('/api/roles')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          name: 'E2E 部门树可见',
+          code: 'e2e_scope_dept_tree',
+          dataScope: DATA_SCOPE_DEPT,
+        })
+        .expect(201);
+      deptRoleId = deptRoleRes.body.data.id;
+      await assignPermissions(deptRoleId, ['system:dept:list']);
+
+      await createUserWithRole({
+        username: 'scope_dept_tree_user',
+        password: 'scope12345',
+        deptId: rndDeptId,
+        roleId: deptRoleId,
+      });
+    });
+
+    it('DEPT 范围部门树仅含本部门及祖先', async () => {
+      const token = await login('scope_dept_tree_user', 'scope12345');
+
+      const res = await request(app.getHttpServer())
+        .get('/api/depts/tree/all')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+
+      const names = flattenDeptNames(res.body.data);
+      expect(names).toContain('研发部');
+      expect(names).toContain('总公司');
+      expect(names).not.toContain('运营部');
+    });
+  });
+
+  describe('Audit log filtering', () => {
+    let rndDeptId: string;
+    let selfRoleId: string;
+
+    beforeAll(async () => {
+      const treeRes = await request(app.getHttpServer())
+        .get('/api/depts/tree/all')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+
+      rndDeptId = findDeptByName(treeRes.body.data, '研发部')!;
+
+      const selfRoleRes = await request(app.getHttpServer())
+        .post('/api/roles')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          name: 'E2E 审计仅本人',
+          code: 'e2e_scope_audit_self',
+          dataScope: DATA_SCOPE_SELF,
+        })
+        .expect(201);
+      selfRoleId = selfRoleRes.body.data.id;
+      await assignPermissions(selfRoleId, [
+        'system:audit:login:list',
+        'system:audit:oper:list',
+      ]);
+
+      await createUserWithRole({
+        username: 'scope_audit_self_user',
+        password: 'scope12345',
+        deptId: rndDeptId,
+        roleId: selfRoleId,
+      });
+
+      await login('scope_audit_self_user', 'scope12345');
+      await login('admin', 'admin123');
+    });
+
+    it('SELF 范围登录日志仅返回本人', async () => {
+      const token = await login('scope_audit_self_user', 'scope12345');
+
+      const res = await request(app.getHttpServer())
+        .get('/api/audit/login-logs?pageSize=100')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+
+      const usernames = res.body.data.list.map((item: { username: string }) => item.username);
+      expect(usernames.every((name: string) => name === 'scope_audit_self_user')).toBe(true);
+    });
+  });
+
+  describe('Online session filtering', () => {
+    let rndDeptId: string;
+    let opsDeptId: string;
+    let deptRoleId: string;
+
+    beforeAll(async () => {
+      const treeRes = await request(app.getHttpServer())
+        .get('/api/depts/tree/all')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+
+      rndDeptId = findDeptByName(treeRes.body.data, '研发部')!;
+      opsDeptId = findDeptByName(treeRes.body.data, '运营部')!;
+
+      const deptRoleRes = await request(app.getHttpServer())
+        .post('/api/roles')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          name: 'E2E 会话部门可见',
+          code: 'e2e_scope_session_dept',
+          dataScope: DATA_SCOPE_DEPT,
+        })
+        .expect(201);
+      deptRoleId = deptRoleRes.body.data.id;
+      await assignPermissions(deptRoleId, ['system:session:list']);
+
+      await createUserWithRole({
+        username: 'scope_session_rnd',
+        password: 'scope12345',
+        deptId: rndDeptId,
+        roleId: deptRoleId,
+      });
+
+      await createUserWithRole({
+        username: 'scope_session_ops',
+        password: 'scope12345',
+        deptId: opsDeptId,
+        roleId: deptRoleId,
+      });
+
+      await login('scope_session_ops', 'scope12345');
+    });
+
+    it('DEPT 范围在线会话不含其他部门用户', async () => {
+      const token = await login('scope_session_rnd', 'scope12345');
+
+      const res = await request(app.getHttpServer())
+        .get('/api/sessions/online?pageSize=100')
+        .set('Authorization', `Bearer ${token}`)
+        .expect(200);
+
+      const usernames = res.body.data.list.map((item: { username: string }) => item.username);
+      expect(usernames).toContain('scope_session_rnd');
+      expect(usernames).not.toContain('scope_session_ops');
       expect(usernames).not.toContain('admin');
     });
   });
