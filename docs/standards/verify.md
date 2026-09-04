@@ -36,7 +36,7 @@ VERIFY_SKIP_BROWSER=1 pnpm verify
 1. **static** 先跑（确保 shared-types 构建就绪）
 2. **api-e2e** 与 **browser-smoke** 并行
 
-browser-smoke 通过 `e2e/global-setup.ts` 登录一次并写入 `.verify/admin-auth.json`，各用例复用 `storageState`，避免 70+ 次重复滑块登录。本地串行 workers=1；如需调试并发可设 `VERIFY_PW_WORKERS=4`（需确保 dev 服务扛得住）。
+browser-smoke 通过 `e2e/global-setup.ts` 登录一次并写入 `.verify/admin-auth.json`，各用例复用 `storageState`，避免 70+ 次重复滑块登录。默认 **workers=2**（本地 dev 实测稳定且比串行快约 40%）；可设 `VERIFY_PW_WORKERS=1` 排查 flaky，或 `VERIFY_PW_WORKERS=3+`（需 dev 服务扛得住，易不稳定）。
 
 Tier 控制台输出会附带耗时，例如 `✓ pass (87.9s)`。
 

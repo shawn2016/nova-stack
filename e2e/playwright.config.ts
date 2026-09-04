@@ -6,7 +6,7 @@ const e2eDir = dirname(fileURLToPath(import.meta.url));
 const rootDir = join(e2eDir, '..');
 const adminAuthFile = join(rootDir, '.verify/admin-auth.json');
 const adminBaseURL = process.env.VERIFY_ADMIN_URL ?? 'http://localhost:5173';
-const workerCount = process.env.VERIFY_PW_WORKERS ? Number(process.env.VERIFY_PW_WORKERS) : 1;
+const workerCount = process.env.VERIFY_PW_WORKERS ? Number(process.env.VERIFY_PW_WORKERS) : 2;
 
 export default defineConfig({
   testDir: './specs',

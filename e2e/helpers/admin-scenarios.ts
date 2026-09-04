@@ -19,6 +19,14 @@ function tableScope(page: Page, panel?: ReturnType<Page['locator']>) {
   return panel ?? page.locator('.art-list-panel').first();
 }
 
+/** 等待列表 loading 遮罩消失，避免搜索按钮被拦截 */
+async function waitPanelReady(scope: ReturnType<Page['locator']>) {
+  const mask = scope.locator('.el-loading-mask');
+  if ((await mask.count()) > 0) {
+    await expect(mask.first()).toBeHidden({ timeout: 30_000 });
+  }
+}
+
 /** 点击表格操作（支持「更多」溢出菜单） */
 export async function clickTableAction(
   page: Page,
@@ -38,26 +46,24 @@ export async function clickTableAction(
 /** 搜索后列表/主内容仍可见 */
 export async function scenarioSearch(page: Page, keyword = 'a', panel?: ReturnType<Page['locator']>) {
   const scope = tableScope(page, panel);
+  await waitPanelReady(scope);
   const searchArea = scope.locator('.art-list-panel__search');
+  await expect(searchArea).toBeVisible({ timeout: 15_000 });
 
-  const keywordField = searchArea.locator('input.el-input__inner:not([readonly])').first();
+  const textInput = searchArea.locator('input.el-input__inner:not([readonly])');
+  const select = searchArea.locator('.el-select');
+  await expect(textInput.or(select).first()).toBeVisible({ timeout: 15_000 });
 
-  if (await keywordField.isVisible().catch(() => false)) {
-    await keywordField.fill(keyword);
-  } else if ((await searchArea.locator('.el-select').count()) > 0) {
-    const select = searchArea.locator('.el-select').first();
-    await expect(select).toBeVisible({ timeout: 15_000 });
-    await select.click();
+  if ((await textInput.count()) > 0) {
+    await textInput.first().fill(keyword);
+  } else {
+    await select.first().click();
     const dropdown = page.locator('.el-select-dropdown:visible').last();
     await expect(dropdown).toBeVisible({ timeout: 5_000 });
     await dropdown.getByRole('option').first().click();
-  } else {
-    const combobox = searchArea.locator('[role="combobox"]').first();
-    await expect(combobox).toBeVisible({ timeout: 15_000 });
-    await combobox.click({ force: true });
-    await page.getByRole('option').first().click();
   }
 
+  await waitPanelReady(scope);
   await searchArea.getByRole('button', { name: /^搜索$|^查询$|Search/i }).click();
   await expect(page.locator('.el-table, .file-grid-wrap, .el-empty').first()).toBeVisible({
     timeout: 15_000,
