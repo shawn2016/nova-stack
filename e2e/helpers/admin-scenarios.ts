@@ -1,5 +1,9 @@
 import { expect, test, type Page } from '@playwright/test';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { expectTableLoaded, openAdminPage } from './admin-page';
+
+const fixturesDir = join(dirname(fileURLToPath(import.meta.url)), '../fixtures');
 
 export type CrudScenarioConfig = {
   module: string;
@@ -34,13 +38,20 @@ export async function clickTableAction(
   panel?: ReturnType<Page['locator']>,
 ) {
   const scope = tableScope(page, panel);
+  await waitPanelReady(scope);
+  await expect(scope.locator('.el-table__row').first()).toBeVisible({ timeout: 30_000 });
+
   const inline = scope.locator('.art-table-actions__link').filter({ hasText: new RegExp(`^${label}$`) });
   if ((await inline.count()) > 0) {
     await inline.first().click();
     return;
   }
-  await scope.locator('.art-table-actions__link').filter({ hasText: /^更多$/ }).click();
-  await page.getByRole('menuitem', { name: label }).click();
+  const more = scope.locator('.art-table-actions__link').filter({ hasText: /^更多$/ }).first();
+  await expect(more).toBeVisible({ timeout: 15_000 });
+  await more.click();
+  const menuItem = page.getByRole('menuitem', { name: label });
+  await expect(menuItem).toBeVisible({ timeout: 5_000 });
+  await menuItem.click();
 }
 
 /** 搜索后列表/主内容仍可见 */
@@ -101,8 +112,16 @@ export async function scenarioEditDialog(page: Page, dialog: string | RegExp, pa
 export async function scenarioDeleteConfirm(page: Page, panel?: ReturnType<Page['locator']>) {
   await clickTableAction(page, '删除', panel);
   const box = page.locator('.el-message-box');
-  await expect(box).toBeVisible({ timeout: 5_000 });
+  await expect(box).toBeVisible({ timeout: 10_000 });
   await box.getByRole('button', { name: /^取消$|Cancel/i }).click();
+}
+
+/** 文件页无数据时上传 smoke 夹具，保证删除场景可测 */
+async function ensureFileCard(page: Page) {
+  const card = page.locator('.file-card').first();
+  if (await card.isVisible().catch(() => false)) return;
+  await page.locator('input[type="file"]').first().setInputFiles(join(fixturesDir, 'smoke.png'));
+  await expect(card).toBeVisible({ timeout: 30_000 });
 }
 
 /** 列表表格渲染 */
@@ -309,13 +328,10 @@ export function registerFileScenarios() {
   });
   test(`${path} 删除确认`, { tag: scenarioTags(module, path, 'delete') }, async ({ page }) => {
     await openAdminPage(page, path);
-    const count = await page.locator('.file-card').count();
-    if (count === 0) {
-      test.skip(true, '暂无文件，跳过删除场景');
-    }
+    await ensureFileCard(page);
     await page.locator('.file-card').first().getByRole('button', { name: '删除' }).click();
     const box = page.locator('.el-message-box');
-    await expect(box).toBeVisible({ timeout: 5_000 });
+    await expect(box).toBeVisible({ timeout: 10_000 });
     await box.getByRole('button', { name: /^取消$|Cancel/i }).click();
   });
 }
