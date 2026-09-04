@@ -1,11 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
-import { IsArray, IsInt } from 'class-validator';
+import { IsArray, IsString } from 'class-validator';
+import type { AssignUserRolesDto as IAssignUserRolesDto } from '@nova/shared-types';
 
-export class AssignUserRolesDto {
-  @ApiProperty({ type: [Number] })
+export class AssignUserRolesDto implements IAssignUserRolesDto {
+  @ApiProperty({ type: [String] })
   @IsArray()
-  @Type(() => Number)
-  @IsInt({ each: true })
-  roleIds!: number[];
+  @IsString({ each: true })
+  roleIds!: string[];
 }

@@ -1,4 +1,3 @@
-import { ConfigService } from '@nestjs/config';
 import { mkdtemp, readFile, rm } from 'fs/promises';
 import { join } from 'path';
 import { tmpdir } from 'os';
@@ -28,18 +27,7 @@ describe('LocalStorageService', () => {
 
   beforeEach(async () => {
     uploadsRoot = await mkdtemp(join(tmpdir(), 'nova-upload-'));
-
-    const configService = {
-      get: jest.fn((key: string) => {
-        const values: Record<string, string | number> = {
-          'upload.appPublicUrl': 'http://localhost:3000',
-          'upload.uploadsDir': uploadsRoot,
-        };
-        return values[key];
-      }),
-    } as unknown as ConfigService;
-
-    service = new LocalStorageService(configService);
+    service = new LocalStorageService();
   });
 
   afterEach(async () => {
@@ -50,7 +38,10 @@ describe('LocalStorageService', () => {
     const key = 'admin/user-1/test-key.png';
     const file = createMockFile();
 
-    const result = await service.upload(file, key);
+    const result = await service.upload(file, key, {
+      appPublicUrl: 'http://localhost:3000',
+      uploadsDir: uploadsRoot,
+    });
 
     const saved = await readFile(join(uploadsRoot, key));
     expect(saved.toString()).toBe('png-data');

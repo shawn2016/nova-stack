@@ -26,11 +26,37 @@
 
     #app-content {
       flex: 1;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
 
       :deep(.layout-content) {
+        display: flex;
+        flex: 1;
+        flex-direction: column;
+        min-height: 0;
         box-sizing: border-box;
-        width: calc(100% - 40px);
-        margin: auto;
+        margin: var(--art-content-inset, 10px);
+
+        &.is-full-page {
+          margin: 0;
+        }
+
+        > *:last-child {
+          display: flex;
+          flex: 1;
+          flex-direction: column;
+          min-height: 0;
+        }
+
+        .art-page-view {
+          display: flex;
+          flex: 1;
+          flex-direction: column;
+          min-height: 0;
+          height: auto !important;
+        }
 
         // 子页面默认 style
         .page-content {
@@ -70,12 +96,6 @@
       width: 100%;
       height: auto;
       overflow: visible;
-
-      #app-content {
-        :deep(.layout-content) {
-          width: calc(100% - 40px);
-        }
-      }
     }
   }
 }
@@ -85,7 +105,7 @@
     #app-main {
       #app-content {
         :deep(.layout-content) {
-          width: calc(100% - 30px);
+          margin: calc(var(--art-content-inset, 10px) * 0.75);
         }
       }
     }

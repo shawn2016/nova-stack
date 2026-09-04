@@ -2,7 +2,7 @@
   <ElDialog
     v-model="visible"
     title="分配权限"
-    width="560px"
+    width="680px"
     align-center
     @close="handleClose"
   >
@@ -10,25 +10,61 @@
       type="info"
       :closable="false"
       show-icon
-      title="权限变更后，相关用户需重新登录后菜单与按钮权限才会生效。"
+      title="功能权限变更后，相关用户需重新登录后菜单与按钮权限才会生效。"
       class="mb-4"
     />
 
-    <ElScrollbar v-loading="loading" height="50vh">
-      <div v-for="group in PERMISSION_GROUPS" :key="group" class="permission-group">
-        <div class="permission-group__title">{{ group }}</div>
-        <ElCheckboxGroup v-model="checkedCodes">
-          <ElCheckbox
-            v-for="item in groupOptions(group)"
-            :key="item.code"
-            :label="item.code"
-            :value="item.code"
-          >
-            {{ item.name }}
-          </ElCheckbox>
-        </ElCheckboxGroup>
-      </div>
-    </ElScrollbar>
+    <div v-loading="loading" class="permission-dialog">
+      <section class="permission-dialog__section">
+        <div class="permission-dialog__title">功能权限</div>
+        <ElScrollbar height="36vh">
+          <ElTree
+            ref="treeRef"
+            :data="permissionTree"
+            show-checkbox
+            node-key="id"
+            default-expand-all
+            :props="{ label: 'label', children: 'children', disabled: 'disabled' }"
+          />
+        </ElScrollbar>
+      </section>
+
+      <section class="permission-dialog__section">
+        <div class="permission-dialog__title">数据范围</div>
+        <ElForm label-width="96px">
+          <ElFormItem label="数据范围">
+            <ElSelect
+              v-model="dataScope"
+              :disabled="isSuperAdmin"
+              placeholder="请选择数据范围"
+              style="width: 100%"
+            >
+              <ElOption
+                v-for="(label, value) in DATA_SCOPE_LABELS"
+                :key="value"
+                :label="label"
+                :value="Number(value)"
+              />
+            </ElSelect>
+          </ElFormItem>
+          <ElFormItem v-if="dataScope === DATA_SCOPE_CUSTOM" label="自定义部门">
+            <ElTreeSelect
+              v-model="customDeptIds"
+              :data="deptOptions"
+              multiple
+              show-checkbox
+              check-strictly
+              collapse-tags
+              collapse-tags-tooltip
+              placeholder="请选择部门"
+              style="width: 100%"
+              node-key="id"
+              :props="{ label: 'label', value: 'id', children: 'children' }"
+            />
+          </ElFormItem>
+        </ElForm>
+      </section>
+    </div>
 
     <template #footer>
       <ElButton @click="handleClose">取消</ElButton>
@@ -38,9 +74,27 @@
 </template>
 
 <script setup lang="ts">
-  import type { SysRoleListItem } from '@nova/shared-types'
-  import { assignRolePermissions, fetchRoleDetail } from '@/api/system-manage'
-  import { PERMISSION_GROUPS, PERMISSION_OPTIONS } from '@/constants/permissions'
+  import type { ElTree } from 'element-plus'
+  import type { DeptTreeNode, SysRoleListItem } from '@nova/shared-types'
+  import {
+    DATA_SCOPE_ALL,
+    DATA_SCOPE_CUSTOM,
+    DATA_SCOPE_LABELS,
+    type DataScope,
+  } from '@nova/shared-types'
+  import {
+    assignRolePermissions,
+    fetchMenuList,
+    fetchPermissionOptions,
+    fetchRoleDetail,
+    updateRole,
+  } from '@/api/system-manage'
+  import { fetchDeptTreeAll } from '@/api/dept'
+  import {
+    buildPermissionTree,
+    permissionCodesToTreeKeys,
+    type PermissionTreeNode,
+  } from '@/utils/permission-tree'
 
   interface Props {
     modelValue: boolean
@@ -59,25 +113,55 @@
 
   const emit = defineEmits<Emits>()
 
+  const treeRef = ref<InstanceType<typeof ElTree>>()
   const loading = ref(false)
   const submitting = ref(false)
-  const checkedCodes = ref<string[]>([])
+  const permissionTree = ref<PermissionTreeNode[]>([])
+  const deptOptions = ref<{ id: string; label: string; children?: typeof deptOptions.value }[]>([])
+  const dataScope = ref<DataScope>(DATA_SCOPE_ALL)
+  const customDeptIds = ref<string[]>([])
 
   const visible = computed({
     get: () => props.modelValue,
     set: (value) => emit('update:modelValue', value),
   })
 
-  const groupOptions = (group: string) =>
-    PERMISSION_OPTIONS.filter((item) => item.group === group)
+  const isSuperAdmin = computed(() => props.roleData?.code === 'super_admin')
+
+  function mapDeptTree(nodes: DeptTreeNode[]): typeof deptOptions.value {
+    return nodes.map((node) => ({
+      id: node.id,
+      label: node.name,
+      ...(node.children?.length ? { children: mapDeptTree(node.children) } : {}),
+    }))
+  }
+
+  async function loadPermissionTree() {
+    const [menus, permissions] = await Promise.all([
+      fetchMenuList(),
+      fetchPermissionOptions(),
+    ])
+    permissionTree.value = buildPermissionTree(menus, permissions)
+  }
 
   async function loadRolePermissions() {
     if (!props.roleData?.id) return
 
     loading.value = true
     try {
-      const detail = await fetchRoleDetail(props.roleData.id)
-      checkedCodes.value = [...detail.permissionCodes]
+      const [detail] = await Promise.all([
+        fetchRoleDetail(props.roleData.id),
+        loadPermissionTree(),
+        fetchDeptTreeAll().then((tree) => {
+          deptOptions.value = mapDeptTree(tree)
+        }),
+      ])
+
+      dataScope.value = detail.dataScope ?? DATA_SCOPE_ALL
+      customDeptIds.value = [...(detail.customDeptIds ?? [])]
+
+      await nextTick()
+      treeRef.value?.setCheckedKeys(permissionCodesToTreeKeys(detail.permissionCodes), false)
     } catch (error) {
       ElMessage.error(error instanceof Error ? error.message : '加载权限失败')
     } finally {
@@ -89,25 +173,46 @@
     () => props.modelValue,
     (newVal) => {
       if (newVal && props.roleData) {
-        loadRolePermissions()
+        void loadRolePermissions()
       }
     },
   )
 
+  watch(dataScope, (scope) => {
+    if (scope !== DATA_SCOPE_CUSTOM) {
+      customDeptIds.value = []
+    }
+  })
+
   const handleClose = () => {
     visible.value = false
-    checkedCodes.value = []
+    permissionTree.value = []
+    dataScope.value = DATA_SCOPE_ALL
+    customDeptIds.value = []
+    treeRef.value?.setCheckedKeys([], false)
   }
 
   const savePermission = async () => {
     if (!props.roleData?.id) return
 
+    const checkedNodes = (treeRef.value?.getCheckedNodes(false, true) ?? []) as PermissionTreeNode[]
+    const permissionCodes = checkedNodes
+      .filter((node) => node.nodeType === 'permission' && node.permissionCode)
+      .map((node) => node.permissionCode!)
+
     submitting.value = true
     try {
-      await assignRolePermissions(props.roleData.id, {
-        permissionCodes: checkedCodes.value,
-      })
-      ElMessage.success('权限保存成功，相关用户需重新登录后生效')
+      await assignRolePermissions(props.roleData.id, { permissionCodes })
+
+      if (!isSuperAdmin.value) {
+        await updateRole(props.roleData.id, {
+          dataScope: dataScope.value,
+          customDeptIds:
+            dataScope.value === DATA_SCOPE_CUSTOM ? customDeptIds.value : [],
+        })
+      }
+
+      ElMessage.success('保存成功，相关用户需重新登录后生效')
       emit('success')
       handleClose()
     } catch (error) {
@@ -119,20 +224,15 @@
 </script>
 
 <style scoped>
-  .permission-group {
-    margin-bottom: 16px;
+  .permission-dialog__section + .permission-dialog__section {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--el-border-color-lighter);
   }
 
-  .permission-group__title {
-    margin-bottom: 8px;
+  .permission-dialog__title {
+    margin-bottom: 10px;
     font-weight: 600;
     color: var(--el-text-color-primary);
-  }
-
-  :deep(.el-checkbox) {
-    display: inline-flex;
-    width: 48%;
-    margin-right: 0;
-    margin-bottom: 8px;
   }
 </style>

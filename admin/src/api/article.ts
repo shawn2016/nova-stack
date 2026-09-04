@@ -3,7 +3,7 @@ import type {
   ArticleListItem,
   CreateArticleDto,
   PaginationResult,
-  UpdateArticleDto,
+  UpdateArticleDto
 } from '@nova/shared-types'
 import { request } from './request'
 
@@ -18,7 +18,7 @@ function toTableResponse<T>(result: PaginationResult<T>) {
     records: result.list,
     total: result.total,
     current: result.page,
-    size: result.pageSize,
+    size: result.pageSize
   }
 }
 
@@ -30,15 +30,15 @@ export function fetchArticleList(params: ArticleListQuery = {}) {
     params: {
       page: current,
       pageSize: size,
-      ...(status !== undefined ? { status } : {}),
-    },
+      ...(status !== undefined ? { status } : {})
+    }
   }).then(toTableResponse)
 }
 
 export function getArticle(id: number) {
   return request<Article>({
     url: `/articles/${id}`,
-    method: 'GET',
+    method: 'GET'
   })
 }
 
@@ -46,7 +46,7 @@ export function createArticle(data: CreateArticleDto) {
   return request<Article>({
     url: '/articles',
     method: 'POST',
-    data,
+    data
   })
 }
 
@@ -54,20 +54,20 @@ export function updateArticle(id: number, data: UpdateArticleDto) {
   return request<Article>({
     url: `/articles/${id}`,
     method: 'PUT',
-    data,
+    data
   })
 }
 
 export function deleteArticle(id: number) {
   return request<{ success: true }>({
     url: `/articles/${id}`,
-    method: 'DELETE',
+    method: 'DELETE'
   })
 }
 
 export function publishArticle(id: number) {
   return request<Article>({
     url: `/articles/${id}/publish`,
-    method: 'PATCH',
+    method: 'PATCH'
   })
 }

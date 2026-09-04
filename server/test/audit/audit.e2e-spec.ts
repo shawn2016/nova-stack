@@ -17,14 +17,14 @@ describe('Audit API (e2e)', () => {
 
   async function loginAdmin(): Promise<string> {
     const res = await request(app.getHttpServer())
-      .post('/auth/login')
+      .post('/api/auth/login')
       .send({ username: 'admin', password: 'admin123' });
     return res.body.data.tokens.accessToken;
   }
 
   async function loginMember(): Promise<string> {
     const res = await request(app.getHttpServer())
-      .post('/member/auth/login')
+      .post('/api/member/auth/login')
       .send({ phone: '13800138000', password: 'member123' });
     return res.body.data.tokens.accessToken;
   }
@@ -57,7 +57,7 @@ describe('Audit API (e2e)', () => {
       const before = await countOperLogs();
 
       await request(app.getHttpServer())
-        .post('/dict/types')
+        .post('/api/dict/types')
         .set('Authorization', `Bearer ${adminToken}`)
         .set('X-Forwarded-For', '203.0.113.20')
         .send({
@@ -75,7 +75,7 @@ describe('Audit API (e2e)', () => {
         module: 'dict',
         action: 'create',
         method: 'POST',
-        path: '/dict/types',
+        path: '/api/dict/types',
         status: 1,
       });
       expect(log?.userId).toBeTruthy();
@@ -86,7 +86,7 @@ describe('Audit API (e2e)', () => {
       const before = await countOperLogs();
 
       await request(app.getHttpServer())
-        .get('/dict/types')
+        .get('/api/dict/types')
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
@@ -97,7 +97,7 @@ describe('Audit API (e2e)', () => {
       const before = await countOperLogs();
 
       await request(app.getHttpServer())
-        .post('/auth/login')
+        .post('/api/auth/login')
         .send({ username: 'admin', password: 'admin123' })
         .expect(200);
 
@@ -108,7 +108,7 @@ describe('Audit API (e2e)', () => {
       const before = await countOperLogs();
 
       await request(app.getHttpServer())
-        .post('/users')
+        .post('/api/users')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           username: 'audit_user',
@@ -130,7 +130,7 @@ describe('Audit API (e2e)', () => {
   describe('GET /audit/login-logs', () => {
     it('有权限的 admin 应返回分页登录日志', async () => {
       const res = await request(app.getHttpServer())
-        .get('/audit/login-logs')
+        .get('/api/audit/login-logs')
         .set('Authorization', `Bearer ${adminToken}`)
         .query({ page: 1, pageSize: 10 })
         .expect(200);
@@ -148,7 +148,7 @@ describe('Audit API (e2e)', () => {
 
     it('可按 username 筛选登录日志', async () => {
       const res = await request(app.getHttpServer())
-        .get('/audit/login-logs')
+        .get('/api/audit/login-logs')
         .set('Authorization', `Bearer ${adminToken}`)
         .query({ username: 'admin', page: 1, pageSize: 5 })
         .expect(200);
@@ -160,7 +160,7 @@ describe('Audit API (e2e)', () => {
 
     it('member token 应返回 403', async () => {
       const res = await request(app.getHttpServer())
-        .get('/audit/login-logs')
+        .get('/api/audit/login-logs')
         .set('Authorization', `Bearer ${memberToken}`)
         .expect(403);
 
@@ -171,7 +171,7 @@ describe('Audit API (e2e)', () => {
   describe('GET /audit/oper-logs', () => {
     it('有权限的 admin 应返回分页操作日志', async () => {
       const res = await request(app.getHttpServer())
-        .get('/audit/oper-logs')
+        .get('/api/audit/oper-logs')
         .set('Authorization', `Bearer ${adminToken}`)
         .query({ page: 1, pageSize: 10 })
         .expect(200);
@@ -191,7 +191,7 @@ describe('Audit API (e2e)', () => {
 
     it('可按 module 筛选操作日志', async () => {
       const res = await request(app.getHttpServer())
-        .get('/audit/oper-logs')
+        .get('/api/audit/oper-logs')
         .set('Authorization', `Bearer ${adminToken}`)
         .query({ module: 'dict', page: 1, pageSize: 10 })
         .expect(200);
@@ -203,7 +203,7 @@ describe('Audit API (e2e)', () => {
 
     it('member token 应返回 403', async () => {
       const res = await request(app.getHttpServer())
-        .get('/audit/oper-logs')
+        .get('/api/audit/oper-logs')
         .set('Authorization', `Bearer ${memberToken}`)
         .expect(403);
 

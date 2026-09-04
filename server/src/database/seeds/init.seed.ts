@@ -7,12 +7,24 @@ import {
   SysDictDataEntity,
   SysDictTypeEntity,
   SysMenuEntity,
+  SysMessageEntity,
+  SysNoticeEntity,
+  SysNoticeReadEntity,
   SysPermissionEntity,
+  SysRegionEntity,
+  SysDeptEntity,
+  SysJobEntity,
+  SysSmsChannelEntity,
+  SysSmsTemplateEntity,
+  SysEmailChannelEntity,
+  SysEmailTemplateEntity,
   SysRoleEntity,
   SysRolePermissionEntity,
   SysUserEntity,
   SysUserRoleEntity,
 } from '../entities';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 const SUPER_ADMIN_ROLE_CODE = 'super_admin';
 const ADMIN_USERNAME = 'admin';
@@ -68,6 +80,55 @@ const PERMISSION_SEEDS: PermissionSeed[] = [
   { name: '站点配置删除', code: 'system:config:delete', type: 'api' },
   { name: '登录日志列表', code: 'system:audit:login:list', type: 'api' },
   { name: '操作日志列表', code: 'system:audit:oper:list', type: 'api' },
+  { name: '文件上传', code: 'system:file:upload', type: 'api' },
+  { name: '文件列表', code: 'system:file:list', type: 'api' },
+  { name: '文件删除', code: 'system:file:delete', type: 'api' },
+  { name: '文件存储配置', code: 'system:file:settings', type: 'api' },
+  { name: '地区列表', code: 'system:region:list', type: 'api' },
+  { name: '地区新增', code: 'system:region:create', type: 'api' },
+  { name: '地区编辑', code: 'system:region:update', type: 'api' },
+  { name: '地区删除', code: 'system:region:delete', type: 'api' },
+  { name: '通知列表', code: 'system:notice:list', type: 'api' },
+  { name: '通知新增', code: 'system:notice:create', type: 'api' },
+  { name: '通知编辑', code: 'system:notice:update', type: 'api' },
+  { name: '通知删除', code: 'system:notice:delete', type: 'api' },
+  { name: '通知发布', code: 'system:notice:publish', type: 'api' },
+  { name: '消息列表', code: 'system:message:list', type: 'api' },
+  { name: '消息发送', code: 'system:message:send', type: 'api' },
+  { name: '消息删除', code: 'system:message:delete', type: 'api' },
+  { name: '部门列表', code: 'system:dept:list', type: 'api' },
+  { name: '部门新增', code: 'system:dept:create', type: 'api' },
+  { name: '部门编辑', code: 'system:dept:update', type: 'api' },
+  { name: '部门删除', code: 'system:dept:delete', type: 'api' },
+  { name: '部门功能开关', code: 'system:dept:settings', type: 'api' },
+  { name: '在线用户列表', code: 'system:session:list', type: 'api' },
+  { name: '在线用户踢下线', code: 'system:session:kick', type: 'api' },
+  { name: '定时任务列表', code: 'infra:job:list', type: 'api' },
+  { name: '定时任务新增', code: 'infra:job:create', type: 'api' },
+  { name: '定时任务编辑', code: 'infra:job:update', type: 'api' },
+  { name: '定时任务删除', code: 'infra:job:delete', type: 'api' },
+  { name: '定时任务执行', code: 'infra:job:run', type: 'api' },
+  { name: '定时任务日志', code: 'infra:job:log:list', type: 'api' },
+  { name: '短信通道列表', code: 'infra:sms:channel:list', type: 'api' },
+  { name: '短信通道新增', code: 'infra:sms:channel:create', type: 'api' },
+  { name: '短信通道编辑', code: 'infra:sms:channel:update', type: 'api' },
+  { name: '短信通道删除', code: 'infra:sms:channel:delete', type: 'api' },
+  { name: '短信模板列表', code: 'infra:sms:template:list', type: 'api' },
+  { name: '短信模板新增', code: 'infra:sms:template:create', type: 'api' },
+  { name: '短信模板编辑', code: 'infra:sms:template:update', type: 'api' },
+  { name: '短信模板删除', code: 'infra:sms:template:delete', type: 'api' },
+  { name: '短信日志列表', code: 'infra:sms:log:list', type: 'api' },
+  { name: '短信测试发送', code: 'infra:sms:send', type: 'api' },
+  { name: '邮件通道列表', code: 'infra:email:channel:list', type: 'api' },
+  { name: '邮件通道新增', code: 'infra:email:channel:create', type: 'api' },
+  { name: '邮件通道编辑', code: 'infra:email:channel:update', type: 'api' },
+  { name: '邮件通道删除', code: 'infra:email:channel:delete', type: 'api' },
+  { name: '邮件模板列表', code: 'infra:email:template:list', type: 'api' },
+  { name: '邮件模板新增', code: 'infra:email:template:create', type: 'api' },
+  { name: '邮件模板编辑', code: 'infra:email:template:update', type: 'api' },
+  { name: '邮件模板删除', code: 'infra:email:template:delete', type: 'api' },
+  { name: '邮件日志列表', code: 'infra:email:log:list', type: 'api' },
+  { name: '邮件测试发送', code: 'infra:email:send', type: 'api' },
 ];
 
 const MENU_SEEDS: MenuSeed[] = [
@@ -117,13 +178,49 @@ const MENU_SEEDS: MenuSeed[] = [
         sort: 4,
       },
       {
+        name: '地区管理',
+        path: '/system/region',
+        component: 'views/system/region/index',
+        icon: 'ri:map-pin-line',
+        type: 'menu',
+        permissionCode: 'system:region:list',
+        sort: 5,
+      },
+      {
+        name: '通知公告',
+        path: '/system/notice',
+        component: 'views/system/notice/index',
+        icon: 'ri:notification-3-line',
+        type: 'menu',
+        permissionCode: 'system:notice:list',
+        sort: 6,
+      },
+      {
+        name: '消息中心',
+        path: '/system/message',
+        component: 'views/system/message/index',
+        icon: 'ri:mail-line',
+        type: 'menu',
+        permissionCode: 'system:message:list',
+        sort: 7,
+      },
+      {
+        name: '部门管理',
+        path: '/system/dept',
+        component: 'views/system/dept/index',
+        icon: 'ri:organization-chart',
+        type: 'menu',
+        permissionCode: 'system:dept:list',
+        sort: 8,
+      },
+      {
         name: '站点配置',
         path: '/system/site-config',
         component: 'views/system/site-config/index',
         icon: 'ri:global-line',
         type: 'menu',
         permissionCode: 'system:config:list',
-        sort: 5,
+        sort: 9,
       },
       {
         name: '审计日志',
@@ -132,7 +229,25 @@ const MENU_SEEDS: MenuSeed[] = [
         icon: 'ri:file-list-3-line',
         type: 'menu',
         permissionCode: 'system:audit:login:list',
-        sort: 6,
+        sort: 10,
+      },
+      {
+        name: '在线用户',
+        path: '/system/online-session',
+        component: 'views/system/online-session/index',
+        icon: 'ri:user-follow-line',
+        type: 'menu',
+        permissionCode: 'system:session:list',
+        sort: 11,
+      },
+      {
+        name: '文件管理',
+        path: '/system/file',
+        component: 'views/system/file/index',
+        icon: 'ri:folder-image-line',
+        type: 'menu',
+        permissionCode: 'system:file:list',
+        sort: 12,
       },
     ],
   },
@@ -153,6 +268,44 @@ const MENU_SEEDS: MenuSeed[] = [
         type: 'menu',
         permissionCode: 'content:article:list',
         sort: 1,
+      },
+    ],
+  },
+  {
+    name: '基础设施',
+    path: '/infra',
+    component: null,
+    icon: 'ri:tools-line',
+    type: 'directory',
+    permissionCode: null,
+    sort: 3,
+    children: [
+      {
+        name: '定时任务',
+        path: '/infra/job',
+        component: 'views/infra/job/index',
+        icon: 'ri:timer-line',
+        type: 'menu',
+        permissionCode: 'infra:job:list',
+        sort: 1,
+      },
+      {
+        name: '短信管理',
+        path: '/infra/sms',
+        component: 'views/infra/sms/index',
+        icon: 'ri:message-2-line',
+        type: 'menu',
+        permissionCode: 'infra:sms:channel:list',
+        sort: 2,
+      },
+      {
+        name: '邮件管理',
+        path: '/infra/email',
+        component: 'views/infra/email/index',
+        icon: 'ri:mail-send-line',
+        type: 'menu',
+        permissionCode: 'infra:email:channel:list',
+        sort: 3,
       },
     ],
   },
@@ -299,6 +452,183 @@ const DEV_DICT_DATA_SEEDS: DictDataSeed[] = [
   { typeCode: 'article_status', label: '已发布', value: 'published', sort: 2, status: 1 },
 ];
 
+const DEV_ONLINE_SESSION_CONFIG_SEEDS: SiteConfigSeed[] = [
+  {
+    configKey: 'online_session.module.enabled',
+    configName: '在线用户模块开关',
+    configValue: 'true',
+    configGroup: 'online_session',
+  },
+];
+
+const DEV_DATA_SCOPE_CONFIG_SEEDS: SiteConfigSeed[] = [
+  {
+    configKey: 'data_scope.module.enabled',
+    configName: '数据权限模块开关',
+    configValue: 'true',
+    configGroup: 'data_scope',
+  },
+];
+
+const DEV_DEPT_CONFIG_SEEDS: SiteConfigSeed[] = [
+  {
+    configKey: 'dept.module.enabled',
+    configName: '部门模块总开关',
+    configValue: 'true',
+    configGroup: 'dept',
+  },
+  {
+    configKey: 'dept.user_binding.enabled',
+    configName: '用户部门绑定开关',
+    configValue: 'true',
+    configGroup: 'dept',
+  },
+];
+
+const DEV_UPLOAD_CONFIG_SEEDS: SiteConfigSeed[] = [
+  {
+    configKey: 'upload.storage.provider',
+    configName: '存储提供商',
+    configValue: 'local',
+    configGroup: 'upload',
+  },
+];
+
+interface DeptSeed {
+  name: string;
+  parentName?: string;
+  sort: number;
+  leader?: string | null;
+  status?: number;
+}
+
+const DEV_DEPT_SEEDS: DeptSeed[] = [
+  { name: '总公司', sort: 0, leader: '管理员' },
+  { name: '研发部', parentName: '总公司', sort: 1 },
+  { name: '运营部', parentName: '总公司', sort: 2 },
+];
+
+async function upsertDevOnlineSessionConfigs(
+  repo: Repository<SysConfigEntity>,
+): Promise<void> {
+  for (const seed of DEV_ONLINE_SESSION_CONFIG_SEEDS) {
+    let config = await repo.findOne({ where: { configKey: seed.configKey } });
+    if (!config) {
+      config = repo.create({
+        configKey: seed.configKey,
+        configName: seed.configName,
+        configValue: seed.configValue,
+        configGroup: seed.configGroup ?? null,
+        remark: seed.remark ?? null,
+      });
+    } else {
+      config.configName = seed.configName;
+      config.configValue = seed.configValue;
+      config.configGroup = seed.configGroup ?? null;
+      config.remark = seed.remark ?? null;
+    }
+    await repo.save(config);
+  }
+}
+
+async function upsertDevDataScopeConfigs(
+  repo: Repository<SysConfigEntity>,
+): Promise<void> {
+  for (const seed of DEV_DATA_SCOPE_CONFIG_SEEDS) {
+    let config = await repo.findOne({ where: { configKey: seed.configKey } });
+    if (!config) {
+      config = repo.create({
+        configKey: seed.configKey,
+        configName: seed.configName,
+        configValue: seed.configValue,
+        configGroup: seed.configGroup ?? null,
+        remark: seed.remark ?? null,
+      });
+    } else {
+      config.configName = seed.configName;
+      config.configValue = seed.configValue;
+      config.configGroup = seed.configGroup ?? null;
+      config.remark = seed.remark ?? null;
+    }
+    await repo.save(config);
+  }
+}
+
+async function upsertDevDeptConfigs(
+  repo: Repository<SysConfigEntity>,
+): Promise<void> {
+  for (const seed of DEV_DEPT_CONFIG_SEEDS) {
+    let config = await repo.findOne({ where: { configKey: seed.configKey } });
+    if (!config) {
+      config = repo.create({
+        configKey: seed.configKey,
+        configName: seed.configName,
+        configValue: seed.configValue,
+        configGroup: seed.configGroup ?? null,
+        remark: seed.remark ?? null,
+      });
+    } else {
+      config.configName = seed.configName;
+      config.configValue = seed.configValue;
+      config.configGroup = seed.configGroup ?? null;
+      config.remark = seed.remark ?? null;
+    }
+    await repo.save(config);
+  }
+}
+
+async function upsertDevUploadConfigs(
+  repo: Repository<SysConfigEntity>,
+): Promise<void> {
+  for (const seed of DEV_UPLOAD_CONFIG_SEEDS) {
+    const exists = await repo.findOne({ where: { configKey: seed.configKey } });
+    if (exists) {
+      continue;
+    }
+    await repo.save(
+      repo.create({
+        configKey: seed.configKey,
+        configName: seed.configName,
+        configValue: seed.configValue,
+        configGroup: seed.configGroup ?? null,
+        remark: seed.remark ?? null,
+      }),
+    );
+  }
+}
+
+async function upsertDevDepts(
+  repo: Repository<SysDeptEntity>,
+): Promise<Map<string, string>> {
+  const nameToId = new Map<string, string>();
+
+  for (const seed of DEV_DEPT_SEEDS) {
+    const parentId = seed.parentName
+      ? nameToId.get(seed.parentName) ?? '0'
+      : '0';
+
+    let dept = await repo.findOne({ where: { name: seed.name, parentId } });
+    if (!dept) {
+      dept = repo.create({
+        parentId,
+        name: seed.name,
+        sort: seed.sort,
+        leader: seed.leader ?? null,
+        phone: null,
+        status: seed.status ?? 1,
+      });
+    } else {
+      dept.sort = seed.sort;
+      dept.leader = seed.leader ?? null;
+      dept.status = seed.status ?? 1;
+    }
+    dept = await repo.save(dept);
+    nameToId.set(seed.name, dept.id);
+  }
+
+  return nameToId;
+}
+
 async function upsertDevSiteConfigs(
   repo: Repository<SysConfigEntity>,
 ): Promise<void> {
@@ -319,6 +649,93 @@ async function upsertDevSiteConfigs(
       config.remark = seed.remark ?? null;
     }
     await repo.save(config);
+  }
+}
+
+interface RegionFlatSeed {
+  code: string;
+  name: string;
+  parentCode: string;
+  level: 1 | 2 | 3;
+  sort: number;
+}
+
+async function upsertRegions(repo: Repository<SysRegionEntity>): Promise<void> {
+  const filePath = join(__dirname, 'data/china-regions.flat.json');
+  const seeds = JSON.parse(readFileSync(filePath, 'utf-8')) as RegionFlatSeed[];
+  seeds.sort((a, b) => a.level - b.level || a.sort - b.sort);
+
+  const codeToId = new Map<string, string>();
+  codeToId.set('0', '0');
+
+  for (const seed of seeds) {
+    const parentId = codeToId.get(seed.parentCode) ?? '0';
+    let region = await repo.findOne({ where: { code: seed.code } });
+    if (!region) {
+      region = repo.create({
+        parentId,
+        name: seed.name,
+        code: seed.code,
+        level: seed.level,
+        sort: seed.sort,
+        status: 1,
+      });
+    } else {
+      region.parentId = parentId;
+      region.name = seed.name;
+      region.level = seed.level;
+      region.sort = seed.sort;
+    }
+    region = await repo.save(region);
+    codeToId.set(seed.code, region.id);
+  }
+}
+
+async function upsertDevNotices(
+  noticeRepo: Repository<SysNoticeEntity>,
+  messageRepo: Repository<SysMessageEntity>,
+  adminUserId: string,
+): Promise<void> {
+  let draft = await noticeRepo.findOne({ where: { title: 'Dev 草稿公告' } });
+  if (!draft) {
+    draft = await noticeRepo.save(
+      noticeRepo.create({
+        title: 'Dev 草稿公告',
+        content: '这是一条开发环境草稿公告',
+        type: 1,
+        status: 0,
+        publisherId: adminUserId,
+        publishedAt: null,
+      }),
+    );
+  }
+
+  let published = await noticeRepo.findOne({ where: { title: 'Dev 已发布公告' } });
+  if (!published) {
+    published = await noticeRepo.save(
+      noticeRepo.create({
+        title: 'Dev 已发布公告',
+        content: '欢迎登录 Nova Stack 管理后台',
+        type: 2,
+        status: 1,
+        publisherId: adminUserId,
+        publishedAt: new Date(),
+      }),
+    );
+  }
+
+  let message = await messageRepo.findOne({ where: { title: 'Dev 欢迎消息' } });
+  if (!message) {
+    await messageRepo.save(
+      messageRepo.create({
+        senderId: adminUserId,
+        receiverId: adminUserId,
+        title: 'Dev 欢迎消息',
+        content: 'seed 示例站内消息',
+        isRead: 0,
+        readAt: null,
+      }),
+    );
   }
 }
 
@@ -401,6 +818,88 @@ async function upsertDevArticles(
   }
 }
 
+async function upsertDevJobs(repo: Repository<SysJobEntity>): Promise<void> {
+  let job = await repo.findOne({ where: { name: 'Demo 心跳' } });
+  if (!job) {
+    await repo.save(
+      repo.create({
+        name: 'Demo 心跳',
+        jobGroup: 'default',
+        invokeTarget: 'demo.heartbeat',
+        cronExpression: '0 */6 * * *',
+        status: 0,
+        concurrent: 0,
+        remark: 'seed 示例任务（默认暂停）',
+      }),
+    );
+  }
+}
+
+async function upsertDevSms(
+  channelRepo: Repository<SysSmsChannelEntity>,
+  templateRepo: Repository<SysSmsTemplateEntity>,
+): Promise<void> {
+  let channel = await channelRepo.findOne({ where: { name: 'Mock 通道' } });
+  if (!channel) {
+    channel = await channelRepo.save(
+      channelRepo.create({
+        name: 'Mock 通道',
+        provider: 'mock',
+        config: '{}',
+        status: 1,
+        remark: 'seed 示例短信通道',
+      }),
+    );
+  }
+
+  const template = await templateRepo.findOne({ where: { code: 'login_code' } });
+  if (!template) {
+    await templateRepo.save(
+      templateRepo.create({
+        code: 'login_code',
+        name: '登录验证码',
+        content: '您的验证码是{code}，5分钟内有效',
+        channelId: channel.id,
+        status: 1,
+        remark: 'seed 示例模板',
+      }),
+    );
+  }
+}
+
+async function upsertDevEmail(
+  channelRepo: Repository<SysEmailChannelEntity>,
+  templateRepo: Repository<SysEmailTemplateEntity>,
+): Promise<void> {
+  let channel = await channelRepo.findOne({ where: { name: 'Mock 通道' } });
+  if (!channel) {
+    channel = await channelRepo.save(
+      channelRepo.create({
+        name: 'Mock 通道',
+        provider: 'mock',
+        config: '{}',
+        status: 1,
+        remark: 'seed 示例邮件通道',
+      }),
+    );
+  }
+
+  const template = await templateRepo.findOne({ where: { code: 'welcome' } });
+  if (!template) {
+    await templateRepo.save(
+      templateRepo.create({
+        code: 'welcome',
+        name: '欢迎邮件',
+        subject: '欢迎加入 {siteName}',
+        content: '您好，欢迎加入 {siteName}！',
+        channelId: channel.id,
+        status: 1,
+        remark: 'seed 示例模板',
+      }),
+    );
+  }
+}
+
 /** 初始化 RBAC 与开发会员 seed 数据（幂等） */
 export async function runInitSeed(dataSource: DataSource): Promise<void> {
   const roleRepo = dataSource.getRepository(SysRoleEntity);
@@ -414,6 +913,15 @@ export async function runInitSeed(dataSource: DataSource): Promise<void> {
   const dictTypeRepo = dataSource.getRepository(SysDictTypeEntity);
   const dictDataRepo = dataSource.getRepository(SysDictDataEntity);
   const configRepo = dataSource.getRepository(SysConfigEntity);
+  const regionRepo = dataSource.getRepository(SysRegionEntity);
+  const noticeRepo = dataSource.getRepository(SysNoticeEntity);
+  const messageRepo = dataSource.getRepository(SysMessageEntity);
+  const deptRepo = dataSource.getRepository(SysDeptEntity);
+  const jobRepo = dataSource.getRepository(SysJobEntity);
+  const smsChannelRepo = dataSource.getRepository(SysSmsChannelEntity);
+  const smsTemplateRepo = dataSource.getRepository(SysSmsTemplateEntity);
+  const emailChannelRepo = dataSource.getRepository(SysEmailChannelEntity);
+  const emailTemplateRepo = dataSource.getRepository(SysEmailTemplateEntity);
 
   let superAdminRole = await roleRepo.findOne({
     where: { code: SUPER_ADMIN_ROLE_CODE },
@@ -425,8 +933,12 @@ export async function runInitSeed(dataSource: DataSource): Promise<void> {
         code: SUPER_ADMIN_ROLE_CODE,
         status: 1,
         sort: 0,
+        dataScope: 1,
       }),
     );
+  } else if (superAdminRole.dataScope !== 1) {
+    superAdminRole.dataScope = 1;
+    superAdminRole = await roleRepo.save(superAdminRole);
   }
 
   const permissions: SysPermissionEntity[] = [];
@@ -449,6 +961,16 @@ export async function runInitSeed(dataSource: DataSource): Promise<void> {
       );
     }
   }
+
+  await upsertRegions(regionRepo);
+  await upsertDevOnlineSessionConfigs(configRepo);
+  await upsertDevDataScopeConfigs(configRepo);
+  await upsertDevDeptConfigs(configRepo);
+  await upsertDevUploadConfigs(configRepo);
+  const deptNameToId = await upsertDevDepts(deptRepo);
+  await upsertDevJobs(jobRepo);
+  await upsertDevSms(smsChannelRepo, smsTemplateRepo);
+  await upsertDevEmail(emailChannelRepo, emailTemplateRepo);
 
   const nodeEnv = process.env.NODE_ENV ?? 'development';
   const isProduction = nodeEnv === 'production';
@@ -480,6 +1002,12 @@ export async function runInitSeed(dataSource: DataSource): Promise<void> {
       );
     }
 
+    const rootDeptId = deptNameToId.get('总公司');
+    if (rootDeptId && !adminUser.deptId) {
+      adminUser.deptId = rootDeptId;
+      await userRepo.save(adminUser);
+    }
+
     let member = await memberRepo.findOne({ where: { phone: DEV_MEMBER_PHONE } });
     if (!member) {
       await memberRepo.save(
@@ -496,5 +1024,6 @@ export async function runInitSeed(dataSource: DataSource): Promise<void> {
     await upsertDevArticles(articleRepo, adminUser.id);
     await upsertDevDicts(dictTypeRepo, dictDataRepo);
     await upsertDevSiteConfigs(configRepo);
+    await upsertDevNotices(noticeRepo, messageRepo, adminUser.id);
   }
 }

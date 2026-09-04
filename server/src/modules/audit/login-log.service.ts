@@ -2,7 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import type { LoginLogListItem, PaginationResult } from '@nova/shared-types';
 import { Repository } from 'typeorm';
-import { SysLoginLogEntity } from '../../database/entities';
+import { SysLoginLogEntity, SysUserEntity } from '../../database/entities';
+import { DataScopeService } from '../data-scope/data-scope.service';
 import { ListLoginLogDto } from './dto/list-login-log.dto';
 
 export interface RecordLoginAttemptParams {
@@ -19,6 +20,9 @@ export class LoginLogService {
   constructor(
     @InjectRepository(SysLoginLogEntity)
     private readonly loginLogRepo: Repository<SysLoginLogEntity>,
+    @InjectRepository(SysUserEntity)
+    private readonly userRepo: Repository<SysUserEntity>,
+    private readonly dataScopeService: DataScopeService,
   ) {}
 
   async recordLoginAttempt(params: RecordLoginAttemptParams): Promise<void> {
@@ -33,11 +37,21 @@ export class LoginLogService {
     await this.loginLogRepo.save(entity);
   }
 
-  async list(query: ListLoginLogDto): Promise<PaginationResult<LoginLogListItem>> {
+  async list(
+    query: ListLoginLogDto,
+    currentUserId: string,
+  ): Promise<PaginationResult<LoginLogListItem>> {
     const { page, pageSize, username, status, startTime, endTime } = query;
     const qb = this.loginLogRepo
       .createQueryBuilder('log')
       .orderBy('log.createdAt', 'DESC');
+
+    const filter = await this.dataScopeService.resolveForUser(currentUserId);
+    const user = await this.userRepo.findOne({ where: { id: currentUserId } });
+    this.dataScopeService.applyAuditLogFilter(qb, 'log', filter, {
+      userId: currentUserId,
+      username: user?.username ?? '',
+    });
 
     if (username) {
       qb.andWhere('log.username LIKE :username', { username: `%${username}%` });

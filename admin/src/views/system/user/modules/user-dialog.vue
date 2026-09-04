@@ -31,6 +31,18 @@
           <ElRadio :value="0">禁用</ElRadio>
         </ElRadioGroup>
       </ElFormItem>
+      <ElFormItem v-if="userBindingEnabled" label="部门" prop="deptId">
+        <ElTreeSelect
+          v-model="formData.deptId"
+          :data="deptOptions"
+          check-strictly
+          clearable
+          placeholder="请选择部门"
+          style="width: 100%"
+          node-key="id"
+          :props="{ label: 'label', value: 'id', children: 'children' }"
+        />
+      </ElFormItem>
       <ElFormItem label="角色" prop="roleIds">
         <ElSelect v-model="formData.roleIds" multiple placeholder="请选择角色" style="width: 100%">
           <ElOption
@@ -58,6 +70,8 @@
     fetchRoleList,
     updateUser,
   } from '@/api/system-manage'
+  import { fetchDeptSettings, fetchDeptTree } from '@/api/dept'
+  import type { DeptTreeNode } from '@nova/shared-types'
 
   interface Props {
     visible: boolean
@@ -75,7 +89,9 @@
 
   const formRef = ref<FormInstance>()
   const submitting = ref(false)
-  const roleOptions = ref<{ id: number; name: string }[]>([])
+  const roleOptions = ref<{ id: string; name: string }[]>([])
+  const deptOptions = ref<{ id: string; label: string }[]>([])
+  const userBindingEnabled = ref(true)
 
   const dialogVisible = computed({
     get: () => props.visible,
@@ -89,7 +105,8 @@
     password: '',
     nickname: '',
     status: 1 as 0 | 1,
-    roleIds: [] as number[],
+    roleIds: [] as string[],
+    deptId: null as string | null,
   })
 
   const rules = computed<FormRules>(() => ({
@@ -108,8 +125,27 @@
   }))
 
   async function loadRoleOptions() {
-    const result = await fetchRoleList()
+    const result = await fetchRoleList({ current: 1, size: 100 })
     roleOptions.value = result.records.map((role) => ({ id: role.id, name: role.name }))
+  }
+
+  function mapDeptTree(nodes: DeptTreeNode[]): { id: string; label: string; children?: ReturnType<typeof mapDeptTree> }[] {
+    return nodes.map((node) => ({
+      id: node.id,
+      label: node.name,
+      ...(node.children?.length ? { children: mapDeptTree(node.children) } : {}),
+    }))
+  }
+
+  async function loadDeptOptions() {
+    try {
+      const [tree, settings] = await Promise.all([fetchDeptTree(), fetchDeptSettings()])
+      deptOptions.value = mapDeptTree(tree)
+      userBindingEnabled.value = settings.userBindingEnabled
+    } catch {
+      userBindingEnabled.value = false
+      deptOptions.value = []
+    }
   }
 
   function initFormData() {
@@ -122,6 +158,7 @@
       nickname: isEdit && row ? row.nickname || '' : '',
       status: isEdit && row ? (row.status ?? 1) : 1,
       roleIds: isEdit && row ? [...(row.roleIds ?? [])] : [],
+      deptId: isEdit && row ? row.deptId ?? null : null,
     })
   }
 
@@ -133,6 +170,7 @@
       nickname: '',
       status: 1,
       roleIds: [],
+      deptId: null,
     })
   }
 
@@ -141,6 +179,7 @@
     ([visible]) => {
       if (visible) {
         loadRoleOptions()
+        loadDeptOptions()
         initFormData()
         nextTick(() => formRef.value?.clearValidate())
       }
@@ -155,7 +194,7 @@
     submitting.value = true
 
     try {
-      const { username, password, nickname, status, roleIds } = formData
+      const { username, password, nickname, status, roleIds, deptId } = formData
 
       if (dialogType.value === 'add') {
         const created = await createUser({
@@ -163,6 +202,7 @@
           password,
           nickname: nickname || undefined,
           status,
+          deptId: userBindingEnabled.value ? deptId : undefined,
         })
         if (roleIds.length) {
           await assignUserRoles(created.id, { roleIds })
@@ -172,6 +212,7 @@
         await updateUser(props.userData.id, {
           nickname: nickname || undefined,
           status,
+          deptId: userBindingEnabled.value ? deptId : undefined,
         })
         await assignUserRoles(props.userData.id, { roleIds })
         ElMessage.success('更新成功')

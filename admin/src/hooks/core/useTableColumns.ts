@@ -168,12 +168,23 @@ export function useTableColumns<T = any>(
     { deep: true }
   )
 
-  // 当前显示列（基于 columnChecks 的 checked 或 visible）
+  // 当前显示列（基于 columnChecks 的 checked 或 visible，并合并列宽/冻结等覆盖项）
   const columns = computed(() => {
     const colMap = new Map(dynamicColumns.value.map((c) => [getColumnKey(c), c]))
     return columnChecks.value
       .filter((c) => getColumnVisibility(c))
-      .map((c) => colMap.get(getColumnKey(c)))
+      .map((c) => {
+        const base = colMap.get(getColumnKey(c))
+        if (!base) return null
+        return {
+          ...base,
+          width: c.width ?? base.width,
+          minWidth: c.width !== undefined ? undefined : (c.minWidth ?? base.minWidth),
+          fixed: c.fixed !== undefined ? c.fixed : base.fixed,
+          checked: c.checked,
+          visible: c.visible
+        }
+      })
       .filter(Boolean) as ColumnOption<T>[]
   })
 

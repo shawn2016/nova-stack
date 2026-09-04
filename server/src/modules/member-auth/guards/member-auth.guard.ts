@@ -7,6 +7,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { AuthUser } from '../../auth/decorators/current-user.decorator';
 import { IS_PUBLIC_KEY } from '../../auth/decorators/public.decorator';
+import { stripApiPrefix } from '../../../common/constants/api-prefix';
 
 /** C 端路由：拒绝 type=admin 的 JWT */
 @Injectable()
@@ -28,7 +29,7 @@ export class MemberAuthGuard implements CanActivate {
       path?: string;
       url?: string;
     }>();
-    const path = request.path ?? request.url ?? '';
+    const path = stripApiPrefix(request.path ?? request.url ?? '');
 
     if (!path.startsWith('/member/')) {
       return true;

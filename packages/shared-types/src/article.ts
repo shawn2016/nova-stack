@@ -1,12 +1,12 @@
 /** 文章完整实体 */
 export interface Article {
-  id: number;
+  id: string;
   title: string;
   summary: string;
   content: string;
   coverUrl?: string;
   status: 0 | 1;
-  authorId: number;
+  authorId: string;
   publishedAt?: string;
   createdAt: string;
   updatedAt: string;
@@ -14,7 +14,7 @@ export interface Article {
 
 /** 文章列表项（不含正文） */
 export interface ArticleListItem {
-  id: number;
+  id: string;
   title: string;
   summary: string;
   coverUrl?: string;

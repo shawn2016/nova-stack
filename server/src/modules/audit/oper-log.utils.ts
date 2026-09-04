@@ -1,5 +1,7 @@
+import { stripApiPrefix } from '../../common/constants/api-prefix';
+
 const MUTATING_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
-const EXCLUDED_PATHS = new Set(['/auth/login', '/auth/logout', '/health']);
+const EXCLUDED_PATHS = new Set(['/api/auth/login', '/api/auth/logout', '/api/health']);
 const SENSITIVE_FIELDS = new Set(['password', 'oldPassword', 'newPassword']);
 const MAX_SUMMARY_LENGTH = 2000;
 
@@ -21,7 +23,7 @@ export function shouldAuditOperLog(
 }
 
 export function resolveModuleFromPath(path: string): string {
-  const normalizedPath = path.split('?')[0] ?? path;
+  const normalizedPath = stripApiPrefix(path.split('?')[0] ?? path);
   const segment = normalizedPath.replace(/^\//, '').split('/')[0];
   return segment || 'unknown';
 }

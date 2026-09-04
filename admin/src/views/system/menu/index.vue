@@ -1,29 +1,31 @@
 <template>
   <div class="menu-page art-full-height">
-    <ArtSearchBar
-      v-model="formFilters"
-      :items="formItems"
-      :showExpand="false"
-      @reset="handleReset"
-      @search="handleSearch"
-    />
-
-    <ElCard class="art-table-card">
-      <ArtTableHeader
-        :showZebra="false"
-        :loading="loading"
-        v-model:columns="columnChecks"
-        @refresh="loadMenuList"
-      >
-        <template #left>
-          <ElButton v-permission="'system:menu:create'" @click="handleAddMenu" v-ripple>
-            添加菜单
-          </ElButton>
-          <ElButton @click="toggleExpand" v-ripple>
-            {{ isExpanded ? '收起' : '展开' }}
-          </ElButton>
-        </template>
-      </ArtTableHeader>
+    <ArtListPanel
+      title="菜单管理"
+      v-model:show-search-bar="showSearchBar"
+      v-model:columns="columnChecks"
+      :loading="loading"
+      :show-zebra="false"
+      @refresh="loadMenuList"
+    >
+      <template #search>
+        <ArtSearchBar
+          v-model="formFilters"
+          :items="formItems"
+          :showExpand="false"
+          embedded
+          @reset="handleReset"
+          @search="handleSearch"
+        />
+      </template>
+      <template #head-actions>
+        <ElButton v-permission="'system:menu:create'" type="primary" @click="handleAddMenu" v-ripple>
+          添加菜单
+        </ElButton>
+        <ElButton @click="toggleExpand" v-ripple>
+          {{ isExpanded ? '收起' : '展开' }}
+        </ElButton>
+      </template>
 
       <ArtTable
         ref="tableRef"
@@ -35,19 +37,20 @@
         :tree-props="{ children: 'children' }"
         :default-expand-all="false"
       />
+    </ArtListPanel>
 
-      <MenuDialog
-        v-model:visible="dialogVisible"
-        :edit-data="editData"
-        :menu-options="flatMenuList"
-        @success="handleMenuSaved"
-      />
-    </ElCard>
+    <MenuDialog
+      v-model:visible="dialogVisible"
+      :edit-data="editData"
+      :menu-options="flatMenuList"
+      @success="handleMenuSaved"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+  import ArtTableActions from '@/components/core/tables/art-table-actions/index.vue'
+  import type { TableActionItem } from '@/components/core/tables/art-table-actions/index.vue'
   import ArtSvgIcon from '@/components/core/base/art-svg-icon/index.vue'
   import { useTableColumns } from '@/hooks/core/useTableColumns'
   import type { SysMenuListItem } from '@nova/shared-types'
@@ -62,6 +65,7 @@
   type MenuTreeItem = SysMenuListItem & { children?: MenuTreeItem[] }
 
   const userStore = useUserStore()
+  const showSearchBar = ref(true)
   const loading = ref(false)
   const isExpanded = ref(false)
   const tableRef = ref()
@@ -98,7 +102,7 @@
     loadMenuList()
   })
 
-  function buildMenuTree(items: SysMenuListItem[], parentId = 0): MenuTreeItem[] {
+  function buildMenuTree(items: SysMenuListItem[], parentId = '0'): MenuTreeItem[] {
     return items
       .filter((item) => item.parentId === parentId)
       .sort((a, b) => a.sort - b.sort)
@@ -169,27 +173,24 @@
       prop: 'operation',
       label: '操作',
       width: 120,
-      align: 'right',
-      formatter: (row: MenuTreeItem) => {
-        const buttons = []
-        if (userStore.hasPermission('system:menu:update')) {
-          buttons.push(
-            h(ArtButtonTable, {
-              type: 'edit',
+      formatter: (row: MenuTreeItem) =>
+        h(ArtTableActions, {
+          items: [
+            {
+              key: 'edit',
+              label: '编辑',
+              auth: 'system:menu:update',
               onClick: () => handleEditMenu(row),
-            }),
-          )
-        }
-        if (userStore.hasPermission('system:menu:delete')) {
-          buttons.push(
-            h(ArtButtonTable, {
-              type: 'delete',
+            },
+            {
+              key: 'delete',
+              label: '删除',
+              danger: true,
+              auth: 'system:menu:delete',
               onClick: () => handleDeleteMenu(row),
-            }),
-          )
-        }
-        return h('div', { style: 'text-align: right' }, buttons)
-      },
+            },
+          ] satisfies TableActionItem[],
+        }),
     },
   ])
 
@@ -211,9 +212,9 @@
     flatMenuList.value.forEach((item) => {
       if (idSet.has(item.id)) {
         let parentId = item.parentId
-        while (parentId) {
+        while (parentId && parentId !== '0') {
           idSet.add(parentId)
-          parentId = flatMenuList.value.find((menu) => menu.id === parentId)?.parentId ?? 0
+          parentId = flatMenuList.value.find((menu) => menu.id === parentId)?.parentId ?? '0'
         }
       }
     })
@@ -226,7 +227,10 @@
     Object.assign(appliedFilters, { name: '', path: '' })
   }
 
-  function handleSearch() {
+  function handleSearch(filters?: { name?: string; path?: string }) {
+    if (filters) {
+      Object.assign(formFilters, filters)
+    }
     Object.assign(appliedFilters, { ...formFilters })
   }
 

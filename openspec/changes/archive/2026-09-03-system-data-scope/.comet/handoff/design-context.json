@@ -1,0 +1,15 @@
+{
+  "change": "system-data-scope",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "0ecc54453a262bebd0304e2a2b65b516d325037d214b0cec8aee781057e881de",
+  "files": [
+    { "path": "openspec/changes/system-data-scope/proposal.md", "sha256": "c4f20fa35144d7e48c595e610996b79ad88341afd43df787a35ee0038c91ddf7" },
+    { "path": "openspec/changes/system-data-scope/design.md", "sha256": "1a78eb05b30ddcba69d33c9ebe1310825faa68072324a08f0b7094b3d1bee232" },
+    { "path": "openspec/changes/system-data-scope/tasks.md", "sha256": "16b65b2540399ace6bf82381ce4a8b91754e5c488aec0f35f9745f31b07bfb05" },
+    { "path": "openspec/changes/system-data-scope/specs/data-scope-admin-ui/spec.md", "sha256": "9c4ae0563cc8db2a108ade03fd54c86c92f8ac763be402dcf361dee9b1c24f46" },
+    { "path": "openspec/changes/system-data-scope/specs/data-scope-api/spec.md", "sha256": "7e32a57694e489a7e3d91c2e44552ae66029b526c2ac91c1a8c5eecdb4f746f1" }
+  ]
+}

@@ -1,22 +1,25 @@
 <template>
   <div class="content-articles-page art-full-height">
-    <ArticleSearch v-model="searchForm" @search="handleSearch" @reset="resetSearchParams" />
-
-    <ElCard class="art-table-card">
-      <ArtTableHeader v-model:columns="columnChecks" :loading="loading" @refresh="refreshData">
-        <template #left>
-          <ElSpace wrap>
-            <ElButton
-              v-permission="'content:article:create'"
-              type="primary"
-              @click="goCreate"
-              v-ripple
-            >
-              新建文章
-            </ElButton>
-          </ElSpace>
-        </template>
-      </ArtTableHeader>
+    <ArtListPanel
+      title="文章管理"
+      v-model:show-search-bar="showSearchBar"
+      v-model:columns="columnChecks"
+      :loading="loading"
+      @refresh="refreshData"
+    >
+      <template #search>
+        <ArticleSearch v-model="searchForm" @search="handleSearch" @reset="resetSearchParams" />
+      </template>
+      <template #head-actions>
+        <ElButton
+          v-permission="'content:article:create'"
+          type="primary"
+          @click="goCreate"
+          v-ripple
+        >
+          新建文章
+        </ElButton>
+      </template>
 
       <ArtTable
         :loading="loading"
@@ -26,13 +29,13 @@
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
       />
-    </ElCard>
+    </ArtListPanel>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { ButtonMoreItem } from '@/components/core/forms/art-button-more/index.vue'
-  import ArtButtonMore from '@/components/core/forms/art-button-more/index.vue'
+  import ArtTableActions from '@/components/core/tables/art-table-actions/index.vue'
+  import type { TableActionItem } from '@/components/core/tables/art-table-actions/index.vue'
   import { useTable } from '@/hooks/core/useTable'
   import {
     deleteArticle as deleteArticleApi,
@@ -49,6 +52,7 @@
 
   const router = useRouter()
   const userStore = useUserStore()
+  const showSearchBar = ref(true)
 
   const searchForm = ref<ArticleListQuery>({
     status: undefined,
@@ -105,37 +109,33 @@
         {
           prop: 'operation',
           label: '操作',
-          width: 80,
+          width: 140,
           fixed: 'right',
           formatter: (row) => {
-            const items: ButtonMoreItem[] = []
-            if (userStore.hasPermission('content:article:update')) {
-              items.push({
+            const items: TableActionItem[] = [
+              {
                 key: 'edit',
                 label: '编辑',
-                icon: 'ri:edit-2-line',
-              })
-            }
-            if (row.status === 0 && userStore.hasPermission('content:article:publish')) {
+                auth: 'content:article:update',
+                onClick: () => buttonMoreClick({ key: 'edit' }, row),
+              },
+            ]
+            if (row.status === 0) {
               items.push({
                 key: 'publish',
                 label: '发布',
-                icon: 'ri:send-plane-line',
+                auth: 'content:article:publish',
+                onClick: () => buttonMoreClick({ key: 'publish' }, row),
               })
             }
-            if (userStore.hasPermission('content:article:delete')) {
-              items.push({
-                key: 'delete',
-                label: '删除',
-                icon: 'ri:delete-bin-4-line',
-                color: '#f56c6c',
-              })
-            }
-            if (!items.length) return h('span', '-')
-            return h(ArtButtonMore, {
-              list: items,
-              onClick: (item: ButtonMoreItem) => buttonMoreClick(item, row),
+            items.push({
+              key: 'delete',
+              label: '删除',
+              danger: true,
+              auth: 'content:article:delete',
+              onClick: () => buttonMoreClick({ key: 'delete' }, row),
             })
+            return h(ArtTableActions, { items })
           },
         },
       ],
@@ -151,7 +151,7 @@
     router.push('/content/articles/create')
   }
 
-  const buttonMoreClick = (item: ButtonMoreItem, row: ArticleListItem) => {
+  const buttonMoreClick = (item: Pick<TableActionItem, 'key'>, row: ArticleListItem) => {
     switch (item.key) {
       case 'edit':
         router.push(`/content/articles/${row.id}/edit`)

@@ -9,8 +9,23 @@ import {
   SysMenuEntity,
   SysOperLogEntity,
   SysPermissionEntity,
+  SysRegionEntity,
+  SysNoticeEntity,
+  SysNoticeReadEntity,
+  SysMessageEntity,
+  SysDeptEntity,
   SysRoleEntity,
   SysRolePermissionEntity,
+  SysRoleDeptEntity,
+  SysJobEntity,
+  SysJobLogEntity,
+  SysSmsChannelEntity,
+  SysSmsTemplateEntity,
+  SysSmsLogEntity,
+  SysEmailChannelEntity,
+  SysEmailTemplateEntity,
+  SysEmailLogEntity,
+  SysFileEntity,
   SysUserEntity,
   SysUserRoleEntity,
   entities,
@@ -57,7 +72,7 @@ describe('RBAC database entities', () => {
     }
   });
 
-  it('loads all 13 entities with expected table names', () => {
+  it('loads all 28 entities with expected table names', () => {
     const tableNames = dataSource.entityMetadatas
       .map((meta) => meta.tableName)
       .sort();
@@ -66,14 +81,29 @@ describe('RBAC database entities', () => {
       'article',
       'member_user',
       'sys_config',
+      'sys_dept',
       'sys_dict_data',
       'sys_dict_type',
+      'sys_email_channel',
+      'sys_email_log',
+      'sys_email_template',
+      'sys_file',
+      'sys_job',
+      'sys_job_log',
       'sys_login_log',
       'sys_menu',
+      'sys_message',
+      'sys_notice',
+      'sys_notice_read',
       'sys_oper_log',
       'sys_permission',
+      'sys_region',
       'sys_role',
+      'sys_role_dept',
       'sys_role_permission',
+      'sys_sms_channel',
+      'sys_sms_log',
+      'sys_sms_template',
       'sys_user',
       'sys_user_role',
     ]);
@@ -86,13 +116,16 @@ describe('RBAC database entities', () => {
     expect(hasUniqueConstraint(meta, 'username')).toBe(true);
     expect(meta.findColumnWithPropertyName('passwordHash')).toBeDefined();
     expect(meta.findColumnWithPropertyName('status')).toBeDefined();
+    expect(meta.findColumnWithPropertyName('deptId')?.databaseName).toBe('dept_id');
+    expect(meta.findColumnWithPropertyName('deptId')?.isNullable).toBe(true);
   });
 
-  it('maps sys_role with unique code index', () => {
+  it('maps sys_role with unique code index and data_scope', () => {
     const meta = dataSource.getMetadata(SysRoleEntity);
 
     expect(meta.tableName).toBe('sys_role');
     expect(hasUniqueConstraint(meta, 'code')).toBe(true);
+    expect(meta.findColumnWithPropertyName('dataScope')?.databaseName).toBe('data_scope');
   });
 
   it('maps sys_permission with unique code index', () => {
@@ -114,6 +147,7 @@ describe('RBAC database entities', () => {
   it('uses composite primary keys on junction tables', () => {
     const userRoleMeta = dataSource.getMetadata(SysUserRoleEntity);
     const rolePermMeta = dataSource.getMetadata(SysRolePermissionEntity);
+    const roleDeptMeta = dataSource.getMetadata(SysRoleDeptEntity);
 
     expect(userRoleMeta.primaryColumns.map((c) => c.propertyName).sort()).toEqual([
       'roleId',
@@ -121,6 +155,10 @@ describe('RBAC database entities', () => {
     ]);
     expect(rolePermMeta.primaryColumns.map((c) => c.propertyName).sort()).toEqual([
       'permissionId',
+      'roleId',
+    ]);
+    expect(roleDeptMeta.primaryColumns.map((c) => c.propertyName).sort()).toEqual([
+      'deptId',
       'roleId',
     ]);
   });
@@ -189,6 +227,45 @@ describe('RBAC database entities', () => {
           'publishedAt,status',
       ),
     ).toBe(true);
+    expect(meta.relations).toHaveLength(0);
+  });
+
+  it('maps sys_region tree fields with unique code', () => {
+    const meta = dataSource.getMetadata(SysRegionEntity);
+
+    expect(meta.tableName).toBe('sys_region');
+    expect(hasUniqueConstraint(meta, 'code')).toBe(true);
+    expect(meta.findColumnWithPropertyName('parentId')?.databaseName).toBe('parent_id');
+    expect(meta.findColumnWithPropertyName('level')?.type).toBe('tinyint');
+    expect(meta.relations).toHaveLength(0);
+  });
+
+  it('maps sys_message with sender and receiver', () => {
+    const meta = dataSource.getMetadata(SysMessageEntity);
+
+    expect(meta.tableName).toBe('sys_message');
+    expect(meta.findColumnWithPropertyName('senderId')?.databaseName).toBe('sender_id');
+    expect(meta.findColumnWithPropertyName('receiverId')?.databaseName).toBe('receiver_id');
+    expect(meta.findColumnWithPropertyName('isRead')?.databaseName).toBe('is_read');
+    expect(meta.relations).toHaveLength(0);
+  });
+
+  it('maps sys_notice_read composite primary key', () => {
+    const meta = dataSource.getMetadata(SysNoticeReadEntity);
+
+    expect(meta.tableName).toBe('sys_notice_read');
+    expect(meta.primaryColumns.map((c) => c.propertyName).sort()).toEqual([
+      'noticeId',
+      'userId',
+    ]);
+  });
+
+  it('maps sys_notice with status and publisher', () => {
+    const meta = dataSource.getMetadata(SysNoticeEntity);
+
+    expect(meta.tableName).toBe('sys_notice');
+    expect(meta.findColumnWithPropertyName('publisherId')?.databaseName).toBe('publisher_id');
+    expect(meta.findColumnWithPropertyName('publishedAt')?.databaseName).toBe('published_at');
     expect(meta.relations).toHaveLength(0);
   });
 

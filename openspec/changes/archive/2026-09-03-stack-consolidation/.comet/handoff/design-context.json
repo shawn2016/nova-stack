@@ -1,0 +1,20 @@
+{
+  "change": "stack-consolidation",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "84954eef4f727161b611ca56150650cfcad21bdae547a6f72f6ab39fbedeef87",
+  "files": [
+    { "path": "openspec/changes/stack-consolidation/proposal.md", "sha256": "d5be2da41c3ef38f7bf79c41046d32e67fd04af9d238acd54b34e684c582c28c" },
+    { "path": "openspec/changes/stack-consolidation/design.md", "sha256": "f2c44c754dc45b43ed394aa1f1af40bf33c485f99eb8cd972d6f419188e7de57" },
+    { "path": "openspec/changes/stack-consolidation/tasks.md", "sha256": "04c930e06cae0cb7f30c4127556c6a5109210aee1b182fc9adfe41660da60c20" },
+    { "path": "openspec/changes/stack-consolidation/specs/admin-scaffold/spec.md", "sha256": "07b7eae78c998a6c4c32cdc97d138ac134c9892ad8c12499ffafe10a756edff4" },
+    { "path": "openspec/changes/stack-consolidation/specs/admin-system-ui/spec.md", "sha256": "a69a7f3b191d8afb935190633f14d7498f2cf5b28bf7cc419e4ec9e418b9a9ed" },
+    { "path": "openspec/changes/stack-consolidation/specs/file-upload-api/spec.md", "sha256": "84dbc1e18ae541071d6487f85d7f50c9127f108d634e8452f8926407138f4df2" },
+    { "path": "openspec/changes/stack-consolidation/specs/monorepo-workspace/spec.md", "sha256": "924bf9dd7223f5fc46df57da81749a6944aac4c6eea2567f7ecc67e3166db444" },
+    { "path": "openspec/changes/stack-consolidation/specs/rbac-api/spec.md", "sha256": "eb1697c2b594c2b20ed7ff5247cb851c544a4f93f03cbf497584413790575ef0" },
+    { "path": "openspec/changes/stack-consolidation/specs/server-scaffold/spec.md", "sha256": "98d3a19264f06e9c29e29e2b1dc5289567ef46702489270397a590276e5ada1d" },
+    { "path": "openspec/changes/stack-consolidation/specs/shared-types/spec.md", "sha256": "426894b5a14d4a17a9ce38c97cfe386b4e3df34ddcc7ccd133a0c0721029ee99" }
+  ]
+}

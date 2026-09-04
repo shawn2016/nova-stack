@@ -4,6 +4,7 @@
     v-model="formData"
     :items="formItems"
     :rules="rules"
+    embedded
     @reset="handleReset"
     @search="handleSearch"
   />
@@ -34,35 +35,13 @@
 
   const rules = {}
 
-  const statusOptions = [
-    { label: '启用', value: 1 },
-    { label: '禁用', value: 0 },
-  ]
-
   const formItems = computed(() => [
     {
-      label: '角色名称',
-      key: 'name',
+      label: '关键词',
+      key: 'keyword',
       type: 'input',
-      placeholder: '请输入角色名称',
+      placeholder: '角色名称或编码',
       clearable: true,
-    },
-    {
-      label: '角色编码',
-      key: 'code',
-      type: 'input',
-      placeholder: '请输入角色编码',
-      clearable: true,
-    },
-    {
-      label: '状态',
-      key: 'status',
-      type: 'select',
-      props: {
-        placeholder: '请选择状态',
-        options: statusOptions,
-        clearable: true,
-      },
     },
   ])
 

@@ -6,6 +6,7 @@ import {
   SysOperLogEntity,
   SysUserEntity,
 } from '../../database/entities';
+import { DataScopeModule } from '../data-scope/data-scope.module';
 import { AuditController } from './audit.controller';
 import { LoginLogService } from './login-log.service';
 import { OperLogInterceptor } from './oper-log.interceptor';
@@ -13,6 +14,7 @@ import { OperLogService } from './oper-log.service';
 
 @Module({
   imports: [
+    DataScopeModule,
     TypeOrmModule.forFeature([
       SysLoginLogEntity,
       SysOperLogEntity,

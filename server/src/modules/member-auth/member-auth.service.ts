@@ -13,6 +13,7 @@ import type {
 } from '@nova/shared-types';
 import { Repository } from 'typeorm';
 import { JwtService } from '../../common/jwt/jwt.service';
+import { toApiId } from '../../common/utils/to-api-id';
 import { MemberUserEntity } from '../../database/entities';
 import { RedisService } from '../../redis/redis.service';
 import { parseDurationToSeconds } from '../auth/auth.service';
@@ -132,7 +133,7 @@ export class MemberAuthService {
 
   private toMemberInfo(member: MemberUserEntity): MemberInfo {
     return {
-      id: Number(member.id),
+      id: toApiId(member.id),
       phone: member.phone,
       nickname: member.nickname,
       avatar: member.avatar ?? '',

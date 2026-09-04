@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import {
+  IsArray,
   IsIn,
   IsInt,
   IsNotEmpty,
@@ -30,4 +31,14 @@ export class CreateRoleDto {
   @IsOptional()
   @IsInt()
   sort?: number;
+
+  @ApiPropertyOptional({ enum: [1, 2, 3, 4, 5] })
+  @IsOptional()
+  @IsIn([1, 2, 3, 4, 5])
+  dataScope?: 1 | 2 | 3 | 4 | 5;
+
+  @ApiPropertyOptional({ type: [String] })
+  @IsOptional()
+  @IsArray()
+  customDeptIds?: string[];
 }

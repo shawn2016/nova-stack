@@ -8,11 +8,13 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RequirePermission } from '../decorators/require-permission.decorator';
 import { AssignRolePermissionsDto } from './dto/assign-role-permissions.dto';
 import { CreateRoleDto } from './dto/create-role.dto';
+import { ListRolesDto } from './dto/list-roles.dto';
 import { UpdateRoleDto } from './dto/update-role.dto';
 import { RoleService } from './role.service';
 
@@ -25,8 +27,15 @@ export class RoleController {
   @Get()
   @RequirePermission('system:role:list')
   @ApiOperation({ summary: '角色列表' })
-  list() {
-    return this.roleService.list();
+  list(@Query() query: ListRolesDto) {
+    return this.roleService.list(query);
+  }
+
+  @Get('permission-options')
+  @RequirePermission('system:role:list')
+  @ApiOperation({ summary: '可分配权限列表' })
+  listPermissionOptions() {
+    return this.roleService.listPermissionOptions();
   }
 
   @Get(':id')

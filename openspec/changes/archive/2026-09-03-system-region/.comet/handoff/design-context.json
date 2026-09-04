@@ -1,0 +1,15 @@
+{
+  "change": "system-region",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "690adc1397eb1b8953682d8a2b7545f522303a8d017be1e5765cbb5ce336866f",
+  "files": [
+    { "path": "openspec/changes/system-region/proposal.md", "sha256": "805ec4cd2687b246bd2723def4f71e3bf4d60709eb457fc87d408b7692c3ea3a" },
+    { "path": "openspec/changes/system-region/design.md", "sha256": "f8ee421c1e4d9488efaeb072d4aa152017867a3fd5c73b4a3e30fe5f695537a3" },
+    { "path": "openspec/changes/system-region/tasks.md", "sha256": "3ef61768398d305d36dfacf8f796f9789a8f694f1e4be0f724c9e415cdc832d6" },
+    { "path": "openspec/changes/system-region/specs/region-admin-ui/spec.md", "sha256": "3bbd0b71c789e8417abc3e15709e657daadc40f383bdf7f636b369b4c4e6c8b6" },
+    { "path": "openspec/changes/system-region/specs/region-api/spec.md", "sha256": "b05c3a1bc4d9deca8623c913560852fb1d108cb55fd4c569af7a73476f89a37c" }
+  ]
+}

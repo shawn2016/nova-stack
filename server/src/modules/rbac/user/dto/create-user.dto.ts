@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import type { CreateUserDto as ICreateUserDto } from '@nova/shared-types';
 import {
   IsIn,
   IsNotEmpty,
@@ -8,7 +9,7 @@ import {
   MinLength,
 } from 'class-validator';
 
-export class CreateUserDto {
+export class CreateUserDto implements ICreateUserDto {
   @ApiProperty({ maxLength: 64 })
   @IsString()
   @IsNotEmpty()
@@ -32,4 +33,9 @@ export class CreateUserDto {
   @IsOptional()
   @IsIn([0, 1])
   status?: 0 | 1;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  deptId?: string | null;
 }

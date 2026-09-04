@@ -14,14 +14,14 @@ describe('Site Config API (e2e)', () => {
 
   async function loginAdmin(): Promise<string> {
     const res = await request(app.getHttpServer())
-      .post('/auth/login')
+      .post('/api/auth/login')
       .send({ username: 'admin', password: 'admin123' });
     return res.body.data.tokens.accessToken;
   }
 
   async function loginMember(): Promise<string> {
     const res = await request(app.getHttpServer())
-      .post('/member/auth/login')
+      .post('/api/member/auth/login')
       .send({ phone: '13800138000', password: 'member123' });
     return res.body.data.tokens.accessToken;
   }
@@ -42,7 +42,7 @@ describe('Site Config API (e2e)', () => {
 
     it('GET /config/items 应返回配置列表（含 seed 示例）', async () => {
       const res = await request(app.getHttpServer())
-        .get('/config/items')
+        .get('/api/config/items')
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
@@ -57,7 +57,7 @@ describe('Site Config API (e2e)', () => {
 
     it('POST /config/items 应创建配置项', async () => {
       const res = await request(app.getHttpServer())
-        .post('/config/items')
+        .post('/api/config/items')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           configKey: 'site.tagline',
@@ -77,7 +77,7 @@ describe('Site Config API (e2e)', () => {
 
     it('POST /config/items 重复 configKey 应返回 400', async () => {
       const res = await request(app.getHttpServer())
-        .post('/config/items')
+        .post('/api/config/items')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           configKey: 'site.name',
@@ -91,7 +91,7 @@ describe('Site Config API (e2e)', () => {
 
     it('PUT /config/items/:id 应更新配置项且 configKey 不可改', async () => {
       const listRes = await request(app.getHttpServer())
-        .get('/config/items')
+        .get('/api/config/items')
         .query({ keyword: 'site.name' })
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
@@ -101,7 +101,7 @@ describe('Site Config API (e2e)', () => {
       ).id;
 
       const res = await request(app.getHttpServer())
-        .put(`/config/items/${seededSiteNameId}`)
+        .put(`/api/config/items/${seededSiteNameId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           configName: '站点名称（已更新）',
@@ -117,7 +117,7 @@ describe('Site Config API (e2e)', () => {
 
     it('GET /config/by-key/:key 应返回已知配置', async () => {
       const res = await request(app.getHttpServer())
-        .get('/config/by-key/site.name')
+        .get('/api/config/by-key/site.name')
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
@@ -130,7 +130,7 @@ describe('Site Config API (e2e)', () => {
 
     it('GET /config/by-key/:key 未知 key 应返回 404', async () => {
       const res = await request(app.getHttpServer())
-        .get('/config/by-key/unknown.key')
+        .get('/api/config/by-key/unknown.key')
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(404);
 
@@ -139,7 +139,7 @@ describe('Site Config API (e2e)', () => {
 
     it('GET /config/items 应支持 keyword 与 group 筛选', async () => {
       const res = await request(app.getHttpServer())
-        .get('/config/items')
+        .get('/api/config/items')
         .query({ keyword: 'logo', group: 'site' })
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
@@ -155,7 +155,7 @@ describe('Site Config API (e2e)', () => {
 
     it('DELETE /config/items/:id 应删除配置项', async () => {
       const createRes = await request(app.getHttpServer())
-        .post('/config/items')
+        .post('/api/config/items')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           configKey: 'site.temp',
@@ -165,7 +165,7 @@ describe('Site Config API (e2e)', () => {
         .expect(201);
 
       const res = await request(app.getHttpServer())
-        .delete(`/config/items/${createRes.body.data.id}`)
+        .delete(`/api/config/items/${createRes.body.data.id}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
@@ -176,7 +176,7 @@ describe('Site Config API (e2e)', () => {
   describe('Auth constraints', () => {
     it('member token 访问 GET /config/items 应返回 403', async () => {
       const res = await request(app.getHttpServer())
-        .get('/config/items')
+        .get('/api/config/items')
         .set('Authorization', `Bearer ${memberToken}`)
         .expect(403);
 
@@ -185,7 +185,7 @@ describe('Site Config API (e2e)', () => {
 
     it('member token 访问 GET /config/by-key/:key 应返回 403', async () => {
       const res = await request(app.getHttpServer())
-        .get('/config/by-key/site.name')
+        .get('/api/config/by-key/site.name')
         .set('Authorization', `Bearer ${memberToken}`)
         .expect(403);
 

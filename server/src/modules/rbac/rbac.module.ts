@@ -1,16 +1,17 @@
 import { Module } from '@nestjs/common';
-import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {
   SysMenuEntity,
   SysPermissionEntity,
   SysRoleEntity,
   SysRolePermissionEntity,
+  SysRoleDeptEntity,
   SysUserEntity,
   SysUserRoleEntity,
 } from '../../database/entities';
 import { AuthModule } from '../auth/auth.module';
-import { PermissionGuard } from './guards/permission.guard';
+import { DataScopeModule } from '../data-scope/data-scope.module';
+import { DeptModule } from '../dept/dept.module';
 import { MenuController } from './menu/menu.controller';
 import { MenuService } from './menu/menu.service';
 import { RoleController } from './role/role.controller';
@@ -21,6 +22,8 @@ import { UserService } from './user/user.service';
 @Module({
   imports: [
     AuthModule,
+    DeptModule,
+    DataScopeModule,
     TypeOrmModule.forFeature([
       SysUserEntity,
       SysUserRoleEntity,
@@ -28,17 +31,10 @@ import { UserService } from './user/user.service';
       SysRolePermissionEntity,
       SysPermissionEntity,
       SysMenuEntity,
+      SysRoleDeptEntity,
     ]),
   ],
   controllers: [UserController, RoleController, MenuController],
-  providers: [
-    UserService,
-    RoleService,
-    MenuService,
-    {
-      provide: APP_GUARD,
-      useClass: PermissionGuard,
-    },
-  ],
+  providers: [UserService, RoleService, MenuService],
 })
 export class RbacModule {}

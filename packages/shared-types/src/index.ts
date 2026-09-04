@@ -56,6 +56,7 @@ export type {
 
 export type {
   AssignRolePermissionsDto,
+  SysPermissionOption,
   AssignUserRolesDto,
   CreateMenuDto,
   CreateRoleDto,
@@ -93,3 +94,109 @@ export type {
   OperLogListItem,
   OperLogListQuery,
 } from './audit-log.js';
+
+export type {
+  CreateRegionDto,
+  RegionListItem,
+  RegionTreeNode,
+  UpdateRegionDto,
+} from './region.js';
+
+export type {
+  CreateMessageDto,
+  CreateNoticeDto,
+  MessageListItem,
+  NoticeListItem,
+  NoticeMyListItem,
+  UnreadCountResult,
+  UpdateNoticeDto,
+} from './notice.js';
+
+export type {
+  CreateDeptDto,
+  DeptListItem,
+  DeptSettings,
+  DeptTreeNode,
+  UpdateDeptDto,
+  UpdateDeptSettingsDto,
+  UpdateDeptStatusDto,
+} from './dept.js';
+
+export type {
+  DataScope,
+  DataScopeFilter,
+} from './data-scope.js';
+
+export {
+  DATA_SCOPE_ALL,
+  DATA_SCOPE_CUSTOM,
+  DATA_SCOPE_DEPT,
+  DATA_SCOPE_DEPT_AND_CHILD,
+  DATA_SCOPE_LABELS,
+  DATA_SCOPE_SELF,
+} from './data-scope.js';
+
+export type {
+  FileListItem,
+  FileStorageType,
+  ListFilesQuery,
+  UpdateUploadSettingsDto,
+  UploadAliyunSettings,
+  UploadLocalSettings,
+  UploadSettings,
+  UploadStorageProvider,
+  UploadTencentSettings,
+} from './file.js';
+
+export { FILE_STORAGE_LABELS, UPLOAD_STORAGE_PROVIDER_LABELS } from './file.js';
+
+export type {
+  KickOnlineSessionResult,
+  OnlineSessionListItem,
+  OnlineSessionListResult,
+} from './online-session.js';
+
+export type {
+  CreateJobDto,
+  JobDetail,
+  JobHandlerInfo,
+  JobListItem,
+  JobLogListItem,
+  JobLogStatus,
+  JobStatus,
+  RunJobResult,
+  UpdateJobDto,
+  UpdateJobStatusDto,
+} from './scheduled-job.js';
+
+export type {
+  CreateSmsChannelDto,
+  CreateSmsTemplateDto,
+  SendSmsDto,
+  SendSmsResult,
+  SmsChannelDetail,
+  SmsChannelListItem,
+  SmsLogListItem,
+  SmsProviderType,
+  SmsStatus,
+  SmsTemplateDetail,
+  SmsTemplateListItem,
+  UpdateSmsChannelDto,
+  UpdateSmsTemplateDto,
+} from './sms.js';
+
+export type {
+  CreateEmailChannelDto,
+  CreateEmailTemplateDto,
+  EmailChannelDetail,
+  EmailChannelListItem,
+  EmailLogListItem,
+  EmailProviderType,
+  EmailStatus,
+  EmailTemplateDetail,
+  EmailTemplateListItem,
+  SendEmailDto,
+  SendEmailResult,
+  UpdateEmailChannelDto,
+  UpdateEmailTemplateDto,
+} from './email.js';

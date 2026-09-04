@@ -4,6 +4,7 @@
     v-model="formData"
     :items="formItems"
     :rules="rules"
+    embedded
     @reset="handleReset"
     @search="handleSearch"
   />
@@ -29,34 +30,19 @@
 
   const formData = computed({
     get: () => props.modelValue,
-    set: (val) => emit('update:modelValue', val),
+    set: (val) => emit('update:modelValue', val)
   })
 
   const rules = {}
 
-  const statusOptions = [
-    { label: '启用', value: 1 },
-    { label: '禁用', value: 0 },
-  ]
-
   const formItems = computed(() => [
     {
-      label: '用户名',
-      key: 'username',
+      label: '关键词',
+      key: 'keyword',
       type: 'input',
-      placeholder: '请输入用户名',
-      clearable: true,
-    },
-    {
-      label: '状态',
-      key: 'status',
-      type: 'select',
-      props: {
-        placeholder: '请选择状态',
-        options: statusOptions,
-        clearable: true,
-      },
-    },
+      placeholder: '用户名或昵称',
+      clearable: true
+    }
   ])
 
   function handleReset() {

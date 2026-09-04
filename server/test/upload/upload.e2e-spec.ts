@@ -26,7 +26,7 @@ describe('Upload API (e2e)', () => {
     app = ctx.app;
 
     const loginRes = await request(app.getHttpServer())
-      .post('/auth/login')
+      .post('/api/auth/login')
       .send({ username: 'admin', password: 'admin123' });
 
     adminToken = loginRes.body.data.tokens.accessToken;
@@ -40,7 +40,7 @@ describe('Upload API (e2e)', () => {
   describe('POST /files/upload', () => {
     it('Admin JWT 上传图片应返回 UploadResult 且可通过 /uploads 访问', async () => {
       const res = await request(app.getHttpServer())
-        .post('/files/upload')
+        .post('/api/files/upload')
         .set('Authorization', `Bearer ${adminToken}`)
         .attach('file', Buffer.from('fake-png-content'), {
           filename: 'avatar.png',
@@ -69,13 +69,13 @@ describe('Upload API (e2e)', () => {
 
     it('Member token 应返回 403', async () => {
       const loginRes = await request(app.getHttpServer())
-        .post('/member/auth/login')
+        .post('/api/member/auth/login')
         .send({ phone: '13800138000', password: 'member123' });
 
       const memberToken = loginRes.body.data.tokens.accessToken;
 
       const res = await request(app.getHttpServer())
-        .post('/files/upload')
+        .post('/api/files/upload')
         .set('Authorization', `Bearer ${memberToken}`)
         .attach('file', Buffer.from('fake-png'), {
           filename: 'avatar.png',
@@ -88,7 +88,7 @@ describe('Upload API (e2e)', () => {
 
     it('非图片 MIME 应返回 400', async () => {
       const res = await request(app.getHttpServer())
-        .post('/files/upload')
+        .post('/api/files/upload')
         .set('Authorization', `Bearer ${adminToken}`)
         .attach('file', Buffer.from('not-image'), {
           filename: 'doc.txt',
@@ -101,11 +101,52 @@ describe('Upload API (e2e)', () => {
 
     it('未携带文件应返回 400', async () => {
       const res = await request(app.getHttpServer())
-        .post('/files/upload')
+        .post('/api/files/upload')
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(400);
 
       expect(res.body.code).toBe(ErrorCode.BAD_REQUEST);
+    });
+  });
+
+  describe('GET /files & DELETE /files/:id', () => {
+    it('上传后应出现在文件列表且可删除', async () => {
+      const uploadRes = await request(app.getHttpServer())
+        .post('/api/files/upload')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .attach('file', Buffer.from('list-test-png'), {
+          filename: 'resource.png',
+          contentType: 'image/png',
+        })
+        .expect(201);
+
+      const listRes = await request(app.getHttpServer())
+        .get('/api/files?pageSize=50')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+
+      expect(listRes.body.data.list.some(
+        (item: { url: string }) => item.url === uploadRes.body.data.url,
+      )).toBe(true);
+
+      const fileItem = listRes.body.data.list.find(
+        (item: { url: string }) => item.url === uploadRes.body.data.url,
+      );
+      expect(fileItem.storage).toBe('local');
+
+      await request(app.getHttpServer())
+        .delete(`/api/files/${fileItem.id}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+
+      const afterDelete = await request(app.getHttpServer())
+        .get('/api/files?pageSize=50')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+
+      expect(afterDelete.body.data.list.some(
+        (item: { id: string }) => item.id === fileItem.id,
+      )).toBe(false);
     });
   });
 });

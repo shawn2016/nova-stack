@@ -2,7 +2,10 @@
 <!-- 支持常用表单组件、自定义组件、插槽、校验、隐藏表单项 -->
 <!-- 写法同 ElementPlus 官方文档组件，把属性写在 props 里面就可以了 -->
 <template>
-  <section class="art-search-bar art-card-xs" :class="{ 'is-expanded': isExpanded }">
+  <section
+    class="art-search-bar"
+    :class="{ 'is-expanded': isExpanded, 'art-card-xs': !embedded, 'is-embedded': embedded }"
+  >
     <ElForm
       ref="formRef"
       :model="modelValue"
@@ -104,7 +107,6 @@
 
 <script setup lang="ts">
   import { ArrowUpBold, ArrowDownBold } from '@element-plus/icons-vue'
-  import { useWindowSize } from '@vueuse/core'
   import { useI18n } from 'vue-i18n'
   import { toRaw, type Component } from 'vue'
   import {
@@ -150,9 +152,7 @@
     treeselect: ElTreeSelect // 树选择器
   }
 
-  const { width } = useWindowSize()
   const { t } = useI18n()
-  const isMobile = computed(() => width.value < 500)
 
   const formInstance = useTemplateRef<FormInstance>('formRef')
 
@@ -211,6 +211,8 @@
     disabledSearch?: boolean
     /** 搜索时是否清洗空值 */
     sanitizeOutput?: Partial<SanitizeOutputOptions>
+    /** 内嵌模式：无外框，用于 ArtListPanel 等一体化容器 */
+    embedded?: boolean
   }
 
   interface SanitizeOutputOptions {
@@ -241,7 +243,8 @@
     showReset: true,
     showSearch: true,
     disabledSearch: false,
-    sanitizeOutput: () => ({})
+    sanitizeOutput: () => ({}),
+    embedded: false
   })
 
   interface SearchBarEmits {
@@ -428,6 +431,10 @@
     const shouldShowLess = !props.isExpand && !isExpanded.value
     if (shouldShowLess) {
       const maxItemsPerRow = Math.floor(24 / props.span) - 1
+      // span=24 时表单项独占一行，不应因预留按钮位而裁成 0 项
+      if (maxItemsPerRow < 1) {
+        return filteredItems
+      }
       return filteredItems.slice(0, maxItemsPerRow)
     }
     return filteredItems
@@ -451,14 +458,10 @@
   })
 
   /**
-   * 操作按钮样式
+   * 操作按钮样式：始终靠左，紧贴最后一个表单项
    */
   const actionButtonsStyle = computed(() => ({
-    'justify-content': isMobile.value
-      ? 'flex-end'
-      : props.items.filter((item) => !item.hidden).length <= props.buttonLeftLimit
-        ? 'flex-start'
-        : 'flex-end'
+    'justify-content': 'flex-start'
   }))
 
   /**
@@ -509,15 +512,24 @@
   .art-search-bar {
     padding: 15px 20px 0;
 
+    &.is-embedded {
+      padding: 16px 20px 0;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      border-radius: 0;
+    }
+
     .action-column {
-      flex: 1;
+      flex: 0 0 auto !important;
+      width: auto !important;
       max-width: 100%;
 
       .action-buttons-wrapper {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
-        justify-content: flex-end;
+        justify-content: flex-start;
         margin-bottom: 12px;
       }
 

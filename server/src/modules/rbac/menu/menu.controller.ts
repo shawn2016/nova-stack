@@ -8,10 +8,12 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RequirePermission } from '../decorators/require-permission.decorator';
 import { CreateMenuDto } from './dto/create-menu.dto';
+import { ListMenusDto } from './dto/list-menus.dto';
 import { UpdateMenuDto } from './dto/update-menu.dto';
 import { MenuService } from './menu.service';
 
@@ -24,8 +26,8 @@ export class MenuController {
   @Get()
   @RequirePermission('system:menu:list')
   @ApiOperation({ summary: '菜单列表' })
-  list() {
-    return this.menuService.list();
+  list(@Query() query: ListMenusDto) {
+    return this.menuService.list(query);
   }
 
   @Post()

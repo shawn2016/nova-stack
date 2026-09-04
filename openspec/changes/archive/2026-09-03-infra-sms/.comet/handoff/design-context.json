@@ -1,0 +1,15 @@
+{
+  "change": "infra-sms",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "1d7b92facbf3f2978950dee057a202155ee06b1ed45beaca3eee752659d99d9e",
+  "files": [
+    { "path": "openspec/changes/infra-sms/proposal.md", "sha256": "25ed4a5c504995ade32c01766d0f557313da4bcfa99ff7529771321a9f0e9bdf" },
+    { "path": "openspec/changes/infra-sms/design.md", "sha256": "cf8535e89eba3ebedd19836bad7e2d7ebe23e85aa94c875552681881bbf21be6" },
+    { "path": "openspec/changes/infra-sms/tasks.md", "sha256": "83dca0237b3a07b65522670beca5cff5b5c6e39f4012656bdb0bf44591289556" },
+    { "path": "openspec/changes/infra-sms/specs/sms-admin-ui/spec.md", "sha256": "bf781011cc169c4926912fe663d64bcb361d821070827926fdac75dbb27b5b41" },
+    { "path": "openspec/changes/infra-sms/specs/sms-api/spec.md", "sha256": "db2dfad14f79ca5c39f81653b187122a095c13e797fd6d3fd770615fa579301b" }
+  ]
+}

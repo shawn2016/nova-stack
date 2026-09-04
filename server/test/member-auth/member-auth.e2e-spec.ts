@@ -22,7 +22,7 @@ describe('Member Auth API (e2e)', () => {
   describe('POST /member/auth/login', () => {
     it('有效凭据应返回 200、TokenPair 与 MemberInfo', async () => {
       const res = await request(app.getHttpServer())
-        .post('/member/auth/login')
+        .post('/api/member/auth/login')
         .send({ phone: '13800138000', password: 'member123' })
         .expect(200);
 
@@ -36,7 +36,7 @@ describe('Member Auth API (e2e)', () => {
 
     it('错误密码应返回 401', async () => {
       const res = await request(app.getHttpServer())
-        .post('/member/auth/login')
+        .post('/api/member/auth/login')
         .send({ phone: '13800138000', password: 'wrong-password' })
         .expect(401);
 
@@ -47,7 +47,7 @@ describe('Member Auth API (e2e)', () => {
   describe('POST /member/auth/register', () => {
     it('新手机号应返回 201 与 TokenPair', async () => {
       const res = await request(app.getHttpServer())
-        .post('/member/auth/register')
+        .post('/api/member/auth/register')
         .send({
           phone: '13900139001',
           password: 'newmember123',
@@ -64,7 +64,7 @@ describe('Member Auth API (e2e)', () => {
 
     it('重复手机号应返回 409', async () => {
       const res = await request(app.getHttpServer())
-        .post('/member/auth/register')
+        .post('/api/member/auth/register')
         .send({ phone: '13800138000', password: 'member123' })
         .expect(409);
 
@@ -75,18 +75,18 @@ describe('Member Auth API (e2e)', () => {
   describe('POST /member/auth/logout + blacklist', () => {
     it('登出后 accessToken 应被拒绝', async () => {
       const loginRes = await request(app.getHttpServer())
-        .post('/member/auth/login')
+        .post('/api/member/auth/login')
         .send({ phone: '13800138000', password: 'member123' });
 
       const accessToken = loginRes.body.data.tokens.accessToken;
 
       await request(app.getHttpServer())
-        .post('/member/auth/logout')
+        .post('/api/member/auth/logout')
         .set('Authorization', `Bearer ${accessToken}`)
         .expect(200);
 
       const retryRes = await request(app.getHttpServer())
-        .post('/member/auth/logout')
+        .post('/api/member/auth/logout')
         .set('Authorization', `Bearer ${accessToken}`)
         .expect(401);
 
@@ -97,13 +97,13 @@ describe('Member Auth API (e2e)', () => {
   describe('POST /member/auth/refresh', () => {
     it('有效 refreshToken 应返回新 accessToken', async () => {
       const loginRes = await request(app.getHttpServer())
-        .post('/member/auth/login')
+        .post('/api/member/auth/login')
         .send({ phone: '13800138000', password: 'member123' });
 
       const { refreshToken } = loginRes.body.data.tokens;
 
       const refreshRes = await request(app.getHttpServer())
-        .post('/member/auth/refresh')
+        .post('/api/member/auth/refresh')
         .send({ refreshToken })
         .expect(200);
 
@@ -115,13 +115,13 @@ describe('Member Auth API (e2e)', () => {
   describe('Admin/Member token isolation', () => {
     it('member token 访问 GET /auth/me 应返回 403', async () => {
       const loginRes = await request(app.getHttpServer())
-        .post('/member/auth/login')
+        .post('/api/member/auth/login')
         .send({ phone: '13800138000', password: 'member123' });
 
       const accessToken = loginRes.body.data.tokens.accessToken;
 
       const res = await request(app.getHttpServer())
-        .get('/auth/me')
+        .get('/api/auth/me')
         .set('Authorization', `Bearer ${accessToken}`)
         .expect(403);
 

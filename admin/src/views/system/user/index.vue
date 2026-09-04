@@ -1,17 +1,25 @@
 <template>
   <div class="user-page art-full-height">
-    <UserSearch v-model="searchForm" @search="handleSearch" @reset="resetSearchParams" />
-
-    <ElCard class="art-table-card">
-      <ArtTableHeader v-model:columns="columnChecks" :loading="loading" @refresh="refreshData">
-        <template #left>
-          <ElSpace wrap>
-            <ElButton v-permission="'system:user:create'" @click="showDialog('add')" v-ripple>
-              新增用户
-            </ElButton>
-          </ElSpace>
-        </template>
-      </ArtTableHeader>
+    <ArtListPanel
+      title="用户管理"
+      v-model:show-search-bar="showSearchBar"
+      v-model:columns="columnChecks"
+      :loading="loading"
+      @refresh="refreshData"
+    >
+      <template #search>
+        <UserSearch v-model="searchForm" @search="handleSearch" @reset="resetSearchParams" />
+      </template>
+      <template #head-actions>
+        <ElButton
+          v-permission="'system:user:create'"
+          type="primary"
+          @click="showDialog('add')"
+          v-ripple
+        >
+          新增用户
+        </ElButton>
+      </template>
 
       <ArtTable
         :loading="loading"
@@ -21,19 +29,20 @@
         @pagination:size-change="handleSizeChange"
         @pagination:current-change="handleCurrentChange"
       />
+    </ArtListPanel>
 
-      <UserDialog
-        v-model:visible="dialogVisible"
-        :type="dialogType"
-        :user-data="currentUserData"
-        @success="refreshData"
-      />
-    </ElCard>
+    <UserDialog
+      v-model:visible="dialogVisible"
+      :type="dialogType"
+      :user-data="currentUserData"
+      @success="refreshData"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-  import ArtButtonTable from '@/components/core/forms/art-button-table/index.vue'
+  import ArtTableActions from '@/components/core/tables/art-table-actions/index.vue'
+  import type { TableActionItem } from '@/components/core/tables/art-table-actions/index.vue'
   import { useTable } from '@/hooks/core/useTable'
   import { deleteUser as deleteUserApi, fetchUserList } from '@/api/system-manage'
   import type { UserListQuery } from '@/api/system-manage'
@@ -41,19 +50,16 @@
   import UserSearch from './modules/user-search.vue'
   import UserDialog from './modules/user-dialog.vue'
   import { ElTag, ElMessageBox } from 'element-plus'
-  import { useUserStore } from '@/store/modules/user'
 
   defineOptions({ name: 'User' })
-
-  const userStore = useUserStore()
 
   const dialogType = ref<'add' | 'edit'>('add')
   const dialogVisible = ref(false)
   const currentUserData = ref<Partial<SysUserListItem>>({})
+  const showSearchBar = ref(true)
 
   const searchForm = ref<UserListQuery>({
-    username: undefined,
-    status: undefined,
+    keyword: undefined,
   })
 
   const {
@@ -80,6 +86,7 @@
         { type: 'index', width: 60, label: '序号' },
         { prop: 'username', label: '用户名', minWidth: 120 },
         { prop: 'nickname', label: '昵称', minWidth: 120 },
+        { prop: 'deptName', label: '部门', minWidth: 120, formatter: (row) => row.deptName || '-' },
         {
           prop: 'roleCodes',
           label: '角色',
@@ -104,26 +111,24 @@
           label: '操作',
           width: 120,
           fixed: 'right',
-          formatter: (row) => {
-            const buttons = []
-            if (userStore.hasPermission('system:user:update')) {
-              buttons.push(
-                h(ArtButtonTable, {
-                  type: 'edit',
+          formatter: (row) =>
+            h(ArtTableActions, {
+              items: [
+                {
+                  key: 'edit',
+                  label: '编辑',
+                  auth: 'system:user:update',
                   onClick: () => showDialog('edit', row),
-                }),
-              )
-            }
-            if (userStore.hasPermission('system:user:delete')) {
-              buttons.push(
-                h(ArtButtonTable, {
-                  type: 'delete',
+                },
+                {
+                  key: 'delete',
+                  label: '删除',
+                  danger: true,
+                  auth: 'system:user:delete',
                   onClick: () => handleDeleteUser(row),
-                }),
-              )
-            }
-            return h('div', buttons)
-          },
+                },
+              ] satisfies TableActionItem[],
+            }),
         },
       ],
     },

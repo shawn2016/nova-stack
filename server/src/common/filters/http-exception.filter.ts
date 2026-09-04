@@ -30,11 +30,21 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
       if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
         const payload = exceptionResponse as Record<string, unknown>;
-        body = {
-          code: (payload.code as number) ?? this.mapStatusToCode(status),
-          message: (payload.message as string) ?? exception.message,
-          data: (payload.data as null) ?? null,
-        };
+        const rawMessage = payload.message;
+
+        if (Array.isArray(rawMessage)) {
+          body = {
+            code: ErrorCode.BAD_REQUEST,
+            message: 'Validation failed',
+            data: { errors: rawMessage } as unknown as null,
+          };
+        } else {
+          body = {
+            code: (payload.code as number) ?? this.mapStatusToCode(status),
+            message: (rawMessage as string) ?? exception.message,
+            data: (payload.data as null) ?? null,
+          };
+        }
       } else {
         body = {
           code: this.mapStatusToCode(status),

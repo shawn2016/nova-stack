@@ -12,11 +12,11 @@ describe('RBAC CRUD API (e2e)', () => {
   let app: INestApplication<App>;
   let adminToken: string;
   let memberToken: string;
-  let adminUserId: number;
+  let adminUserId: string;
 
   async function loginAdmin(): Promise<string> {
     const res = await request(app.getHttpServer())
-      .post('/auth/login')
+      .post('/api/auth/login')
       .send({ username: 'admin', password: 'admin123' });
     adminUserId = res.body.data.user.id;
     return res.body.data.tokens.accessToken;
@@ -24,7 +24,7 @@ describe('RBAC CRUD API (e2e)', () => {
 
   async function loginMember(): Promise<string> {
     const res = await request(app.getHttpServer())
-      .post('/member/auth/login')
+      .post('/api/member/auth/login')
       .send({ phone: '13800138000', password: 'member123' });
     return res.body.data.tokens.accessToken;
   }
@@ -42,12 +42,12 @@ describe('RBAC CRUD API (e2e)', () => {
   });
 
   describe('Users API', () => {
-    let createdUserId: number;
-    let testRoleId: number;
+    let createdUserId: string;
+    let testRoleId: string;
 
     it('GET /users 应返回用户列表', async () => {
       const res = await request(app.getHttpServer())
-        .get('/users')
+        .get('/api/users')
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
@@ -59,7 +59,7 @@ describe('RBAC CRUD API (e2e)', () => {
 
     it('POST /users 应创建用户（密码 bcrypt 存储）', async () => {
       const res = await request(app.getHttpServer())
-        .post('/users')
+        .post('/api/users')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           username: 'e2e_user',
@@ -77,7 +77,7 @@ describe('RBAC CRUD API (e2e)', () => {
       createdUserId = res.body.data.id;
 
       const loginRes = await request(app.getHttpServer())
-        .post('/auth/login')
+        .post('/api/auth/login')
         .send({ username: 'e2e_user', password: 'e2e_pass123' })
         .expect(200);
 
@@ -86,7 +86,7 @@ describe('RBAC CRUD API (e2e)', () => {
 
     it('GET /users/:id 应返回用户详情', async () => {
       const res = await request(app.getHttpServer())
-        .get(`/users/${createdUserId}`)
+        .get(`/api/users/${createdUserId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
@@ -97,7 +97,7 @@ describe('RBAC CRUD API (e2e)', () => {
 
     it('PUT /users/:id 应更新用户（不含密码）', async () => {
       const res = await request(app.getHttpServer())
-        .put(`/users/${createdUserId}`)
+        .put(`/api/users/${createdUserId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({ nickname: 'E2E 用户（已更新）', status: 1 })
         .expect(200);
@@ -107,7 +107,7 @@ describe('RBAC CRUD API (e2e)', () => {
 
     it('PUT /users/:id/roles 应分配角色', async () => {
       const rolesRes = await request(app.getHttpServer())
-        .get('/roles')
+        .get('/api/roles')
         .set('Authorization', `Bearer ${adminToken}`);
 
       const limitedRole = rolesRes.body.data.list.find(
@@ -117,7 +117,7 @@ describe('RBAC CRUD API (e2e)', () => {
       testRoleId = limitedRole.id;
 
       const res = await request(app.getHttpServer())
-        .put(`/users/${createdUserId}/roles`)
+        .put(`/api/users/${createdUserId}/roles`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({ roleIds: [testRoleId] })
         .expect(200);
@@ -128,7 +128,7 @@ describe('RBAC CRUD API (e2e)', () => {
 
     it('DELETE /users/:id 禁止删除当前登录用户', async () => {
       const res = await request(app.getHttpServer())
-        .delete(`/users/${adminUserId}`)
+        .delete(`/api/users/${adminUserId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(400);
 
@@ -137,27 +137,27 @@ describe('RBAC CRUD API (e2e)', () => {
 
     it('DELETE /users/:id 应删除其他用户', async () => {
       const res = await request(app.getHttpServer())
-        .delete(`/users/${createdUserId}`)
+        .delete(`/api/users/${createdUserId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
       expect(res.body.data.success).toBe(true);
 
       await request(app.getHttpServer())
-        .get(`/users/${createdUserId}`)
+        .get(`/api/users/${createdUserId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(404);
     });
 
     it('无 system:user:create 权限的用户 POST /users 应返回 403', async () => {
       const loginRes = await request(app.getHttpServer())
-        .post('/auth/login')
+        .post('/api/auth/login')
         .send({ username: 'limited', password: 'limited123' });
 
       const limitedToken = loginRes.body.data.tokens.accessToken;
 
       const res = await request(app.getHttpServer())
-        .post('/users')
+        .post('/api/users')
         .set('Authorization', `Bearer ${limitedToken}`)
         .send({
           username: 'forbidden_user',
@@ -170,7 +170,7 @@ describe('RBAC CRUD API (e2e)', () => {
 
     it('member token 访问 GET /users 应返回 403', async () => {
       const res = await request(app.getHttpServer())
-        .get('/users')
+        .get('/api/users')
         .set('Authorization', `Bearer ${memberToken}`)
         .expect(403);
 
@@ -179,11 +179,11 @@ describe('RBAC CRUD API (e2e)', () => {
   });
 
   describe('Roles API', () => {
-    let createdRoleId: number;
+    let createdRoleId: string;
 
     it('GET /roles 应返回角色列表', async () => {
       const res = await request(app.getHttpServer())
-        .get('/roles')
+        .get('/api/roles')
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
@@ -195,7 +195,7 @@ describe('RBAC CRUD API (e2e)', () => {
 
     it('POST /roles 应创建角色', async () => {
       const res = await request(app.getHttpServer())
-        .post('/roles')
+        .post('/api/roles')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           name: 'E2E 测试角色',
@@ -211,7 +211,7 @@ describe('RBAC CRUD API (e2e)', () => {
 
     it('GET /roles/:id 应返回角色详情含权限', async () => {
       const res = await request(app.getHttpServer())
-        .get(`/roles/${createdRoleId}`)
+        .get(`/api/roles/${createdRoleId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
@@ -221,7 +221,7 @@ describe('RBAC CRUD API (e2e)', () => {
 
     it('PUT /roles/:id 应更新角色', async () => {
       const res = await request(app.getHttpServer())
-        .put(`/roles/${createdRoleId}`)
+        .put(`/api/roles/${createdRoleId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({ name: 'E2E 测试角色（已更新）', sort: 51 })
         .expect(200);
@@ -232,7 +232,7 @@ describe('RBAC CRUD API (e2e)', () => {
 
     it('PUT /roles/:id/permissions 应分配权限', async () => {
       const res = await request(app.getHttpServer())
-        .put(`/roles/${createdRoleId}/permissions`)
+        .put(`/api/roles/${createdRoleId}/permissions`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({ permissionCodes: ['system:user:list', 'content:article:list'] })
         .expect(200);
@@ -243,7 +243,7 @@ describe('RBAC CRUD API (e2e)', () => {
 
     it('DELETE /roles/:id 禁止删除 super_admin 角色', async () => {
       const rolesRes = await request(app.getHttpServer())
-        .get('/roles')
+        .get('/api/roles')
         .set('Authorization', `Bearer ${adminToken}`);
 
       const superAdmin = rolesRes.body.data.list.find(
@@ -251,7 +251,7 @@ describe('RBAC CRUD API (e2e)', () => {
       );
 
       const res = await request(app.getHttpServer())
-        .delete(`/roles/${superAdmin.id}`)
+        .delete(`/api/roles/${superAdmin.id}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(400);
 
@@ -260,25 +260,25 @@ describe('RBAC CRUD API (e2e)', () => {
 
     it('DELETE /roles/:id 应删除普通角色', async () => {
       const res = await request(app.getHttpServer())
-        .delete(`/roles/${createdRoleId}`)
+        .delete(`/api/roles/${createdRoleId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
       expect(res.body.data.success).toBe(true);
 
       await request(app.getHttpServer())
-        .get(`/roles/${createdRoleId}`)
+        .get(`/api/roles/${createdRoleId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(404);
     });
 
     it('无 system:role:list 权限的用户 GET /roles 应返回 403', async () => {
       const loginRes = await request(app.getHttpServer())
-        .post('/auth/login')
+        .post('/api/auth/login')
         .send({ username: 'limited', password: 'limited123' });
 
       const res = await request(app.getHttpServer())
-        .get('/roles')
+        .get('/api/roles')
         .set('Authorization', `Bearer ${loginRes.body.data.tokens.accessToken}`)
         .expect(403);
 
@@ -287,11 +287,11 @@ describe('RBAC CRUD API (e2e)', () => {
   });
 
   describe('Menus API', () => {
-    let createdMenuId: number;
+    let createdMenuId: string;
 
     it('GET /menus 应返回菜单列表', async () => {
       const res = await request(app.getHttpServer())
-        .get('/menus')
+        .get('/api/menus')
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
@@ -302,10 +302,10 @@ describe('RBAC CRUD API (e2e)', () => {
 
     it('POST /menus 应创建菜单', async () => {
       const res = await request(app.getHttpServer())
-        .post('/menus')
+        .post('/api/menus')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
-          parentId: 0,
+          parentId: '0',
           name: 'E2E 测试菜单',
           path: '/e2e-test',
           component: 'views/e2e/test',
@@ -324,7 +324,7 @@ describe('RBAC CRUD API (e2e)', () => {
 
     it('GET /auth/me/menus 创建菜单后应反映变更', async () => {
       const res = await request(app.getHttpServer())
-        .get('/auth/me/menus')
+        .get('/api/auth/me/menus')
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
@@ -340,7 +340,7 @@ describe('RBAC CRUD API (e2e)', () => {
 
     it('PUT /menus/:id 应更新菜单', async () => {
       const res = await request(app.getHttpServer())
-        .put(`/menus/${createdMenuId}`)
+        .put(`/api/menus/${createdMenuId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .send({ name: 'E2E 测试菜单（已更新）' })
         .expect(200);
@@ -350,10 +350,10 @@ describe('RBAC CRUD API (e2e)', () => {
 
     it('DELETE /menus/:id 有子菜单时应拒绝删除', async () => {
       const parentRes = await request(app.getHttpServer())
-        .post('/menus')
+        .post('/api/menus')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
-          parentId: 0,
+          parentId: '0',
           name: 'E2E 父菜单',
           path: '/e2e-parent',
           type: 'directory',
@@ -362,7 +362,7 @@ describe('RBAC CRUD API (e2e)', () => {
         .expect(201);
 
       await request(app.getHttpServer())
-        .post('/menus')
+        .post('/api/menus')
         .set('Authorization', `Bearer ${adminToken}`)
         .send({
           parentId: parentRes.body.data.id,
@@ -374,7 +374,7 @@ describe('RBAC CRUD API (e2e)', () => {
         .expect(201);
 
       const res = await request(app.getHttpServer())
-        .delete(`/menus/${parentRes.body.data.id}`)
+        .delete(`/api/menus/${parentRes.body.data.id}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(400);
 
@@ -383,14 +383,14 @@ describe('RBAC CRUD API (e2e)', () => {
 
     it('DELETE /menus/:id 应删除无子菜单的菜单', async () => {
       const res = await request(app.getHttpServer())
-        .delete(`/menus/${createdMenuId}`)
+        .delete(`/api/menus/${createdMenuId}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(200);
 
       expect(res.body.data.success).toBe(true);
 
       const menusRes = await request(app.getHttpServer())
-        .get('/auth/me/menus')
+        .get('/api/auth/me/menus')
         .set('Authorization', `Bearer ${adminToken}`);
 
       const findMenu = (nodes: Array<{ name: string; children?: unknown[] }>): boolean =>
@@ -405,11 +405,11 @@ describe('RBAC CRUD API (e2e)', () => {
 
     it('无 system:menu:list 权限的用户 GET /menus 应返回 403', async () => {
       const loginRes = await request(app.getHttpServer())
-        .post('/auth/login')
+        .post('/api/auth/login')
         .send({ username: 'limited', password: 'limited123' });
 
       const res = await request(app.getHttpServer())
-        .get('/menus')
+        .get('/api/menus')
         .set('Authorization', `Bearer ${loginRes.body.data.tokens.accessToken}`)
         .expect(403);
 

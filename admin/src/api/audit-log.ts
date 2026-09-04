@@ -1,8 +1,4 @@
-import type {
-  LoginLogListItem,
-  OperLogListItem,
-  PaginationResult,
-} from '@nova/shared-types'
+import type { LoginLogListItem, OperLogListItem, PaginationResult } from '@nova/shared-types'
 import { request } from './request'
 
 export interface LoginLogListQuery {
@@ -29,13 +25,13 @@ function toTableResponse<T>(result: PaginationResult<T>) {
     records: result.list,
     total: result.total,
     current: result.page,
-    size: result.pageSize,
+    size: result.pageSize
   }
 }
 
 function buildAuditParams(
   params: LoginLogListQuery | OperLogListQuery,
-  extra?: Record<string, string | number | undefined>,
+  extra?: Record<string, string | number | undefined>
 ) {
   const { current = 1, size = 20, username, status, startTime, endTime } = params
   return {
@@ -45,7 +41,7 @@ function buildAuditParams(
     ...(status !== undefined && status !== null ? { status } : {}),
     ...(startTime ? { startTime } : {}),
     ...(endTime ? { endTime } : {}),
-    ...extra,
+    ...extra
   }
 }
 
@@ -53,7 +49,7 @@ export function fetchLoginLogs(params: LoginLogListQuery = {}) {
   return request<PaginationResult<LoginLogListItem>>({
     url: '/audit/login-logs',
     method: 'GET',
-    params: buildAuditParams(params),
+    params: buildAuditParams(params)
   }).then(toTableResponse)
 }
 
@@ -62,6 +58,6 @@ export function fetchOperLogs(params: OperLogListQuery = {}) {
   return request<PaginationResult<OperLogListItem>>({
     url: '/audit/oper-logs',
     method: 'GET',
-    params: buildAuditParams(rest, module ? { module } : {}),
+    params: buildAuditParams(rest, module ? { module } : {})
   }).then(toTableResponse)
 }

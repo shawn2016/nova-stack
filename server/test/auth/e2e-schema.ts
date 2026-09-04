@@ -10,6 +10,7 @@ export async function initE2eSchema(dataSource: DataSource): Promise<void> {
       nickname VARCHAR(64) NOT NULL,
       avatar VARCHAR(512),
       status TINYINT NOT NULL DEFAULT 1,
+      dept_id BIGINT,
       created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
@@ -22,6 +23,7 @@ export async function initE2eSchema(dataSource: DataSource): Promise<void> {
       code VARCHAR(64) NOT NULL UNIQUE,
       status TINYINT NOT NULL DEFAULT 1,
       sort INT NOT NULL DEFAULT 0,
+      data_scope TINYINT NOT NULL DEFAULT 1,
       created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
@@ -170,6 +172,208 @@ export async function initE2eSchema(dataSource: DataSource): Promise<void> {
       status TINYINT NOT NULL,
       error_msg VARCHAR(500),
       duration_ms INT NOT NULL,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS sys_region (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      parent_id BIGINT NOT NULL DEFAULT 0,
+      name VARCHAR(64) NOT NULL,
+      code VARCHAR(12) NOT NULL UNIQUE,
+      level TINYINT NOT NULL,
+      sort INT NOT NULL DEFAULT 0,
+      status TINYINT NOT NULL DEFAULT 1,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS sys_notice (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title VARCHAR(128) NOT NULL,
+      content TEXT NOT NULL,
+      type TINYINT NOT NULL,
+      status TINYINT NOT NULL DEFAULT 0,
+      publisher_id BIGINT NOT NULL,
+      published_at DATETIME,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS sys_notice_read (
+      notice_id BIGINT NOT NULL,
+      user_id BIGINT NOT NULL,
+      read_at DATETIME NOT NULL,
+      PRIMARY KEY (notice_id, user_id)
+    )
+  `);
+
+  await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS sys_message (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      sender_id BIGINT NOT NULL,
+      receiver_id BIGINT NOT NULL,
+      title VARCHAR(128) NOT NULL,
+      content TEXT NOT NULL,
+      is_read TINYINT NOT NULL DEFAULT 0,
+      read_at DATETIME,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS sys_role_dept (
+      role_id BIGINT NOT NULL,
+      dept_id BIGINT NOT NULL,
+      PRIMARY KEY (role_id, dept_id)
+    )
+  `);
+
+  await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS sys_dept (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      parent_id BIGINT NOT NULL DEFAULT 0,
+      name VARCHAR(64) NOT NULL,
+      sort INT NOT NULL DEFAULT 0,
+      leader VARCHAR(64),
+      phone VARCHAR(32),
+      status TINYINT NOT NULL DEFAULT 1,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS sys_job (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name VARCHAR(64) NOT NULL,
+      job_group VARCHAR(64) NOT NULL DEFAULT 'default',
+      invoke_target VARCHAR(128) NOT NULL,
+      cron_expression VARCHAR(64) NOT NULL,
+      status TINYINT NOT NULL DEFAULT 1,
+      concurrent TINYINT NOT NULL DEFAULT 0,
+      remark VARCHAR(255),
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS sys_job_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      job_id BIGINT NOT NULL,
+      job_name VARCHAR(64) NOT NULL,
+      job_group VARCHAR(64) NOT NULL,
+      invoke_target VARCHAR(128) NOT NULL,
+      status TINYINT NOT NULL,
+      message VARCHAR(500),
+      exception_info TEXT,
+      start_time DATETIME NOT NULL,
+      end_time DATETIME NOT NULL,
+      duration_ms INT NOT NULL,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS sys_sms_channel (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name VARCHAR(64) NOT NULL,
+      provider VARCHAR(32) NOT NULL,
+      config TEXT NOT NULL,
+      status TINYINT NOT NULL DEFAULT 1,
+      remark VARCHAR(255),
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS sys_sms_template (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      code VARCHAR(64) NOT NULL UNIQUE,
+      name VARCHAR(64) NOT NULL,
+      content TEXT NOT NULL,
+      channel_id BIGINT NOT NULL,
+      status TINYINT NOT NULL DEFAULT 1,
+      remark VARCHAR(255),
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS sys_sms_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      channel_id BIGINT NOT NULL,
+      template_code VARCHAR(64) NOT NULL,
+      phone VARCHAR(20) NOT NULL,
+      content TEXT NOT NULL,
+      status TINYINT NOT NULL,
+      provider_message VARCHAR(500),
+      sent_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS sys_email_channel (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name VARCHAR(64) NOT NULL,
+      provider VARCHAR(32) NOT NULL,
+      config TEXT NOT NULL,
+      status TINYINT NOT NULL DEFAULT 1,
+      remark VARCHAR(255),
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS sys_email_template (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      code VARCHAR(64) NOT NULL UNIQUE,
+      name VARCHAR(64) NOT NULL,
+      subject VARCHAR(255) NOT NULL,
+      content TEXT NOT NULL,
+      channel_id BIGINT NOT NULL,
+      status TINYINT NOT NULL DEFAULT 1,
+      remark VARCHAR(255),
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS sys_email_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      channel_id BIGINT NOT NULL,
+      template_code VARCHAR(64) NOT NULL,
+      "to" VARCHAR(128) NOT NULL,
+      subject VARCHAR(255) NOT NULL,
+      content TEXT NOT NULL,
+      status TINYINT NOT NULL,
+      provider_message VARCHAR(500),
+      sent_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS sys_file (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      url VARCHAR(512) NOT NULL,
+      object_key VARCHAR(512) NOT NULL,
+      storage VARCHAR(16) NOT NULL,
+      mime_type VARCHAR(128) NOT NULL,
+      size INT NOT NULL,
+      original_name VARCHAR(255),
+      uploader_id BIGINT NOT NULL,
       created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
   `);

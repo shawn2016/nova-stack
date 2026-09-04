@@ -10,7 +10,7 @@
     <ElForm ref="formRef" :model="form" :rules="rules" label-width="96px">
       <ElFormItem label="上级菜单" prop="parentId">
         <ElSelect v-model="form.parentId" placeholder="请选择上级菜单" style="width: 100%">
-          <ElOption label="顶级菜单" :value="0" />
+          <ElOption label="顶级菜单" value="0" />
           <ElOption
             v-for="item in parentOptions"
             :key="item.id"
@@ -90,8 +90,8 @@
   const isEdit = ref(false)
 
   const form = reactive({
-    id: 0,
-    parentId: 0,
+    id: '' as string,
+    parentId: '0',
     name: '',
     path: '',
     component: '',
@@ -121,8 +121,8 @@
 
   function resetForm() {
     Object.assign(form, {
-      id: 0,
-      parentId: 0,
+      id: '',
+      parentId: '0',
       name: '',
       path: '',
       component: '',

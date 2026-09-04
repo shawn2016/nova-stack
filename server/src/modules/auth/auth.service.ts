@@ -16,6 +16,7 @@ import type {
 } from '@nova/shared-types';
 import { In, Repository } from 'typeorm';
 import { JwtService } from '../../common/jwt/jwt.service';
+import { toApiId } from '../../common/utils/to-api-id';
 import {
   SysMenuEntity,
   SysPermissionEntity,
@@ -26,6 +27,7 @@ import {
 } from '../../database/entities';
 import { RedisService } from '../../redis/redis.service';
 import { LoginLogService } from '../audit/login-log.service';
+import { OnlineSessionService } from '../online-session/online-session.service';
 import { LoginDto } from './dto/login.dto';
 
 export interface LoginContext {
@@ -52,6 +54,7 @@ export class AuthService {
     private readonly redisService: RedisService,
     private readonly configService: ConfigService,
     private readonly loginLogService: LoginLogService,
+    private readonly onlineSessionService: OnlineSessionService,
   ) {}
 
   async login(
@@ -98,6 +101,19 @@ export class AuthService {
     const { roles, permissions } = await this.loadRolesAndPermissions(user.id);
     const tokens = await this.issueTokenPair(user.id);
 
+    const accessJti = this.jwtService.extractJti(tokens.accessToken);
+    await this.onlineSessionService.register(
+      accessJti,
+      {
+        userId: toApiId(user.id),
+        username: user.username,
+        ip,
+        userAgent: userAgent ?? null,
+        loginAt: new Date().toISOString(),
+      },
+      tokens.expiresIn,
+    );
+
     return {
       tokens,
       user: this.toAdminInfo(user, roles, permissions),
@@ -112,6 +128,7 @@ export class AuthService {
     const payload = await this.jwtService.verifyToken(accessToken);
     const ttl = Math.max(payload.exp - Math.floor(Date.now() / 1000), 1);
     await this.jwtService.blacklist(payload.jti, ttl);
+    await this.onlineSessionService.remove(payload.jti);
 
     return { success: true };
   }
@@ -249,10 +266,10 @@ export class AuthService {
     const activeRoles = roles.filter((role) => role.status === 1);
     const roleCodes = activeRoles.map((role) => role.code);
 
-    const rolePermissions = await this.rolePermissionRepo.find();
-    const permissionIds = rolePermissions
-      .filter((link) => roleIds.includes(link.roleId))
-      .map((link) => link.permissionId);
+    const rolePermissions = await this.rolePermissionRepo.find({
+      where: { roleId: In(roleIds) },
+    });
+    const permissionIds = rolePermissions.map((link) => link.permissionId);
 
     if (!permissionIds.length) {
       return { roles: roleCodes, permissions: [] };
@@ -272,7 +289,7 @@ export class AuthService {
     permissions: string[],
   ): AdminInfo {
     return {
-      id: Number(user.id),
+      id: toApiId(user.id),
       username: user.username,
       nickname: user.nickname,
       avatar: user.avatar ?? '',
@@ -288,7 +305,7 @@ export class AuthService {
       .map((menu) => {
         const children = this.buildMenuTree(menus, menu.id);
         const node: MenuNode = {
-          id: Number(menu.id),
+          id: toApiId(menu.id),
           name: menu.name,
           path: menu.path ?? '',
           component: menu.component ?? '',

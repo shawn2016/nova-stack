@@ -30,6 +30,10 @@ export class SysUserEntity {
   @Column({ type: 'tinyint', default: 1, comment: '状态：1启用 0禁用' })
   status!: number;
 
+  /** 部门 ID；null=未绑定 */
+  @Column({ type: 'bigint', name: 'dept_id', nullable: true, comment: '部门ID' })
+  deptId!: string | null;
+
   @CreateDateColumn({ type: 'datetime', name: 'created_at', comment: '创建时间' })
   createdAt!: Date;
 

@@ -1,26 +1,35 @@
 <template>
   <div class="dict-page art-full-height">
     <ElRow :gutter="12" class="dict-page__row">
-      <ElCol :xs="24" :lg="10" class="dict-page__col">
-        <ElCard class="art-table-card dict-page__card">
-          <ArtTableHeader
-            v-model:columns="typeColumnChecks"
-            :loading="typeLoading"
-            :showSearchBar="false"
-            @refresh="refreshTypeData"
-          >
-            <template #left>
-              <ElSpace wrap>
-                <ElButton
-                  v-permission="'system:dict:type:create'"
-                  @click="showTypeDialog('add')"
-                  v-ripple
-                >
-                  新增类型
-                </ElButton>
-              </ElSpace>
-            </template>
-          </ArtTableHeader>
+      <ElCol :xs="24" :lg="12" class="dict-page__col">
+        <ArtListPanel
+          title="字典类型"
+          v-model:show-search-bar="showTypeSearchBar"
+          v-model:columns="typeColumnChecks"
+          :loading="typeLoading"
+          @refresh="refreshTypeData"
+        >
+          <template #search>
+            <ArtSearchBar
+              v-model="typeSearchForm"
+              :items="typeSearchItems"
+              :span="12"
+              :showExpand="false"
+              embedded
+              @reset="handleTypeSearchReset"
+              @search="handleTypeSearch"
+            />
+          </template>
+          <template #head-actions>
+            <ElButton
+              v-permission="'system:dict:type:create'"
+              type="primary"
+              @click="showTypeDialog('add')"
+              v-ripple
+            >
+              新增类型
+            </ElButton>
+          </template>
 
           <ArtTable
             ref="typeTableRef"
@@ -33,34 +42,43 @@
             @pagination:size-change="handleTypeSizeChange"
             @pagination:current-change="handleTypeCurrentChange"
           />
-        </ElCard>
+        </ArtListPanel>
       </ElCol>
 
-      <ElCol :xs="24" :lg="14" class="dict-page__col">
-        <ElCard class="art-table-card dict-page__card">
-          <ArtTableHeader
-            v-model:columns="dataColumnChecks"
-            :loading="dataLoading"
-            :showSearchBar="false"
-            @refresh="refreshDataTable"
-          >
-            <template #left>
-              <ElSpace wrap>
-                <ElButton
-                  v-permission="'system:dict:data:create'"
-                  :disabled="!selectedType"
-                  @click="showDataDialog('add')"
-                  v-ripple
-                >
-                  新增字典项
-                </ElButton>
-                <span v-if="selectedType" class="dict-page__subtitle">
-                  {{ selectedType.name }}（{{ selectedType.code }}）
-                </span>
-                <span v-else class="dict-page__subtitle text-g-400">请先选择左侧字典类型</span>
-              </ElSpace>
-            </template>
-          </ArtTableHeader>
+      <ElCol :xs="24" :lg="12" class="dict-page__col">
+        <ArtListPanel
+          title="字典数据"
+          v-model:show-search-bar="showDataSearchBar"
+          v-model:columns="dataColumnChecks"
+          :loading="dataLoading"
+          @refresh="refreshDataTable"
+        >
+          <template #search>
+            <ArtSearchBar
+              v-model="dataSearchForm"
+              :items="dataSearchItems"
+              :span="12"
+              :showExpand="false"
+              embedded
+              @reset="handleDataSearchReset"
+              @search="handleDataSearch"
+            />
+          </template>
+          <template #head-actions>
+            <ElButton
+              v-permission="'system:dict:data:create'"
+              type="primary"
+              :disabled="!selectedType"
+              @click="showDataDialog('add')"
+              v-ripple
+            >
+              新增字典项
+            </ElButton>
+            <span v-if="selectedType" class="dict-page__subtitle">
+              {{ selectedType.name }}（{{ selectedType.code }}）
+            </span>
+            <span v-else class="dict-page__subtitle text-g-400">请先选择左侧字典类型</span>
+          </template>
 
           <ArtTable
             :loading="dataLoading"
@@ -70,7 +88,7 @@
             @pagination:size-change="handleDataSizeChange"
             @pagination:current-change="handleDataCurrentChange"
           />
-        </ElCard>
+        </ArtListPanel>
       </ElCol>
     </ElRow>
 
@@ -93,27 +111,42 @@
 </template>
 
 <script setup lang="ts">
-  import { ButtonMoreItem } from '@/components/core/forms/art-button-more/index.vue'
-  import ArtButtonMore from '@/components/core/forms/art-button-more/index.vue'
+  import ArtTableActions from '@/components/core/tables/art-table-actions/index.vue'
+  import type { TableActionItem } from '@/components/core/tables/art-table-actions/index.vue'
   import ArtTable from '@/components/core/tables/art-table/index.vue'
   import { useTable } from '@/hooks/core/useTable'
-  import {
-    deleteDictData,
-    deleteDictType,
-    fetchDictDataList,
-    fetchDictTypeList,
-  } from '@/api/dict'
+  import { deleteDictData, deleteDictType, fetchDictDataList, fetchDictTypeList } from '@/api/dict'
   import type { DictDataListItem, DictTypeListItem } from '@nova/shared-types'
   import { ElMessageBox, ElTag } from 'element-plus'
-  import { useUserStore } from '@/store/modules/user'
   import DictTypeDialog from './modules/dict-type-dialog.vue'
   import DictDataDialog from './modules/dict-data-dialog.vue'
 
   defineOptions({ name: 'Dict' })
 
-  const userStore = useUserStore()
   const typeTableRef = ref<InstanceType<typeof ArtTable>>()
   const selectedType = ref<DictTypeListItem | null>(null)
+  const showTypeSearchBar = ref(true)
+  const showDataSearchBar = ref(true)
+  const typeSearchForm = reactive({ keyword: '' })
+  const dataSearchForm = reactive({ keyword: '' })
+
+  const typeSearchItems = computed(() => [
+    {
+      label: '关键词',
+      key: 'keyword',
+      type: 'input',
+      props: { clearable: true, placeholder: '类型名称或编码' }
+    }
+  ])
+
+  const dataSearchItems = computed(() => [
+    {
+      label: '关键词',
+      key: 'keyword',
+      type: 'input',
+      props: { clearable: true, placeholder: '显示标签或存储值' }
+    }
+  ])
 
   const typeDialogVisible = ref(false)
   const typeDialogMode = ref<'add' | 'edit'>('add')
@@ -151,15 +184,16 @@
     loading: typeLoading,
     pagination: typePagination,
     getData: getTypeData,
+    replaceSearchParams: replaceTypeSearchParams,
     handleSizeChange: handleTypeSizeChange,
     handleCurrentChange: handleTypeCurrentChange,
-    refreshData: refreshTypeData,
+    refreshData: refreshTypeData
   } = useTable({
     core: {
       apiFn: fetchDictTypeList,
       apiParams: {
         current: 1,
-        size: 20,
+        size: 20
       },
       columnsFactory: () => [
         { prop: 'name', label: '类型名称', minWidth: 120 },
@@ -170,47 +204,40 @@
           width: 90,
           formatter: (row) => {
             const enabled = row.status === 1
-            return h(
-              ElTag,
-              { type: enabled ? 'success' : 'warning' },
-              () => (enabled ? '启用' : '禁用'),
+            return h(ElTag, { type: enabled ? 'success' : 'warning' }, () =>
+              enabled ? '启用' : '禁用'
             )
-          },
+          }
         },
         {
           prop: 'operation',
           label: '操作',
-          width: 80,
+          width: 140,
           fixed: 'right',
           formatter: (row) => {
-            const items: ButtonMoreItem[] = []
-            if (userStore.hasPermission('system:dict:type:update')) {
-              items.push({
+            const items: TableActionItem[] = [
+              {
                 key: 'edit',
-                label: '编辑类型',
-                icon: 'ri:edit-2-line',
-              })
-            }
-            if (userStore.hasPermission('system:dict:type:delete')) {
-              items.push({
+                label: '编辑',
+                auth: 'system:dict:type:update',
+                onClick: () => typeButtonClick({ key: 'edit' }, row)
+              },
+              {
                 key: 'delete',
-                label: '删除类型',
-                icon: 'ri:delete-bin-4-line',
-                color: '#f56c6c',
-              })
-            }
-            if (!items.length) return h('span', '-')
-            return h(ArtButtonMore, {
-              list: items,
-              onClick: (item: ButtonMoreItem) => typeButtonClick(item, row),
-            })
-          },
-        },
-      ],
+                label: '删除',
+                danger: true,
+                auth: 'system:dict:type:delete',
+                onClick: () => typeButtonClick({ key: 'delete' }, row)
+              }
+            ]
+            return h(ArtTableActions, { items })
+          }
+        }
+      ]
     },
     hooks: {
-      onSuccess: (rows) => syncTypeCurrentRow(rows),
-    },
+      onSuccess: (rows) => syncTypeCurrentRow(rows)
+    }
   })
 
   const {
@@ -223,14 +250,14 @@
     replaceSearchParams: replaceDataSearchParams,
     handleSizeChange: handleDataSizeChange,
     handleCurrentChange: handleDataCurrentChange,
-    refreshData: refreshDataTable,
+    refreshData: refreshDataTable
   } = useTable({
     core: {
       apiFn: fetchDictDataList,
       apiParams: {
         current: 1,
         size: 20,
-        typeId: '',
+        typeId: ''
       },
       immediate: false,
       columnsFactory: () => [
@@ -243,44 +270,37 @@
           width: 90,
           formatter: (row) => {
             const enabled = row.status === 1
-            return h(
-              ElTag,
-              { type: enabled ? 'success' : 'warning' },
-              () => (enabled ? '启用' : '禁用'),
+            return h(ElTag, { type: enabled ? 'success' : 'warning' }, () =>
+              enabled ? '启用' : '禁用'
             )
-          },
+          }
         },
         {
           prop: 'operation',
           label: '操作',
-          width: 80,
+          width: 140,
           fixed: 'right',
           formatter: (row) => {
-            const items: ButtonMoreItem[] = []
-            if (userStore.hasPermission('system:dict:data:update')) {
-              items.push({
+            const items: TableActionItem[] = [
+              {
                 key: 'edit',
-                label: '编辑字典项',
-                icon: 'ri:edit-2-line',
-              })
-            }
-            if (userStore.hasPermission('system:dict:data:delete')) {
-              items.push({
+                label: '编辑',
+                auth: 'system:dict:data:update',
+                onClick: () => dataButtonClick({ key: 'edit' }, row)
+              },
+              {
                 key: 'delete',
-                label: '删除字典项',
-                icon: 'ri:delete-bin-4-line',
-                color: '#f56c6c',
-              })
-            }
-            if (!items.length) return h('span', '-')
-            return h(ArtButtonMore, {
-              list: items,
-              onClick: (item: ButtonMoreItem) => dataButtonClick(item, row),
-            })
-          },
-        },
-      ],
-    },
+                label: '删除',
+                danger: true,
+                auth: 'system:dict:data:delete',
+                onClick: () => dataButtonClick({ key: 'delete' }, row)
+              }
+            ]
+            return h(ArtTableActions, { items })
+          }
+        }
+      ]
+    }
   })
 
   const loadDataForSelectedType = () => {
@@ -290,10 +310,44 @@
     }
     replaceDataSearchParams({
       typeId: selectedType.value.id,
+      keyword: dataSearchForm.keyword || undefined,
       current: 1,
-      size: dataPagination.size,
+      size: dataPagination.size
     })
     getDataTableData()
+  }
+
+  function handleTypeSearch() {
+    replaceTypeSearchParams({
+      keyword: typeSearchForm.keyword || undefined,
+      current: 1,
+      size: typePagination.size
+    })
+    getTypeData()
+  }
+
+  function handleTypeSearchReset() {
+    typeSearchForm.keyword = ''
+    handleTypeSearch()
+  }
+
+  function handleDataSearch() {
+    if (!selectedType.value) {
+      ElMessage.warning('请先选择左侧字典类型')
+      return
+    }
+    replaceDataSearchParams({
+      typeId: selectedType.value.id,
+      keyword: dataSearchForm.keyword || undefined,
+      current: 1,
+      size: dataPagination.size
+    })
+    getDataTableData()
+  }
+
+  function handleDataSearchReset() {
+    dataSearchForm.keyword = ''
+    handleDataSearch()
   }
 
   const handleTypeRowClick = (row: DictTypeListItem) => {
@@ -314,7 +368,7 @@
     dataDialogVisible.value = true
   }
 
-  const typeButtonClick = (item: ButtonMoreItem, row: DictTypeListItem) => {
+  const typeButtonClick = (item: Pick<TableActionItem, 'key'>, row: DictTypeListItem) => {
     switch (item.key) {
       case 'edit':
         showTypeDialog('edit', row)
@@ -325,7 +379,7 @@
     }
   }
 
-  const dataButtonClick = (item: ButtonMoreItem, row: DictDataListItem) => {
+  const dataButtonClick = (item: Pick<TableActionItem, 'key'>, row: DictDataListItem) => {
     switch (item.key) {
       case 'edit':
         showDataDialog('edit', row)
@@ -340,7 +394,7 @@
     ElMessageBox.confirm(`确定删除字典类型「${row.name}」吗？`, '删除确认', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
-      type: 'warning',
+      type: 'warning'
     })
       .then(async () => {
         await deleteDictType(row.id)
@@ -357,7 +411,7 @@
     ElMessageBox.confirm(`确定删除字典项「${row.label}」吗？`, '删除确认', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
-      type: 'warning',
+      type: 'warning'
     })
       .then(async () => {
         await deleteDictData(row.id)
@@ -380,17 +434,23 @@
 
     &__col {
       height: 100%;
-    }
+      min-width: 0;
 
-    &__card {
-      height: 100%;
-      display: flex;
-      flex-direction: column;
+      :deep(.art-list-panel) {
+        height: 100%;
+      }
     }
 
     &__subtitle {
       font-size: 13px;
       line-height: 32px;
+    }
+
+    :deep(.art-table .el-table__cell) {
+      .cell {
+        overflow: visible;
+        white-space: nowrap;
+      }
     }
   }
 </style>

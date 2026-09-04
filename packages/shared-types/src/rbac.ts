@@ -1,11 +1,15 @@
+import type { DataScope } from './data-scope.js';
+
 /** 系统用户列表项 */
 export interface SysUserListItem {
-  id: number;
+  id: string;
   username: string;
   nickname: string;
   avatar: string;
   status: 0 | 1;
-  roleIds: number[];
+  deptId: string | null;
+  deptName: string | null;
+  roleIds: string[];
   roleCodes: string[];
 }
 
@@ -21,31 +25,35 @@ export interface CreateUserDto {
   password: string;
   nickname?: string;
   status?: 0 | 1;
+  deptId?: string | null;
 }
 
 /** 更新用户请求（MVP 不含改密码） */
 export interface UpdateUserDto {
   nickname?: string;
   status?: 0 | 1;
+  deptId?: string | null;
 }
 
 /** 分配用户角色请求 */
 export interface AssignUserRolesDto {
-  roleIds: number[];
+  roleIds: string[];
 }
 
 /** 角色列表项 */
 export interface SysRoleListItem {
-  id: number;
+  id: string;
   name: string;
   code: string;
   status: 0 | 1;
   sort: number;
+  dataScope: DataScope;
 }
 
 /** 角色详情 */
 export interface SysRoleDetail extends SysRoleListItem {
   permissionCodes: string[];
+  customDeptIds: string[];
 }
 
 /** 创建角色请求 */
@@ -54,6 +62,8 @@ export interface CreateRoleDto {
   code: string;
   status?: 0 | 1;
   sort?: number;
+  dataScope?: DataScope;
+  customDeptIds?: string[];
 }
 
 /** 更新角色请求 */
@@ -62,6 +72,8 @@ export interface UpdateRoleDto {
   code?: string;
   status?: 0 | 1;
   sort?: number;
+  dataScope?: DataScope;
+  customDeptIds?: string[];
 }
 
 /** 分配角色权限请求 */
@@ -69,10 +81,16 @@ export interface AssignRolePermissionsDto {
   permissionCodes: string[];
 }
 
+/** 可分配权限项（与 sys_permission 对齐） */
+export interface SysPermissionOption {
+  code: string;
+  name: string;
+}
+
 /** 菜单管理列表项 */
 export interface SysMenuListItem {
-  id: number;
-  parentId: number;
+  id: string;
+  parentId: string;
   name: string;
   path: string;
   component: string;
@@ -86,7 +104,7 @@ export interface SysMenuListItem {
 
 /** 创建菜单请求 */
 export interface CreateMenuDto {
-  parentId?: number;
+  parentId?: string;
   name: string;
   path?: string;
   component?: string;
@@ -100,7 +118,7 @@ export interface CreateMenuDto {
 
 /** 更新菜单请求 */
 export interface UpdateMenuDto {
-  parentId?: number;
+  parentId?: string;
   name?: string;
   path?: string;
   component?: string;

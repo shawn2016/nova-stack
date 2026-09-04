@@ -6,6 +6,7 @@ import type {
   CreateUserDto,
   PaginationResult,
   SysMenuListItem,
+  SysPermissionOption,
   SysRoleDetail,
   SysRoleListItem,
   SysUserDetail,
@@ -17,31 +18,21 @@ import type {
 import { request } from './request'
 
 export interface UserListQuery {
-  username?: string
-  status?: 0 | 1
+  keyword?: string
   current?: number
   size?: number
 }
 
 export interface RoleListQuery {
-  name?: string
-  code?: string
-  status?: 0 | 1
+  keyword?: string
   current?: number
   size?: number
 }
 
-function filterPaginated<T>(
-  result: PaginationResult<T>,
-  predicate: (item: T) => boolean,
-): PaginationResult<T> {
-  const list = result.list.filter(predicate)
-  return {
-    list,
-    total: list.length,
-    page: 1,
-    pageSize: list.length || 1,
-  }
+export interface MenuListQuery {
+  keyword?: string
+  page?: number
+  pageSize?: number
 }
 
 function toTableResponse<T>(result: PaginationResult<T>) {
@@ -53,26 +44,24 @@ function toTableResponse<T>(result: PaginationResult<T>) {
   }
 }
 
+function buildListParams(params: { current?: number; size?: number; keyword?: string }) {
+  const { current = 1, size = 20, keyword } = params
+  return {
+    page: current,
+    pageSize: size,
+    ...(keyword?.trim() ? { keyword: keyword.trim() } : {}),
+  }
+}
+
 export function fetchUserList(params: UserListQuery = {}) {
-  const { username, status } = params
   return request<PaginationResult<SysUserListItem>>({
     url: '/users',
     method: 'GET',
-  }).then((result) => {
-    if (!username && status === undefined) {
-      return toTableResponse(result)
-    }
-    return toTableResponse(
-      filterPaginated(result, (item) => {
-        const matchUsername = !username || item.username.includes(username)
-        const matchStatus = status === undefined || item.status === status
-        return matchUsername && matchStatus
-      }),
-    )
-  })
+    params: buildListParams(params),
+  }).then(toTableResponse)
 }
 
-export function fetchUserDetail(id: number) {
+export function fetchUserDetail(id: string) {
   return request<SysUserDetail>({
     url: `/users/${id}`,
     method: 'GET',
@@ -87,7 +76,7 @@ export function createUser(data: CreateUserDto) {
   })
 }
 
-export function updateUser(id: number, data: UpdateUserDto) {
+export function updateUser(id: string, data: UpdateUserDto) {
   return request<SysUserDetail>({
     url: `/users/${id}`,
     method: 'PUT',
@@ -95,14 +84,14 @@ export function updateUser(id: number, data: UpdateUserDto) {
   })
 }
 
-export function deleteUser(id: number) {
+export function deleteUser(id: string) {
   return request<{ success: true }>({
     url: `/users/${id}`,
     method: 'DELETE',
   })
 }
 
-export function assignUserRoles(id: number, data: AssignUserRolesDto) {
+export function assignUserRoles(id: string, data: AssignUserRolesDto) {
   return request<SysUserDetail>({
     url: `/users/${id}/roles`,
     method: 'PUT',
@@ -111,28 +100,23 @@ export function assignUserRoles(id: number, data: AssignUserRolesDto) {
 }
 
 export function fetchRoleList(params: RoleListQuery = {}) {
-  const { name, code, status } = params
   return request<PaginationResult<SysRoleListItem>>({
     url: '/roles',
     method: 'GET',
-  }).then((result) => {
-    if (!name && !code && status === undefined) {
-      return toTableResponse(result)
-    }
-    return toTableResponse(
-      filterPaginated(result, (item) => {
-        const matchName = !name || item.name.includes(name)
-        const matchCode = !code || item.code.includes(code)
-        const matchStatus = status === undefined || item.status === status
-        return matchName && matchCode && matchStatus
-      }),
-    )
+    params: buildListParams(params),
+  }).then(toTableResponse)
+}
+
+export function fetchRoleDetail(id: string) {
+  return request<SysRoleDetail>({
+    url: `/roles/${id}`,
+    method: 'GET',
   })
 }
 
-export function fetchRoleDetail(id: number) {
-  return request<SysRoleDetail>({
-    url: `/roles/${id}`,
+export function fetchPermissionOptions() {
+  return request<SysPermissionOption[]>({
+    url: '/roles/permission-options',
     method: 'GET',
   })
 }
@@ -145,7 +129,7 @@ export function createRole(data: CreateRoleDto) {
   })
 }
 
-export function updateRole(id: number, data: UpdateRoleDto) {
+export function updateRole(id: string, data: UpdateRoleDto) {
   return request<SysRoleDetail>({
     url: `/roles/${id}`,
     method: 'PUT',
@@ -153,14 +137,14 @@ export function updateRole(id: number, data: UpdateRoleDto) {
   })
 }
 
-export function deleteRole(id: number) {
+export function deleteRole(id: string) {
   return request<{ success: true }>({
     url: `/roles/${id}`,
     method: 'DELETE',
   })
 }
 
-export function assignRolePermissions(id: number, data: AssignRolePermissionsDto) {
+export function assignRolePermissions(id: string, data: AssignRolePermissionsDto) {
   return request<SysRoleDetail>({
     url: `/roles/${id}/permissions`,
     method: 'PUT',
@@ -168,10 +152,17 @@ export function assignRolePermissions(id: number, data: AssignRolePermissionsDto
   })
 }
 
-export function fetchMenuList() {
+/** 菜单管理需完整列表以构建树，默认拉取较大 pageSize */
+export function fetchMenuList(params: MenuListQuery = {}) {
+  const { keyword, page = 1, pageSize = 500 } = params
   return request<PaginationResult<SysMenuListItem>>({
     url: '/menus',
     method: 'GET',
+    params: {
+      page,
+      pageSize,
+      ...(keyword?.trim() ? { keyword: keyword.trim() } : {}),
+    },
   }).then((result) => result.list)
 }
 
@@ -183,7 +174,7 @@ export function createMenu(data: CreateMenuDto) {
   })
 }
 
-export function updateMenu(id: number, data: UpdateMenuDto) {
+export function updateMenu(id: string, data: UpdateMenuDto) {
   return request<SysMenuListItem>({
     url: `/menus/${id}`,
     method: 'PUT',
@@ -191,7 +182,7 @@ export function updateMenu(id: number, data: UpdateMenuDto) {
   })
 }
 
-export function deleteMenu(id: number) {
+export function deleteMenu(id: string) {
   return request<{ success: true }>({
     url: `/menus/${id}`,
     method: 'DELETE',

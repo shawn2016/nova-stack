@@ -24,8 +24,19 @@
 - **THEN** 应遵循 `docs/standards/` 中对应专题与 ai-checklist 自检项
 
 ### Requirement: 根级开发文档
-系统 MUST 提供 README，说明 monorepo 结构、前置依赖（Node、pnpm、MySQL、Redis）及本地启动步骤。
+系统 MUST 提供 README，说明 monorepo 结构、前置依赖（Node、pnpm、MySQL、Redis）、**`pnpm seed` 步骤**、**统一端口约定（默认 3001）** 及本地启动步骤；技术栈描述 MUST 与实际一致（Element Plus + Tailwind，非 Arco）。
 
 #### Scenario: 新开发者 onboarding
-- **WHEN** 新开发者阅读根 README
-- **THEN** 可了解三端目录分工、技术栈与启动顺序
+- **WHEN** 新开发者阅读根 README 并复制 `.env.example`
+- **THEN** 可了解三端目录分工、技术栈、seed 与启动顺序，端口与 proxy 一致
+
+### Requirement: 根级开发脚本
+系统 MUST 提供根级 `build`、`test` 聚合脚本；**`postinstall` MUST 构建 shared-types**；**`dev` MUST 并行启动 shared-types watch**（或等价 watch 方案）。
+
+#### Scenario: clone 后安装
+- **WHEN** 新 clone 执行 `pnpm install`
+- **THEN** shared-types dist 可用，IDE 类型不报错
+
+#### Scenario: 本地基础设施
+- **WHEN** 开发者执行 `docker compose up -d`
+- **THEN** MySQL 与 Redis 可用，与 `.env.example` 端口/凭证一致

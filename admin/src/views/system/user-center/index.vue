@@ -19,7 +19,7 @@
             />
           </ElUpload>
           <p v-if="avatarUploading" class="relative z-10 mt-2 text-xs text-g-500">头像上传中...</p>
-          <h2 class="mt-5 text-xl font-normal">{{ userInfo.userName }}</h2>
+          <h2 class="mt-5 text-xl font-normal">{{ userInfo?.username }}</h2>
           <p class="mt-2 text-sm text-g-500">{{ form.nickname || '未设置昵称' }}</p>
         </div>
       </div>
@@ -169,7 +169,7 @@
   })
 
   function syncFormFromStore() {
-    form.nickname = userInfo.value.nickName ?? ''
+    form.nickname = userInfo.value?.nickname ?? ''
     avatarPreview.value = userInfo.value.avatar || defaultAvatar
   }
 

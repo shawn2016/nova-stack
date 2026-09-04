@@ -26,6 +26,15 @@ export class SysRoleEntity {
   @Column({ type: 'int', default: 0, comment: '排序' })
   sort!: number;
 
+  /** 数据权限：1全部 2自定义 3本部门 4本部门及以下 5仅本人 */
+  @Column({
+    type: 'tinyint',
+    name: 'data_scope',
+    default: 1,
+    comment: '数据权限：1全部 2自定义 3本部门 4本部门及以下 5仅本人',
+  })
+  dataScope!: number;
+
   @CreateDateColumn({ type: 'datetime', name: 'created_at', comment: '创建时间' })
   createdAt!: Date;
 

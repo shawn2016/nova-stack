@@ -11,8 +11,8 @@ import {
 export class CreateMenuDto {
   @ApiPropertyOptional()
   @IsOptional()
-  @IsInt()
-  parentId?: number;
+  @IsString()
+  parentId?: string;
 
   @ApiProperty({ maxLength: 64 })
   @IsString()

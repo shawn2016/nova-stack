@@ -16,7 +16,7 @@ describe('AppController (e2e)', () => {
 
   it('GET /health 应返回 200 且 ApiResponse 格式', () => {
     return request(ctx.app.getHttpServer())
-      .get('/health')
+      .get('/api/health')
       .expect(200)
       .expect((res) => {
         expect(res.body).toEqual({

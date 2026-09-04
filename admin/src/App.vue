@@ -1,6 +1,6 @@
 <template>
   <ElConfigProvider
-    size="default"
+    :size="uiConfig.elementSize"
     :locale="locales[language]"
     :z-index="3000"
     :card="{
@@ -13,6 +13,7 @@
 
 <script setup lang="ts">
   import { useUserStore } from './store/modules/user'
+  import { uiConfig } from '@/config/modules/ui'
   import zh from 'element-plus/es/locale/lang/zh-cn'
   import en from 'element-plus/es/locale/lang/en'
   import { systemUpgrade } from './utils/sys'
@@ -29,6 +30,10 @@
   }
 
   onBeforeMount(() => {
+    document.documentElement.style.setProperty(
+      '--art-content-inset',
+      `${uiConfig.contentInset}px`,
+    )
     toggleTransition(true)
     initializeTheme()
   })
