@@ -20,7 +20,7 @@
 
 - [x] 3.1 初始化 `e2e/` Playwright（admin baseURL、webServer）
 - [x] 3.2 `@smoke` 用例：登录 admin → 侧边栏「系统管理」可见
-- [ ] 3.3 Playwright JSON reporter 适配到 verify-report cases（browser tier 当前以 suite 级汇总）
+- [x] 3.3 Playwright JSON reporter 适配到 verify-report cases（含错误、定位与附件）
 
 ## 4. 闭环演示与文档
 

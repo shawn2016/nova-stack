@@ -1,9 +1,13 @@
 import Fastify from 'fastify';
 import fastifyStatic from '@fastify/static';
 import { spawn } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parse as parseYaml } from 'yaml';
 import { buildAiFixBundles } from './ai-bundle.js';
+import { buildRetestSpec, type RetestInput } from './retest.js';
+import { getReportConclusion, validateVerifyReport, type VerifyReport } from './types.js';
 import {
   deleteAllRuns,
   deleteRun,
@@ -20,6 +24,10 @@ const PORT = Number(process.env.VERIFY_HUB_PORT ?? 9470);
 const TOKEN = process.env.VERIFY_HUB_TOKEN ?? 'dev-local-token';
 const PROJECT_ROOT = process.env.VERIFY_PROJECT_ROOT ?? join(__dirname, '..', '..', '..');
 const ALLOW_RETEST = process.env.VERIFY_HUB_ALLOW_RETEST !== '0';
+const verifyConfig = parseYaml(readFileSync(join(PROJECT_ROOT, '.verify', 'config.yaml'), 'utf8')) as {
+  tiers?: Array<{ id: string }>;
+};
+const ALLOWED_TIERS = (verifyConfig.tiers ?? []).map((tier) => tier.id);
 
 const app = Fastify({ logger: true });
 
@@ -36,18 +44,20 @@ function assertToken(authHeader?: string): boolean {
 
 function parseReportSummary(reportJson: string) {
   try {
-    const report = JSON.parse(reportJson) as {
-      coverage?: { modules?: { tested?: number; total?: number }; gaps?: { modulesMissingBrowserSpec?: unknown[] } };
-      summary?: { failed?: number };
-    };
+    const report = JSON.parse(reportJson) as VerifyReport;
     return {
       modulesTested: report.coverage?.modules?.tested ?? 0,
       modulesTotal: report.coverage?.modules?.total ?? 0,
       failedCases: report.summary?.failed ?? 0,
       gapCount: report.coverage?.gaps?.modulesMissingBrowserSpec?.length ?? 0,
+      conclusion: getReportConclusion(report),
+      changeId: report.provenance?.changeId,
+      runRole: report.provenance?.runRole,
+      parentRunId: report.provenance?.parentRunId,
+      acceptance: report.acceptance?.summary,
     };
   } catch {
-    return { modulesTested: 0, modulesTotal: 0, failedCases: 0, gapCount: 0 };
+    return { modulesTested: 0, modulesTotal: 0, failedCases: 0, gapCount: 0, conclusion: 'fail' as const };
   }
 }
 
@@ -67,21 +77,19 @@ app.get('/api/config', async () => ({
   token: TOKEN,
   allowRetest: ALLOW_RETEST,
   projectRoot: PROJECT_ROOT,
+  allowedTiers: ALLOWED_TIERS,
 }));
 
 app.post('/api/runs', async (request, reply) => {
-  const body = request.body as Record<string, unknown>;
-  if (body?.schema !== 'nova.verify-report.v1') {
-    return reply.code(400).send({ message: 'Invalid schema, expected nova.verify-report.v1' });
-  }
-  if (!body.runId || typeof body.runId !== 'string') {
-    return reply.code(400).send({ message: 'runId is required' });
-  }
+  const body = request.body as VerifyReport;
+  const validationError = validateVerifyReport(body);
+  if (validationError) return reply.code(400).send({ message: validationError });
   upsertRun(body);
-  const summary = body.summary as Record<string, number> | undefined;
+  const summary = body.summary;
   return reply.code(201).send({
     id: body.runId,
-    status: (summary?.failed ?? 0) > 0 ? 'fail' : 'pass',
+    status: getReportConclusion(body),
+    conclusion: getReportConclusion(body),
     summary,
     url: `http://localhost:${PORT}/?run=${body.runId}`,
   });
@@ -146,24 +154,45 @@ app.get('/api/coverage/cumulative', async (request) => {
 });
 
 app.post('/api/retest', async (request, reply) => {
-  const body = (request.body ?? {}) as { tier?: string; command?: string };
-  const tier = body.tier?.trim();
-  const command = body.command ?? (tier ? `pnpm verify --tier ${tier}` : 'pnpm verify');
-
-  if (!ALLOW_RETEST) {
-    return { started: false, command, hint: '已复制命令，请在项目根目录终端执行（VERIFY_HUB_ALLOW_RETEST=0）' };
+  const body = (request.body ?? {}) as RetestInput;
+  const parentRow = body.parentRunId ? getRun(body.parentRunId) : undefined;
+  const parentReport = parentRow ? (JSON.parse(parentRow.report_json) as VerifyReport) : undefined;
+  let spec;
+  try {
+    spec = buildRetestSpec(body, ALLOWED_TIERS, parentReport);
+  } catch (error) {
+    return reply.code(400).send({ message: error instanceof Error ? error.message : '复测参数无效' });
   }
 
-  const args = tier ? ['verify', '--tier', tier] : ['verify'];
-  const child = spawn('pnpm', args, {
+  if (!ALLOW_RETEST) {
+    return {
+      started: false,
+      command: spec.command,
+      hint: '已复制命令，请在项目根目录终端执行（VERIFY_HUB_ALLOW_RETEST=0）',
+    };
+  }
+
+  const child = spawn('pnpm', spec.args, {
     cwd: PROJECT_ROOT,
     detached: true,
     stdio: 'ignore',
     shell: process.platform === 'win32',
+    env: {
+      ...process.env,
+      VERIFY_PARENT_RUN_ID: body.parentRunId ?? '',
+      VERIFY_CHANGE: body.changeId ?? parentReport?.provenance?.changeId ?? '',
+      VERIFY_RUN_ROLE: 'verifier',
+    },
   });
   child.unref();
 
-  return reply.code(202).send({ started: true, command, pid: child.pid, cwd: PROJECT_ROOT });
+  return reply.code(202).send({
+    started: true,
+    command: spec.command,
+    pid: child.pid,
+    cwd: PROJECT_ROOT,
+    parentRunId: body.parentRunId,
+  });
 });
 
 await app.listen({ port: PORT, host: '0.0.0.0' });

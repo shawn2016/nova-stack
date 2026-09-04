@@ -3,11 +3,16 @@
  * Verify Runner：按 tier 执行验证、生成 verify-report.v1 并上报 Hub
  */
 import { execSync, spawnSync } from 'node:child_process';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parse as parseYaml } from 'yaml';
+import {
+  deriveConclusion,
+  evaluateAcceptance,
+  loadVerificationContract,
+} from './verify-contract.mjs';
 import {
   buildCoverage,
   loadInventory,
@@ -28,13 +33,22 @@ function loadConfig() {
 
 function parseArgs(argv) {
   const tiers = [];
+  let changeId;
+  let runRole;
+  let parentRunId;
   for (let i = 0; i < argv.length; i += 1) {
     if (argv[i] === '--tier' && argv[i + 1]) {
       tiers.push(argv[i + 1]);
       i += 1;
+    } else if (argv[i] === '--change' && argv[i + 1]) {
+      changeId = argv[++i];
+    } else if (argv[i] === '--role' && argv[i + 1]) {
+      runRole = argv[++i];
+    } else if (argv[i] === '--parent-run' && argv[i + 1]) {
+      parentRunId = argv[++i];
     }
   }
-  return { onlyTiers: tiers };
+  return { onlyTiers: tiers, changeId, runRole, parentRunId };
 }
 
 function getGitInfo() {
@@ -48,6 +62,23 @@ function getGitInfo() {
   }
 }
 
+/** 解析 Comet/vibecoding change；显式参数和环境变量优先 */
+function resolveChangeId(explicitChangeId, git) {
+  if (explicitChangeId || process.env.VERIFY_CHANGE) {
+    return explicitChangeId ?? process.env.VERIFY_CHANGE;
+  }
+  const selectionPath = join(rootDir, '.comet', 'current-change.json');
+  if (existsSync(selectionPath)) {
+    try {
+      const selection = JSON.parse(readFileSync(selectionPath, 'utf8'));
+      if (!selection.branch || selection.branch === git.branch) return selection.change;
+    } catch {
+      // 非 Comet 或选择文件无效时，继续使用分支推断。
+    }
+  }
+  return git.branch.startsWith('comet/') ? git.branch.slice('comet/'.length) : undefined;
+}
+
 function runCommand(command, cwd = rootDir) {
   const started = Date.now();
   const result = spawnSync(command, {
@@ -59,7 +90,13 @@ function runCommand(command, cwd = rootDir) {
   const durationMs = Date.now() - started;
   const output = `${result.stdout ?? ''}${result.stderr ?? ''}`.trim();
   const status = result.status === 0 ? 'pass' : 'fail';
-  return { status, durationMs, output, exitCode: result.status ?? 1 };
+  return {
+    status,
+    disposition: result.error ? 'blocked' : 'executed',
+    durationMs,
+    output,
+    exitCode: result.status ?? 1,
+  };
 }
 
 function summarizeCases(cases) {
@@ -107,10 +144,18 @@ function collectTierCases(tier, result) {
         id: 'static:suite',
         tierId: 'static',
         module: 'static',
-        title: 'shared-types 测试与构建',
+        title: 'Runner/Hub 检查与 shared-types 测试构建',
         status: result.status,
+        disposition: result.disposition,
         durationMs: result.durationMs,
         retestCommand: 'pnpm verify --tier static',
+        evidence: [
+          {
+            kind: 'command',
+            command: tier.command,
+            exitCode: result.exitCode,
+          },
+        ],
         error:
           result.status === 'fail'
             ? { message: result.output.slice(-2000) || `exit ${result.exitCode}` }
@@ -126,7 +171,9 @@ function collectTierCases(tier, result) {
       module: tier.id,
       title: tier.title ?? tier.id,
       status: result.status,
+      disposition: result.disposition,
       durationMs: result.durationMs,
+      evidence: [{ kind: 'command', command: tier.command, exitCode: result.exitCode }],
       error:
         result.status === 'fail'
           ? { message: result.output.slice(-4000) || `Command exited with ${result.exitCode}` }
@@ -140,10 +187,14 @@ async function main() {
   const config = loadConfig();
   const inventory = loadInventory();
   const apiCatalog = scanApiEndpoints();
-  const { onlyTiers } = parseArgs(process.argv.slice(2));
+  const args = parseArgs(process.argv.slice(2));
+  const { onlyTiers } = args;
   const runId = randomUUID();
   const startedAt = new Date().toISOString();
   const tiers = config.tiers.filter((tier) => !onlyTiers.length || onlyTiers.includes(tier.id));
+  const git = getGitInfo();
+  const changeId = resolveChangeId(args.changeId, git);
+  const contract = loadVerificationContract(changeId, rootDir);
 
   const reportTiers = [];
   const cases = [];
@@ -155,6 +206,8 @@ async function main() {
         id: tier.id,
         title: tier.title,
         status: 'skip',
+        disposition: 'skipped',
+        skipReason: tier.skipEnv,
         durationMs: 0,
         command: tier.command,
       });
@@ -164,6 +217,8 @@ async function main() {
         module: tier.id,
         title: `${tier.title ?? tier.id}（已跳过）`,
         status: 'skip',
+        disposition: 'skipped',
+        skipReason: tier.skipEnv,
         durationMs: 0,
         retestCommand: `pnpm verify --tier ${tier.id}`,
       });
@@ -177,8 +232,11 @@ async function main() {
       id: tier.id,
       title: tier.title,
       status: result.status,
+      disposition: result.disposition,
       durationMs: result.durationMs,
       command: tier.command,
+      exitCode: result.exitCode,
+      evidence: [{ kind: 'command', command: tier.command, exitCode: result.exitCode }],
     });
 
     cases.push(...collectTierCases(tier, result));
@@ -186,6 +244,10 @@ async function main() {
   }
 
   const coverage = buildCoverage(inventory, cases, apiCatalog, executedTierIds);
+  const acceptance = evaluateAcceptance(contract, reportTiers, cases);
+  const summary = summarizeCases(cases);
+  const requiredTierIds = config.tiers.filter((tier) => tier.required !== false).map((tier) => tier.id);
+  const conclusion = deriveConclusion({ summary, tiers: reportTiers, acceptance, requiredTierIds });
   const finishedAt = new Date().toISOString();
   const durationMs = reportTiers.reduce((sum, t) => sum + (t.durationMs ?? 0), 0);
   const report = {
@@ -195,10 +257,26 @@ async function main() {
     startedAt,
     finishedAt,
     durationMs,
-    git: getGitInfo(),
+    git,
+    provenance: {
+      changeId,
+      runRole: args.runRole ?? process.env.VERIFY_RUN_ROLE ?? 'builder',
+      parentRunId: args.parentRunId ?? process.env.VERIFY_PARENT_RUN_ID,
+      branch: git.branch,
+      commit: git.commit,
+      dirty: git.dirty,
+      environment: {
+        node: process.version,
+        platform: process.platform,
+        arch: process.arch,
+        packageManager: process.env.npm_config_user_agent,
+      },
+    },
     tiers: reportTiers,
     cases,
-    summary: summarizeCases(cases),
+    summary,
+    acceptance,
+    conclusion,
     coverage,
   };
 
@@ -222,7 +300,9 @@ async function main() {
   console.log(
     `\nSummary: ${report.summary.passed}/${report.summary.total} passed, ${report.summary.failed} failed, ${report.summary.skipped} skipped`,
   );
-  process.exit(report.summary.failed > 0 ? 1 : 0);
+  console.log(`Conclusion: ${report.conclusion}${changeId ? ` · change ${changeId}` : ''}`);
+  const isFullRun = onlyTiers.length === 0;
+  process.exit(report.conclusion === 'fail' ? 1 : isFullRun && report.conclusion === 'incomplete' ? 2 : 0);
 }
 
 main().catch((error) => {

@@ -2,26 +2,19 @@ import Database from 'better-sqlite3';
 import { mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { getReportConclusion, type RunRow, type VerifyReport } from './types.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const dataDir = join(__dirname, '..', 'data');
-const dbPath = join(dataDir, 'hub.db');
-
-export type RunRow = {
-  id: string;
-  project: string;
-  status: string;
-  summary_total: number;
-  summary_passed: number;
-  summary_failed: number;
-  summary_skipped: number;
-  started_at: string;
-  finished_at: string;
-  duration_ms: number;
-  report_json: string;
-};
+const dbPath = process.env.VERIFY_HUB_DB_PATH ?? join(__dirname, '..', 'data', 'hub.db');
+const dataDir = dirname(dbPath);
 
 let db: Database.Database | null = null;
+
+/** 关闭数据库连接，仅供测试进程清理资源。 */
+export function closeDb(): void {
+  db?.close();
+  db = null;
+}
 
 /** 初始化 SQLite 并建表 */
 export function getDb(): Database.Database {
@@ -49,9 +42,9 @@ export function getDb(): Database.Database {
 }
 
 /** 写入或覆盖一次验证运行 */
-export function upsertRun(report: Record<string, unknown>): void {
+export function upsertRun(report: VerifyReport): void {
   const database = getDb();
-  const summary = (report.summary ?? {}) as Record<string, number>;
+  const summary = report.summary ?? {};
   database
     .prepare(
       `INSERT INTO runs (
@@ -73,7 +66,7 @@ export function upsertRun(report: Record<string, unknown>): void {
     .run(
       report.runId,
       report.project,
-      summary.failed > 0 ? 'fail' : 'pass',
+      getReportConclusion(report),
       summary.total ?? 0,
       summary.passed ?? 0,
       summary.failed ?? 0,

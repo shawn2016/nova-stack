@@ -346,6 +346,9 @@ importers:
       fastify:
         specifier: ^5.2.1
         version: 5.12.1
+      yaml:
+        specifier: ^2.7.0
+        version: 2.9.0
     devDependencies:
       '@types/better-sqlite3':
         specifier: ^7.6.12

@@ -40,18 +40,21 @@ export async function scenarioSearch(page: Page, keyword = 'a', panel?: ReturnTy
   const scope = tableScope(page, panel);
   const searchArea = scope.locator('.art-list-panel__search');
 
-  const keywordField = searchArea
-    .locator('.el-form-item')
-    .filter({ hasText: /关键词/ })
-    .locator('input.el-input__inner')
-    .first();
+  const keywordField = searchArea.locator('input.el-input__inner:not([readonly])').first();
 
   if (await keywordField.isVisible().catch(() => false)) {
     await keywordField.fill(keyword);
+  } else if ((await searchArea.locator('.el-select').count()) > 0) {
+    const select = searchArea.locator('.el-select').first();
+    await expect(select).toBeVisible({ timeout: 15_000 });
+    await select.click();
+    const dropdown = page.locator('.el-select-dropdown:visible').last();
+    await expect(dropdown).toBeVisible({ timeout: 5_000 });
+    await dropdown.getByRole('option').first().click();
   } else {
     const combobox = searchArea.locator('[role="combobox"]').first();
     await expect(combobox).toBeVisible({ timeout: 15_000 });
-    await combobox.click();
+    await combobox.click({ force: true });
     await page.getByRole('option').first().click();
   }
 
@@ -168,7 +171,15 @@ export async function scenarioArticleDelete(page: Page) {
 
 /** 文章：搜索（状态下拉） */
 export async function scenarioArticleSearch(page: Page) {
-  await scenarioSearch(page);
+  const searchArea = page.locator('.art-list-panel__search');
+  const select = searchArea.locator('.el-select').first();
+  await expect(select).toBeVisible({ timeout: 15_000 });
+  await select.click();
+  const dropdown = page.locator('.el-select-dropdown:visible').last();
+  await expect(dropdown).toBeVisible({ timeout: 5_000 });
+  await dropdown.getByRole('option', { name: '已发布' }).click();
+  await searchArea.getByRole('button', { name: /^搜索$|^查询$|Search/i }).click();
+  await expect(page.locator('.el-table').first()).toBeVisible({ timeout: 15_000 });
 }
 
 /** 定时任务无搜索栏 */

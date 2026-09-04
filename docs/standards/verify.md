@@ -36,12 +36,29 @@ pnpm verify --tier api-e2e
 pnpm verify --tier browser-smoke
 ```
 
+单 tier 运行是局部证据，报告 `conclusion` 通常为 `incomplete`；只有全部 required tier 与 required acceptance 都通过，才是 `pass`。
+
 ## 配置
 
 - `.verify/config.yaml` — tier 命令、Hub 地址、module 标签
 - `.verify/inventory.yaml` — 业务模块清单（用于覆盖率统计）
+- `.verify/contracts/<change>.yaml` — change 验收项与 tier/case/scenario 证据映射
 - `.verify/schema.json` — verify-report.v1 结构
 - 本地报告备份：`.verify/reports/<runId>.json`
+
+## 验收合同与最终结论
+
+Runner 按 `--change`、`VERIFY_CHANGE`、当前 Comet change 或 `comet/<change>` 分支顺序解析 change，并加载对应 Verification Contract。
+
+报告结论：
+
+| conclusion | 含义 |
+|------|------|
+| `pass` | 全部 required tier 与 required acceptance 都有通过证据 |
+| `fail` | 存在失败 case、tier 或 required acceptance |
+| `incomplete` | required 项被跳过、阻塞或本次未执行；不能视为 Green |
+
+报告 `provenance` 记录 change、Builder/Verifier 角色、parent run、branch、commit、dirty 和运行环境。Builder 自测是候选证据；Comet full Verify 必须重新生成 `runRole=verifier` 的报告。
 
 Hub 报告中的 **覆盖概览** 包含：
 - **业务模块**：已测 / 总共（来自 inventory）
@@ -66,8 +83,10 @@ Hub 报告中的 **覆盖概览** 包含：
 
 - **折叠面板**：模块覆盖、API 目录、用例明细均可收起
 - **删除报告**：单条删除 / 保留最近 10 条 / 清空全部
-- **复测**：Hub 内按钮触发 `POST /api/retest`（默认后台 spawn；`VERIFY_HUB_ALLOW_RETEST=0` 时仅复制命令）
+- **复测**：Hub 只接受配置中的 tier/case 标识，后台启动关联的 Verifier run；完成后自动跳转子 run。禁止传入任意 shell 命令
 - **失败用例**：列表右侧「查看 / 复制 / 复测」；详情顶栏「复测失败 tier / 全部 / 复制全部失败上下文」
+- **验收项**：第一屏显示 required acceptance、关联 case 和证据状态；可复制 Comet 证据块
+- **筛选**：按 change、结论和 Builder/Verifier 角色过滤运行
 
 ## 写用例
 
@@ -81,6 +100,22 @@ Hub 报告中的 **覆盖概览** 包含：
 2. 点击「复制 AI 修复上下文」
 3. 粘贴给 AI，按 `AGENTS.md` 修复
 4. 执行 run 详情中的复测命令
+
+## Comet Verify
+
+full Verify 执行：
+
+```bash
+VERIFY_RUN_ROLE=verifier VERIFY_CHANGE=<change-name> pnpm verify
+```
+
+要求：
+
+1. 不跳过 required tier
+2. `conclusion` 为 `pass`
+3. `provenance.changeId`、branch、commit 与当前 change 一致
+4. 最终证据不得是 dirty run
+5. 点击 Hub「复制 Comet 证据」，粘贴到验证报告 `## Verify Hub Evidence`
 
 ## Hub 环境变量
 

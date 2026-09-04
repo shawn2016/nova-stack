@@ -1,5 +1,5 @@
 {
-  "$schema": "./schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "nova.verify-report.v1",
   "type": "object",
   "required": ["schema", "runId", "project", "startedAt", "finishedAt", "summary", "tiers", "cases"],
@@ -7,9 +7,93 @@
     "schema": { "const": "nova.verify-report.v1" },
     "runId": { "type": "string" },
     "project": { "type": "string" },
-    "startedAt": { "type": "string" },
-    "finishedAt": { "type": "string" },
+    "startedAt": { "type": "string", "format": "date-time" },
+    "finishedAt": { "type": "string", "format": "date-time" },
     "durationMs": { "type": "number" },
+    "conclusion": { "enum": ["pass", "fail", "incomplete"] },
+    "git": { "$ref": "#/$defs/git" },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "changeId": { "type": "string" },
+        "runRole": { "enum": ["builder", "verifier"] },
+        "parentRunId": { "type": "string" },
+        "branch": { "type": "string" },
+        "commit": { "type": "string" },
+        "dirty": { "type": "boolean" },
+        "environment": { "type": "object" }
+      }
+    },
+    "summary": { "$ref": "#/$defs/summary" },
+    "tiers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "status"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "status": { "enum": ["pass", "fail", "skip"] },
+          "disposition": { "enum": ["executed", "skipped", "blocked", "waived", "not-run"] },
+          "skipReason": { "type": "string" },
+          "durationMs": { "type": "number" },
+          "command": { "type": "string" },
+          "exitCode": { "type": "number" },
+          "evidence": { "$ref": "#/$defs/evidenceList" }
+        }
+      }
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "status"],
+        "properties": {
+          "id": { "type": "string" },
+          "tierId": { "type": "string" },
+          "module": { "type": "string" },
+          "title": { "type": "string" },
+          "status": { "enum": ["pass", "fail", "skip"] },
+          "disposition": { "enum": ["executed", "skipped", "blocked", "waived", "not-run"] },
+          "page": { "type": "string" },
+          "scenario": { "type": "string" },
+          "tags": { "type": "array", "items": { "type": "string" } },
+          "durationMs": { "type": "number" },
+          "retestCommand": { "type": "string" },
+          "error": { "$ref": "#/$defs/error" },
+          "attachments": { "$ref": "#/$defs/attachments" },
+          "evidence": { "$ref": "#/$defs/evidenceList" }
+        }
+      }
+    },
+    "acceptance": {
+      "type": "object",
+      "properties": {
+        "contractPath": { "type": ["string", "null"] },
+        "summary": { "$ref": "#/$defs/acceptanceSummary" },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "description", "required", "status"],
+            "properties": {
+              "id": { "type": "string" },
+              "description": { "type": "string" },
+              "required": { "type": "boolean" },
+              "status": {
+                "enum": ["pass", "fail", "skipped", "not-run", "blocked", "waived"]
+              },
+              "linkedCases": { "type": "array", "items": { "type": "string" } },
+              "evidence": { "type": "array" },
+              "waiver": { "type": "object" }
+            }
+          }
+        }
+      }
+    },
+    "coverage": { "type": "object" }
+  },
+  "$defs": {
     "git": {
       "type": "object",
       "properties": {
@@ -20,6 +104,7 @@
     },
     "summary": {
       "type": "object",
+      "required": ["total", "passed", "failed", "skipped"],
       "properties": {
         "total": { "type": "number" },
         "passed": { "type": "number" },
@@ -27,7 +112,58 @@
         "skipped": { "type": "number" }
       }
     },
-    "tiers": { "type": "array" },
-    "cases": { "type": "array" }
+    "acceptanceSummary": {
+      "type": "object",
+      "properties": {
+        "total": { "type": "number" },
+        "passed": { "type": "number" },
+        "failed": { "type": "number" },
+        "incomplete": { "type": "number" },
+        "waived": { "type": "number" }
+      }
+    },
+    "error": {
+      "type": "object",
+      "properties": {
+        "message": { "type": "string" },
+        "stack": { "type": "string" },
+        "snippet": { "type": "string" },
+        "location": {
+          "type": "object",
+          "properties": {
+            "file": { "type": "string" },
+            "line": { "type": "number" },
+            "column": { "type": "number" }
+          }
+        }
+      }
+    },
+    "attachments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "path": { "type": "string" },
+          "contentType": { "type": "string" }
+        }
+      }
+    },
+    "evidenceList": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind"],
+        "properties": {
+          "kind": { "enum": ["command", "artifact", "screenshot", "log", "manual"] },
+          "name": { "type": "string" },
+          "path": { "type": "string" },
+          "contentType": { "type": "string" },
+          "command": { "type": "string" },
+          "exitCode": { "type": "number" },
+          "capturedAt": { "type": "string" }
+        }
+      }
+    }
   }
 }

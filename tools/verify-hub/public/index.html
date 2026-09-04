@@ -81,7 +81,27 @@
       }
       .badge.pass { background: rgba(61, 214, 140, 0.15); color: var(--pass); }
       .badge.fail { background: rgba(255, 107, 107, 0.15); color: var(--fail); }
-      .badge.skip, .badge.partial, .badge.not-run { background: rgba(240, 180, 41, 0.12); color: var(--skip); }
+      .badge.skip, .badge.partial, .badge.not-run, .badge.skipped, .badge.incomplete, .badge.blocked {
+        background: rgba(240, 180, 41, 0.12);
+        color: var(--skip);
+      }
+      .badge.waived { background: rgba(91, 156, 255, 0.12); color: var(--accent); }
+      .filters {
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .filters input, .filters select {
+        width: 100%;
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        padding: 6px 8px;
+        color: var(--text);
+        background: var(--card);
+        font-size: 12px;
+      }
       .detail { padding: 20px 24px 40px; }
       .detail-head {
         display: flex;
@@ -261,6 +281,21 @@
           <span>最近运行</span>
           <span style="color:var(--muted);font-size:12px;font-weight:400;" id="run-count"></span>
         </div>
+        <div class="filters">
+          <select id="filter-conclusion" aria-label="按结论筛选">
+            <option value="all">全部结论</option>
+            <option value="attention">仅失败 / 未完成</option>
+            <option value="pass">通过</option>
+            <option value="fail">失败</option>
+            <option value="incomplete">未完成</option>
+          </select>
+          <select id="filter-role" aria-label="按运行角色筛选">
+            <option value="all">全部角色</option>
+            <option value="builder">Builder</option>
+            <option value="verifier">Verifier</option>
+          </select>
+          <input id="filter-change" placeholder="筛选 change" style="grid-column:1/-1;" />
+        </div>
         <div id="run-list" class="empty">加载中…</div>
       </section>
       <section class="panel detail" id="detail">
@@ -289,6 +324,7 @@
       let hubConfig = { token: 'dev-local-token', allowRetest: true };
       let currentRun = null;
       let cumulativeMatrix = null;
+      let allRuns = [];
 
       function toast(msg) {
         const el = document.getElementById('toast');
@@ -359,15 +395,52 @@
         loadCumulative();
       }
 
-      async function retest({ tier, command }) {
+      function watchRetest(parentRunId, knownIds) {
+        const deadline = Date.now() + 10 * 60 * 1000;
+        const timer = setInterval(async () => {
+          if (Date.now() > deadline) {
+            clearInterval(timer);
+            toast('复测仍在运行，请稍后刷新');
+            return;
+          }
+          const res = await fetch('/api/runs?limit=30');
+          const data = await res.json();
+          const child = (data.items ?? []).find(
+            (item) => item.parentRunId === parentRunId && item.runRole === 'verifier' && !knownIds.has(item.id),
+          );
+          if (!child) return;
+          clearInterval(timer);
+          allRuns = data.items ?? [];
+          selectedId = child.id;
+          history.replaceState({}, '', `?run=${selectedId}`);
+          renderRunList();
+          loadDetail(selectedId);
+          loadStats();
+          toast(`复测完成：${conclusionLabel(child.conclusion)}`);
+        }, 3000);
+      }
+
+      async function retest({ tier, caseId } = {}) {
+        const parentRunId = currentRun?.runId;
+        const knownIds = new Set(allRuns.map((item) => item.id));
         const res = await fetch('/api/retest', {
           method: 'POST',
           headers: authHeaders({ 'Content-Type': 'application/json' }),
-          body: JSON.stringify({ tier, command }),
+          body: JSON.stringify({
+            tier,
+            caseId,
+            parentRunId,
+            changeId: currentRun?.provenance?.changeId,
+          }),
         });
         const data = await res.json();
+        if (!res.ok) {
+          toast(data.message ?? '复测启动失败');
+          return;
+        }
         if (data.started) {
-          toast(`已后台启动：${data.command}`);
+          toast(`复测已启动：${data.command}`);
+          if (parentRunId) watchRetest(parentRunId, knownIds);
         } else {
           await copyText(data.command);
           toast(data.hint ?? '命令已复制');
@@ -386,38 +459,69 @@
         document.getElementById('modal').classList.remove('open');
       }
 
-      async function loadRuns() {
-        const res = await fetch('/api/runs?limit=30');
-        const data = await res.json();
+      function conclusionLabel(conclusion) {
+        return {
+          pass: '通过',
+          fail: '失败',
+          incomplete: '未完成',
+          blocked: '阻塞',
+          waived: '豁免',
+          skipped: '跳过',
+          'not-run': '未执行',
+        }[conclusion] ?? conclusion ?? '未知';
+      }
+
+      function filteredRuns() {
+        const conclusion = document.getElementById('filter-conclusion').value;
+        const role = document.getElementById('filter-role').value;
+        const change = document.getElementById('filter-change').value.trim().toLowerCase();
+        return allRuns
+          .filter((run) => {
+            if (conclusion === 'attention' && !['fail', 'incomplete'].includes(run.conclusion)) return false;
+            if (!['all', 'attention'].includes(conclusion) && run.conclusion !== conclusion) return false;
+            if (role !== 'all' && run.runRole !== role) return false;
+            if (change && !(run.changeId ?? '').toLowerCase().includes(change)) return false;
+            return true;
+          })
+          .sort((a, b) => {
+            const priority = { fail: 0, incomplete: 1, pass: 2 };
+            return (priority[a.conclusion] ?? 3) - (priority[b.conclusion] ?? 3);
+          });
+      }
+
+      function renderRunList() {
+        const items = filteredRuns();
         const list = document.getElementById('run-list');
-        document.getElementById('run-count').textContent = `${data.items?.length ?? 0} 条`;
-        if (!data.items?.length) {
+        document.getElementById('run-count').textContent = `${items.length}/${allRuns.length} 条`;
+        if (!items.length) {
           list.className = 'empty';
-          list.textContent = '暂无运行记录。请先执行 pnpm verify';
+          list.textContent = allRuns.length ? '没有符合筛选条件的运行' : '暂无运行记录。请先执行 pnpm verify';
           return;
         }
         list.className = '';
-        list.innerHTML = data.items
+        list.innerHTML = items
           .map(
             (run) => `
           <div class="run-item ${run.id === selectedId ? 'active' : ''}" data-id="${run.id}">
             <div>
               <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-                <span class="badge ${run.status}">${run.status === 'pass' ? '通过' : '失败'}</span>
+                <span class="badge ${run.conclusion}">${conclusionLabel(run.conclusion)}</span>
+                ${run.runRole ? `<span class="tag">${run.runRole}</span>` : ''}
                 ${run.failedCases ? `<span class="badge fail">${run.failedCases} 失败</span>` : ''}
                 <span style="color:var(--muted);font-size:12px;">${(run.durationMs / 1000).toFixed(1)}s</span>
               </div>
-              <div style="margin-top:6px;font-size:13px;">${run.project}</div>
+              <div style="margin-top:6px;font-size:13px;">${run.changeId ? escapeHtml(run.changeId) : run.project}</div>
               <div style="color:var(--muted);font-size:12px;">${run.startedAt}</div>
               <div style="font-size:12px;margin-top:4px;">
-                模块 ${run.modulesTested ?? 0}/${run.modulesTotal ?? 0}
+                验收 ${run.acceptance?.passed ?? 0}/${run.acceptance?.total ?? 0}
+                · 模块 ${run.modulesTested ?? 0}/${run.modulesTotal ?? 0}
                 · ${run.summary.passed}/${run.summary.total} 通过
                 ${run.gapCount ? ` · <span style="color:var(--warn)">${run.gapCount} 缺 browser</span>` : ''}
               </div>
             </div>
             <div class="run-actions">
-              <button class="ghost" data-action="view" title="查看">👁</button>
-              <button class="ghost" data-action="delete" title="删除">🗑</button>
+              <button class="ghost" data-action="view" title="查看">查看</button>
+              <button class="ghost" data-action="delete" title="删除">删除</button>
             </div>
           </div>`,
           )
@@ -427,7 +531,7 @@
           el.addEventListener('click', () => {
             selectedId = el.dataset.id;
             history.replaceState({}, '', `?run=${selectedId}`);
-            loadRuns();
+            renderRunList();
             loadDetail(selectedId);
           });
           el.querySelector('[data-action="delete"]')?.addEventListener('click', (ev) => deleteRun(el.dataset.id, ev));
@@ -435,10 +539,17 @@
             ev.stopPropagation();
             selectedId = el.dataset.id;
             history.replaceState({}, '', `?run=${selectedId}`);
-            loadRuns();
+            renderRunList();
             loadDetail(selectedId);
           });
         });
+      }
+
+      async function loadRuns() {
+        const res = await fetch('/api/runs?limit=30');
+        const data = await res.json();
+        allRuns = data.items ?? [];
+        renderRunList();
         if (selectedId) loadDetail(selectedId);
       }
 
@@ -699,6 +810,82 @@ pnpm verify --tier browser-smoke
           </details>`;
       }
 
+      function buildCometEvidenceMarkdown(run) {
+        const acceptance = run.acceptance?.items ?? [];
+        const failed = acceptance.filter((item) => item.required && item.status !== 'pass');
+        const baseUrl = `${location.origin}${location.pathname}?run=${run.runId}`;
+        const acceptanceLines = acceptance.length
+          ? acceptance.map((item) => `- [${item.status === 'pass' ? 'x' : ' '}] ${item.id} ${item.description}（${item.status}）`).join('\n')
+          : '- 旧报告未包含 Verification Contract';
+        return `## Verify Hub Evidence
+- Run ID: \`${run.runId}\`
+- Dashboard: ${baseUrl}
+- Change: \`${run.provenance?.changeId ?? 'unknown'}\`
+- Role: \`${run.provenance?.runRole ?? 'legacy'}\`
+- Git: \`${run.git?.branch ?? '?'}@${(run.git?.commit ?? '').slice(0, 12)}\`${run.git?.dirty ? '（dirty）' : ''}
+- Conclusion: **${run.conclusion ?? ((run.summary?.failed ?? 0) ? 'fail' : 'pass')}**
+- Summary: ${run.summary?.passed ?? 0}/${run.summary?.total ?? 0} passed, ${run.summary?.failed ?? 0} failed, ${run.summary?.skipped ?? 0} skipped
+
+### Acceptance
+${acceptanceLines}
+
+### 未满足 Required
+${failed.length ? failed.map((item) => `- ${item.id}: ${item.status}`).join('\n') : '- 无'}
+`;
+      }
+
+      function renderAcceptance(run) {
+        const acceptance = run.acceptance;
+        if (!acceptance?.items?.length) {
+          return `
+            <details class="section" open>
+              <summary><span>验收项</span><span style="color:var(--muted);font-size:12px;font-weight:400;">旧报告未绑定合同</span></summary>
+              <div class="section-body"><div class="gap-banner">本次 run 没有 Verification Contract，测试结果仅能作为候选证据。</div></div>
+            </details>`;
+        }
+        const rows = acceptance.items
+          .map((item) => {
+            const linked = (item.linkedCases ?? [])
+              .map((caseId) => `<button class="ghost" data-case-view="${escapeHtml(caseId)}">${escapeHtml(caseId.split(':').pop())}</button>`)
+              .join('');
+            const selectors = (item.evidence ?? [])
+              .map((entry) => {
+                const selector = entry.selector ?? {};
+                const target = selector.type === 'tier'
+                  ? selector.tierId
+                  : selector.type === 'scenario'
+                    ? `${selector.page}#${selector.scenario}`
+                    : selector.caseId ?? selector.tag ?? selector.type;
+                return `<span class="tag ${entry.status === 'pass' ? 'ok' : 'missing'}">${escapeHtml(target ?? '?')} · ${entry.status}</span>`;
+              })
+              .join(' ');
+            return `
+              <tr>
+                <td><strong>${escapeHtml(item.id)}</strong>${item.required ? '<span class="tag">required</span>' : ''}<div style="font-size:12px;margin-top:4px;">${escapeHtml(item.description)}</div></td>
+                <td><span class="badge ${item.status}">${conclusionLabel(item.status)}</span></td>
+                <td>${selectors || '-'}</td>
+                <td>${linked || '-'}</td>
+              </tr>`;
+          })
+          .join('');
+        const summary = acceptance.summary ?? {};
+        return `
+          <details class="section" open>
+            <summary>
+              <span>验收项（${summary.passed ?? 0}/${summary.total ?? acceptance.items.length} 通过）</span>
+              <span style="color:var(--muted);font-size:12px;font-weight:400;">合同 ${escapeHtml(acceptance.contractPath ?? '-')}</span>
+            </summary>
+            <div class="section-body">
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>验收标准</th><th>状态</th><th>证据选择器</th><th>关联用例</th></tr></thead>
+                  <tbody>${rows}</tbody>
+                </table>
+              </div>
+            </div>
+          </details>`;
+      }
+
       function formatCaseDetailHtml(c) {
         const tags = (c.tags ?? []).filter((t) => t.startsWith('@page:') || t.startsWith('@scenario:')).join(' ');
         const loc = c.error?.location;
@@ -717,6 +904,12 @@ pnpm verify --tier browser-smoke
         const attachHtml = attachments
           ? `<details><summary style="cursor:pointer;color:var(--accent);margin:8px 0;">附件（trace / 上下文）</summary><ul style="margin:8px 0;padding-left:18px;font-size:12px;">${attachments}</ul><p style="color:var(--muted);font-size:11px;">本地查看 trace：<code>npx playwright show-trace &lt;path&gt;</code></p></details>`
           : '';
+        const evidence = (c.evidence ?? [])
+          .map((item) => `<li>${escapeHtml(item.kind)}${item.name ? ` · ${escapeHtml(item.name)}` : ''}${item.path ? ` · <span class="mono">${escapeHtml(item.path)}</span>` : ''}${item.command ? ` · <span class="mono">${escapeHtml(item.command)}</span> (exit ${item.exitCode ?? '?'})` : ''}</li>`)
+          .join('');
+        const evidenceHtml = evidence
+          ? `<details><summary style="cursor:pointer;color:var(--accent);margin:8px 0;">结构化证据</summary><ul style="margin:8px 0;padding-left:18px;font-size:12px;">${evidence}</ul></details>`
+          : '';
 
         return `
           <div style="margin-bottom:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
@@ -728,6 +921,7 @@ pnpm verify --tier browser-smoke
           ${snippet}
           ${c.error?.stack ? `<details><summary style="cursor:pointer;color:var(--accent);margin:8px 0;">完整 Stack</summary><pre>${escapeHtml(c.error.stack)}</pre></details>` : ''}
           ${attachHtml}
+          ${evidenceHtml}
         `;
       }
 
@@ -753,7 +947,7 @@ pnpm verify --tier browser-smoke
               else copyText(`${c.title}\n\n${c.error?.message ?? ''}\n\n${c.error?.stack ?? ''}`);
             });
             document.querySelector('[data-modal-retest]')?.addEventListener('click', () =>
-              retest({ tier: c.tierId, command: c.retestCommand }),
+              retest({ tier: c.tierId, caseId: c.id }),
             );
             document.getElementById('modal-close-btn')?.addEventListener('click', closeModal);
           });
@@ -767,7 +961,7 @@ pnpm verify --tier browser-smoke
         });
 
         document.querySelectorAll('[data-case-retest]').forEach((btn) => {
-          btn.addEventListener('click', () => retest({ tier: btn.dataset.tier, command: btn.dataset.cmd }));
+          btn.addEventListener('click', () => retest({ tier: btn.dataset.tier, caseId: btn.dataset.caseId }));
         });
       }
 
@@ -790,6 +984,8 @@ pnpm verify --tier browser-smoke
         const tc = cov.testCases ?? {};
         const gaps = cov.gaps ?? {};
         const scenarios = cov.scenarios ?? {};
+        const conclusion = run.conclusion ?? ((run.summary?.failed ?? 0) > 0 ? 'fail' : 'pass');
+        const acceptance = run.acceptance?.summary ?? {};
         const detail = document.getElementById('detail');
         const failedTiers = [...new Set((run.cases ?? []).filter((c) => c.status === 'fail').map((c) => c.tierId))];
 
@@ -838,16 +1034,32 @@ pnpm verify --tier browser-smoke
               <p style="color:var(--muted);margin:0;font-size:13px;">
                 ${run.git?.branch ?? ''} @ ${(run.git?.commit ?? '').slice(0, 8)} · ${run.startedAt}
               </p>
+              <p style="color:var(--muted);margin:4px 0 0;font-size:12px;">
+                change <strong style="color:var(--text)">${escapeHtml(run.provenance?.changeId ?? '未绑定')}</strong> ·
+                role <strong style="color:var(--text)">${run.provenance?.runRole ?? 'legacy'}</strong>
+                ${run.provenance?.parentRunId ? ` · parent ${escapeHtml(run.provenance.parentRunId.slice(0, 8))}` : ''}
+              </p>
             </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">
               ${failedTiers.map((t) => `<button class="secondary" data-retest-tier="${t}">复测 ${t}</button>`).join('')}
               <button class="secondary" data-retest-all>复测全部</button>
+              <button class="secondary" data-copy-comet>复制 Comet 证据</button>
               ${bundles.length ? `<button data-copy-all-fail>复制全部失败上下文</button>` : ''}
               <button class="danger" data-delete-run>删除此报告</button>
             </div>
           </div>
 
           <div class="coverage-grid">
+            <div class="coverage-card">
+              <div class="label">最终结论</div>
+              <div class="value"><span class="badge ${conclusion}" style="font-size:13px;">${conclusionLabel(conclusion)}</span></div>
+              <div class="sub">${run.provenance?.runRole === 'verifier' ? '独立复核' : 'Builder 候选证据'}${run.git?.dirty ? ' · dirty' : ''}</div>
+            </div>
+            <div class="coverage-card">
+              <div class="label">Required 验收</div>
+              <div class="value">${acceptance.passed ?? 0}/${acceptance.total ?? 0}</div>
+              <div class="sub">失败 ${acceptance.failed ?? 0} · 未完成 ${acceptance.incomplete ?? 0}</div>
+            </div>
             <div class="coverage-card">
               <div class="label">业务模块</div>
               <div class="value">${mod.tested ?? 0}/${mod.total ?? 0}</div>
@@ -875,6 +1087,7 @@ pnpm verify --tier browser-smoke
             </div>
           </div>
 
+          ${renderAcceptance(run)}
           ${renderScenarioMatrix(scenarios)}
           ${renderGaps(gaps, mod)}
           ${renderCumulative()}
@@ -957,7 +1170,7 @@ pnpm verify --tier browser-smoke
                         <div class="case-actions">
                           <button class="secondary" data-case-view="${c.id}">查看</button>
                           ${c.status === 'fail' ? `<button data-case-copy="${c.id}">复制</button>` : ''}
-                          <button class="secondary" data-case-retest data-tier="${c.tierId}" data-cmd="${c.retestCommand ?? 'pnpm verify'}">复测</button>
+                          <button class="secondary" data-case-retest data-tier="${c.tierId}" data-case-id="${c.id}">复测</button>
                         </div>
                       </div>`;
                       })
@@ -971,7 +1184,8 @@ pnpm verify --tier browser-smoke
         `;
 
         detail.querySelector('[data-delete-run]')?.addEventListener('click', () => deleteRun(id));
-        detail.querySelector('[data-retest-all]')?.addEventListener('click', () => retest({ command: 'pnpm verify' }));
+        detail.querySelector('[data-copy-comet]')?.addEventListener('click', () => copyText(buildCometEvidenceMarkdown(run)));
+        detail.querySelector('[data-retest-all]')?.addEventListener('click', () => retest({}));
         detail.querySelectorAll('[data-retest-tier]').forEach((btn) => {
           btn.addEventListener('click', () => retest({ tier: btn.dataset.retestTier }));
         });
@@ -1001,6 +1215,9 @@ pnpm verify --tier browser-smoke
       });
       document.getElementById('btn-keep-latest').addEventListener('click', () => cleanupRuns('keep'));
       document.getElementById('btn-delete-all').addEventListener('click', () => cleanupRuns('all'));
+      document.getElementById('filter-conclusion').addEventListener('change', renderRunList);
+      document.getElementById('filter-role').addEventListener('change', renderRunList);
+      document.getElementById('filter-change').addEventListener('input', renderRunList);
 
       (async () => {
         await loadConfig();

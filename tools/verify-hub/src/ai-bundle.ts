@@ -1,30 +1,21 @@
-type VerifyCase = {
-  id: string;
-  tierId?: string;
-  module?: string;
-  title?: string;
-  status?: string;
-  error?: { message?: string; stack?: string };
-  retestCommand?: string;
-  suggestedFiles?: string[];
-};
-
-type VerifyReport = {
-  runId: string;
-  project?: string;
-  git?: { branch?: string; commit?: string; dirty?: boolean };
-  cases?: VerifyCase[];
-  coverage?: {
-    gaps?: {
-      modulesMissingBrowserSpec?: Array<{ id: string; name: string; adminPages?: unknown[] }>;
-      adminPages?: { total?: number; untested?: number };
-    };
-  };
-};
+import type { VerifyCase, VerifyReport } from './types.js';
 
 /** 为失败用例生成可复制给 AI 的 Markdown 修复包 */
 export function buildAiFixBundle(report: VerifyReport, caseItem: VerifyCase): string {
   const files = (caseItem.suggestedFiles ?? []).map((f) => `- \`${f}\``).join('\n') || '- （见错误栈与模块路径自行定位）';
+  const acceptanceIds =
+    report.acceptance?.items
+      ?.filter((item) => item.linkedCases?.includes(caseItem.id))
+      .map((item) => `\`${item.id}\``)
+      .join('、') || '未关联';
+  const evidence = [...(caseItem.evidence ?? []), ...(caseItem.attachments ?? []).map((item) => ({
+    kind: 'artifact' as const,
+    ...item,
+  }))];
+  const evidenceText =
+    evidence
+      .map((item) => `- ${item.kind}${item.name ? ` · ${item.name}` : ''}${item.path ? `：\`${item.path}\`` : ''}`)
+      .join('\n') || '- 无附件';
   const gaps = report.coverage?.gaps;
   const browserGaps =
     gaps?.modulesMissingBrowserSpec
@@ -43,6 +34,7 @@ export function buildAiFixBundle(report: VerifyReport, caseItem: VerifyCase): st
 - 模块：\`${caseItem.module ?? 'unknown'}\`
 - Case ID：\`${caseItem.id}\`
 - 标题：${caseItem.title ?? caseItem.id}
+- 验收项：${acceptanceIds}
 
 ## 错误
 \`\`\`
@@ -54,6 +46,9 @@ ${caseItem.error?.location ? `\n### 定位\n\`${caseItem.error.location.file}:${
 
 ## 建议查看文件
 ${files}
+
+## 执行证据
+${evidenceText}
 
 ## 复测命令
 \`\`\`bash

@@ -66,15 +66,21 @@ export function parseJestE2eReport(reportPath) {
     for (const assertion of fileResult.assertionResults ?? []) {
       const status =
         assertion.status === 'passed' ? 'pass' : assertion.status === 'pending' ? 'skip' : 'fail';
+      const failureMessage = stripAnsi(
+        (assertion.failureMessages ?? []).filter(Boolean).join('\n') || fileResult.failureMessage || '',
+      );
       cases.push({
         id: `api-e2e:${rel}:${assertion.title}`,
         tierId: 'api-e2e',
         module: moduleId,
         title: assertion.fullName.replace(/^.*\.e2e-spec\.ts /, ''),
         status,
+        disposition: status === 'skip' ? 'skipped' : 'executed',
         durationMs: Math.round(assertion.duration ?? 0),
         retestCommand: 'pnpm verify --tier api-e2e',
         suiteFile: rel,
+        error: status === 'fail' ? { message: failureMessage || 'Jest E2E 用例失败' } : undefined,
+        suggestedFiles: [`server/test/${rel}.e2e-spec.ts`],
       });
     }
   }
@@ -154,6 +160,7 @@ export function parsePlaywrightReport(reportPath) {
             module: moduleTag?.replace('@module:', '') ?? 'browser-smoke',
             title: spec.title,
             status,
+            disposition: status === 'skip' ? 'skipped' : 'executed',
             durationMs: Math.round(result?.duration ?? 0),
             retestCommand: 'pnpm verify --tier browser-smoke',
             tags,
@@ -163,6 +170,12 @@ export function parsePlaywrightReport(reportPath) {
               ? { message: failure.message, stack: failure.stack, snippet: failure.snippet, location: failure.location }
               : undefined,
             attachments: failure?.attachments,
+            evidence: failure?.attachments?.map((attachment) => ({
+              kind: attachment.contentType?.startsWith('image/') ? 'screenshot' : 'artifact',
+              path: attachment.path,
+              contentType: attachment.contentType,
+              name: attachment.name,
+            })),
             suggestedFiles: failure?.location?.file ? [failure.location.file] : specFile ? [`e2e/specs/${specFile}`] : [],
           });
         }
