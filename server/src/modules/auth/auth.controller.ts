@@ -1,6 +1,8 @@
 import { Body, Controller, Get, HttpCode, Post, Put, Req } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ConfigService } from '@nestjs/config';
 import type { Request } from 'express';
+import { resolveClientIp } from '../../common/utils/resolve-client-ip';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser, AuthUser } from './decorators/current-user.decorator';
 import { LoginDto } from './dto/login.dto';
@@ -12,15 +14,20 @@ import { AuthService } from './auth.service';
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @Public()
   @Post('login')
   @HttpCode(200)
   @ApiOperation({ summary: 'B 端管理员登录' })
   login(@Body() body: LoginDto, @Req() req: Request) {
+    const trustProxy =
+      this.configService.get<boolean>('ipBlacklist.trustProxy') ?? false;
     return this.authService.login(body, {
-      ip: req.ip ?? req.socket.remoteAddress ?? '',
+      ip: resolveClientIp(req, trustProxy),
       userAgent: req.headers['user-agent'],
     });
   }

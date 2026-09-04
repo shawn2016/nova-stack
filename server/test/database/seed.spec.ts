@@ -232,7 +232,7 @@ describe('runInitSeed', () => {
 
     await runInitSeed(dataSource);
 
-    expect(stores.permissions.length).toBe(81);
+    expect(stores.permissions.length).toBe(85);
     expect(stores.permissions.some((p) => p.code === 'system:user:list')).toBe(true);
     expect(stores.permissions.some((p) => p.code === 'content:article:list')).toBe(true);
     expect(stores.permissions.some((p) => p.code === 'system:dict:type:list')).toBe(true);
@@ -307,7 +307,7 @@ describe('runInitSeed', () => {
     );
     expect(stores.menus.find((m) => m.name === '系统管理')?.icon).toBe('ri:settings-3-line');
     expect(stores.menus.find((m) => m.name === '用户管理')?.icon).toBe('ri:user-line');
-    expect(stores.rolePermissions.length).toBe(81);
+    expect(stores.rolePermissions.length).toBe(85);
   });
 
   it('does not duplicate role-permission links on second run', async () => {
@@ -318,8 +318,8 @@ describe('runInitSeed', () => {
     await runInitSeed(dataSource);
     await runInitSeed(dataSource);
 
-    expect(stores.permissions.length).toBe(81);
-    expect(stores.rolePermissions.length).toBe(81);
+    expect(stores.permissions.length).toBe(85);
+    expect(stores.rolePermissions.length).toBe(85);
   });
 
   it('seeds dev sample articles in non-production', async () => {
@@ -471,6 +471,6 @@ describe('runInitSeed', () => {
     expect(bcrypt.hash).not.toHaveBeenCalled();
 
     expect(stores.roles.some((role) => role.code === 'super_admin')).toBe(true);
-    expect(stores.permissions.length).toBe(81);
+    expect(stores.permissions.length).toBe(85);
   });
 });

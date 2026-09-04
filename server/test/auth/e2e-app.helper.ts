@@ -24,6 +24,13 @@ function createMockRedis() {
       store.delete(key);
       return 1;
     }),
+    incr: jest.fn(async (key: string) => {
+      const current = parseInt(store.get(key) ?? '0', 10);
+      const next = current + 1;
+      store.set(key, String(next));
+      return next;
+    }),
+    expire: jest.fn(async () => 1),
     keys: jest.fn(async (pattern: string) => {
       const regex = new RegExp(`^${pattern.replace(/\*/g, '.*')}$`);
       return [...store.keys()].filter((key) => regex.test(key));
@@ -51,6 +58,9 @@ export async function createE2eApp(): Promise<E2eAppContext> {
   process.env.OSS_ENABLED = 'false';
   process.env.APP_PUBLIC_URL = 'http://localhost:3000';
   process.env.UPLOAD_MAX_SIZE = '5242880';
+  process.env.IP_BLACKLIST_WHITELIST = '';
+  process.env.IP_BLACKLIST_FAIL_THRESHOLD = '3';
+  process.env.TRUST_PROXY = 'true';
 
   const mockRedis = createMockRedis();
 

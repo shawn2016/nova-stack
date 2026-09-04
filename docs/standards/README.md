@@ -12,6 +12,7 @@
 | uni-app | [uni-app.md](./uni-app.md) | 同功能 admin/api |
 | util / 复杂函数 | [comments.md](./comments.md) | 同目录相邻文件 |
 | commit / 分支 | [git.md](./git.md) | — |
+| Verify / 浏览器 E2E | [verify.md](./verify.md) | `e2e/specs/modules/online-session.spec.ts` |
 
 ## 存量代码策略
 
@@ -30,5 +31,6 @@
 | [uni-app.md](./uni-app.md) | C 端简版 |
 | [comments.md](./comments.md) | 注释 |
 | [git.md](./git.md) | 分支、归档 merge |
+| [verify.md](./verify.md) | Verify Loop、Playwright 场景 |
 
 功能设计：`docs/superpowers/specs/`（需求层，非写码规范）

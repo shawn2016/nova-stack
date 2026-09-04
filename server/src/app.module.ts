@@ -3,6 +3,7 @@ import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import appConfig, {
   databaseConfig,
+  ipBlacklistConfig,
   jwtConfig,
   redisConfig,
   uploadConfig,
@@ -31,6 +32,7 @@ import { NoticeModule } from './modules/notice/notice.module';
 import { DeptModule } from './modules/dept/dept.module';
 import { DataScopeModule } from './modules/data-scope/data-scope.module';
 import { OnlineSessionModule } from './modules/online-session/online-session.module';
+import { IpBlacklistModule } from './modules/ip-blacklist/ip-blacklist.module';
 import { JobModule } from './modules/job/job.module';
 import { SmsModule } from './modules/sms/sms.module';
 import { EmailModule } from './modules/email/email.module';
@@ -39,7 +41,7 @@ import { EmailModule } from './modules/email/email.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [appConfig, databaseConfig, jwtConfig, redisConfig, uploadConfig],
+      load: [appConfig, databaseConfig, jwtConfig, redisConfig, uploadConfig, ipBlacklistConfig],
       validate,
       envFilePath: ['.env'],
     }),
@@ -47,6 +49,7 @@ import { EmailModule } from './modules/email/email.module';
     RedisModule,
     JwtModule,
     HealthModule,
+    IpBlacklistModule,
     AuthModule,
     MemberAuthModule,
     RbacModule,

@@ -17,6 +17,12 @@ export async function configureApp(app: INestApplication) {
 
   app.setGlobalPrefix(API_PREFIX);
 
+  const trustProxy =
+    configService.get<boolean>('ipBlacklist.trustProxy') ?? false;
+  if (trustProxy) {
+    (app as NestExpressApplication).set('trust proxy', 1);
+  }
+
   app.enableCors({
     origin: corsOrigins,
     credentials: true,

@@ -1,0 +1,16 @@
+{
+  "change": "ip-blacklist",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "02e839b9fd329191bcf02fae61f4feedef90a6360e595064c103b0b4bc53f740",
+  "files": [
+    { "path": "openspec/changes/ip-blacklist/proposal.md", "sha256": "ae93987bd300d931be3cc5fe1d8629a6675fe74a922c3879c2c17b90ff10d373" },
+    { "path": "openspec/changes/ip-blacklist/design.md", "sha256": "a065e164b0e0b087a42f235fe2ab8a1bb8c05857eb266d4a9376cf8f97f9bbbf" },
+    { "path": "openspec/changes/ip-blacklist/tasks.md", "sha256": "c8b6140401b81bfae59a577e1e110ab18f1d96ecf8c6f8c43c699f0395674f2b" },
+    { "path": "openspec/changes/ip-blacklist/specs/auth-api/spec.md", "sha256": "d165ddfa77fa2c1ce006ca7502f4a7abce9c7fc0ab5061f7b0434f708b222876" },
+    { "path": "openspec/changes/ip-blacklist/specs/ip-blacklist-admin-ui/spec.md", "sha256": "b791a6bdce478c37c6b73ea9272f054529a3e07bad853b14331e5bdf39f25c00" },
+    { "path": "openspec/changes/ip-blacklist/specs/ip-blacklist-api/spec.md", "sha256": "96a9b74ddfcdf424fea1c5630352231953a0836e56c4872ac8caf0ff3085fa1b" }
+  ]
+}

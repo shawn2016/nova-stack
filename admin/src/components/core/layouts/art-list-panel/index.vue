@@ -2,19 +2,24 @@
 <template>
   <div class="art-list-panel art-full-height">
     <ElCard class="art-list-panel__card art-table-card">
-      <nav v-if="tabs.length" class="art-list-panel__tabs" role="tablist">
-        <button
-          v-for="tab in tabs"
-          :key="tab.name"
-          type="button"
-          role="tab"
-          class="art-list-panel__tab"
-          :class="{ 'is-active': activeTab === tab.name }"
-          :aria-selected="activeTab === tab.name"
-          @click="handleTabChange(tab.name)"
-        >
-          {{ tab.label }}
-        </button>
+      <nav v-if="tabs.length" class="art-list-panel__tabs-bar" role="presentation">
+        <div class="art-list-panel__tabs" role="tablist">
+          <button
+            v-for="tab in tabs"
+            :key="tab.name"
+            type="button"
+            role="tab"
+            class="art-list-panel__tab"
+            :class="{ 'is-active': activeTab === tab.name }"
+            :aria-selected="activeTab === tab.name"
+            @click="handleTabChange(tab.name)"
+          >
+            {{ tab.label }}
+          </button>
+        </div>
+        <div v-if="$slots['head-actions']" class="art-list-panel__head-actions">
+          <slot name="head-actions" />
+        </div>
       </nav>
 
       <header v-else-if="title" class="art-list-panel__head" :class="`is-size-${componentSize}`">
@@ -161,14 +166,24 @@
       }
     }
 
-    &__tabs {
+    &__tabs-bar {
       display: flex;
       flex-shrink: 0;
-      gap: 0;
       align-items: stretch;
-      padding: 0;
+      justify-content: space-between;
       background: var(--el-fill-color-lighter);
       border-bottom: 1px solid var(--el-border-color-lighter);
+    }
+
+    &__tabs {
+      display: flex;
+      flex: 1;
+      gap: 0;
+      align-items: stretch;
+      min-width: 0;
+      padding: 0;
+      background: transparent;
+      border-bottom: none;
     }
 
     &__head {

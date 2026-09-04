@@ -67,6 +67,8 @@ Agent **开始写码前**选对应「写码前」节阅读；**声称完成前**
 - [ ] 写操作按钮有 `v-permission`，与后端码一致
 - [ ] 删除有 `ElMessageBox.confirm`
 - [ ] 类型来自 `@nova/shared-types`，请求走 `admin/src/api/`
+- [ ] **新菜单页**：已加 `e2e/specs/modules/*.spec.ts` 并更新 `.verify/inventory.yaml`（见 [AGENTS.md §浏览器 E2E](../../AGENTS.md#新-admin-菜单页与浏览器-e2everify-loop)）
+- [ ] **改 Admin 交互/按钮文案**：已同步更新对应 Playwright scenario
 
 ### 注释（若新增 util / Entity / 复杂逻辑）
 

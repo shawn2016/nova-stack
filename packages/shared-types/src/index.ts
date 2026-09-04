@@ -157,6 +157,15 @@ export type {
 } from './online-session.js';
 
 export type {
+  CreateIpBlacklistDto,
+  IpBlacklistListItem,
+  IpBlacklistListQuery,
+  IpBlacklistListResult,
+  IpBlacklistSource,
+  UpdateIpBlacklistStatusDto,
+} from './ip-blacklist.js';
+
+export type {
   CreateJobDto,
   JobDetail,
   JobHandlerInfo,

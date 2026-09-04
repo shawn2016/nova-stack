@@ -1,0 +1,36 @@
+# Admin 页面场景目录（期望能力 vs 实际 E2E）
+# 写新页 / 新 E2E 时：spec 用 @page:<path> @scenario:<id> 标注；Hub 会对账
+scenarios:
+  list:
+    name: 列表加载
+    description: 进入页面，表格或主内容区成功渲染
+  search:
+    name: 搜索筛选
+    description: 搜索栏提交后列表刷新
+  create:
+    name: 新增
+    description: 打开新增弹窗并提交
+  update:
+    name: 编辑
+    description: 打开编辑弹窗并保存
+  delete:
+    name: 删除
+    description: 确认删除后列表更新
+  tabs:
+    name: Tab 切换
+    description: 多 Tab 页切换后内容加载
+  upload:
+    name: 上传
+    description: 文件/图片上传流程
+  auth:
+    name: 登录认证
+    description: 登录表单与鉴权流程
+
+# 页面型模板（inventory 未声明 capabilities 时的默认期望，会被 Vue 扫描覆盖）
+profiles:
+  crud:
+    expects: [list, search, create, update, delete]
+  readonly:
+    expects: [list, search]
+  tabbed:
+    expects: [list, tabs]

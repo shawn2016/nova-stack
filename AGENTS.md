@@ -79,8 +79,21 @@ Admin `admin/admin123` · 会员 `13800138000/member123`（seed 后）
 pnpm lint
 pnpm --filter @nova/shared-types build   # 若改了 shared-types
 pnpm --filter @nova/server test          # 若改了 server
+pnpm --filter @nova/server test:e2e      # 新/改 API 时建议跑（含 ip-blacklist 等）
 pnpm --filter @nova/admin build          # 若改了 admin
 ```
+
+**说明**：上表是日常 Build / Archive 默认门禁；**不含** Playwright 浏览器 E2E。根目录 `pnpm test` 也不会跑 `e2e/`。
+
+### 新 Admin 菜单页与浏览器 E2E（Verify Loop）
+
+新增带菜单的 Admin CRUD 页时，除 server `test:e2e` 外，**必须**同步：
+
+1. 新增 `e2e/specs/modules/<module>.spec.ts`（列表加载 + 搜索等；标杆 `e2e/specs/modules/online-session.spec.ts` 或同类型 CRUD 页）
+2. 在 `.verify/inventory.yaml` 登记模块与 `adminPages`
+3. 功能/交互变更时更新对应 scenario（不只增不改）
+
+合并 verify 能力后跑 `pnpm verify` 验收；本地可 `pnpm exec playwright test e2e/specs/modules/<module>.spec.ts` 单测（需 `pnpm dev` + seed）。
 
 ---
 

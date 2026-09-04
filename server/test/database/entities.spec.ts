@@ -72,7 +72,7 @@ describe('RBAC database entities', () => {
     }
   });
 
-  it('loads all 28 entities with expected table names', () => {
+  it('loads all 29 entities with expected table names', () => {
     const tableNames = dataSource.entityMetadatas
       .map((meta) => meta.tableName)
       .sort();
@@ -88,6 +88,7 @@ describe('RBAC database entities', () => {
       'sys_email_log',
       'sys_email_template',
       'sys_file',
+      'sys_ip_blacklist',
       'sys_job',
       'sys_job_log',
       'sys_login_log',

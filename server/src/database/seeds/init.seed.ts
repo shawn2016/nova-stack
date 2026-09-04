@@ -129,6 +129,10 @@ const PERMISSION_SEEDS: PermissionSeed[] = [
   { name: '邮件模板删除', code: 'infra:email:template:delete', type: 'api' },
   { name: '邮件日志列表', code: 'infra:email:log:list', type: 'api' },
   { name: '邮件测试发送', code: 'infra:email:send', type: 'api' },
+  { name: 'IP黑名单列表', code: 'security:ip-blacklist:list', type: 'api' },
+  { name: 'IP黑名单新增', code: 'security:ip-blacklist:create', type: 'api' },
+  { name: 'IP黑名单删除', code: 'security:ip-blacklist:delete', type: 'api' },
+  { name: 'IP黑名单更新', code: 'security:ip-blacklist:update', type: 'api' },
 ];
 
 const MENU_SEEDS: MenuSeed[] = [
@@ -241,13 +245,22 @@ const MENU_SEEDS: MenuSeed[] = [
         sort: 11,
       },
       {
+        name: 'IP黑名单',
+        path: '/system/ip-blacklist',
+        component: 'views/system/ip-blacklist/index',
+        icon: 'ri:shield-keyhole-line',
+        type: 'menu',
+        permissionCode: 'security:ip-blacklist:list',
+        sort: 12,
+      },
+      {
         name: '文件管理',
         path: '/system/file',
         component: 'views/system/file/index',
         icon: 'ri:folder-image-line',
         type: 'menu',
         permissionCode: 'system:file:list',
-        sort: 12,
+        sort: 13,
       },
     ],
   },

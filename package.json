@@ -6,6 +6,13 @@
     "build": "pnpm -r build",
     "build:shared-types": "pnpm --filter @nova/shared-types build",
     "test": "pnpm --filter @nova/shared-types test && pnpm --filter @nova/server test && pnpm --filter @nova/server test:e2e",
+    "verify": "node scripts/verify.mjs",
+    "verify:hub": "pnpm --filter @nova/verify-hub dev",
+    "verify:test": "node --test scripts/verify-contract.test.mjs && pnpm --filter @nova/verify-hub test",
+    "verify:tier:static": "pnpm run verify:test && pnpm --filter @nova/verify-hub typecheck && pnpm --filter @nova/shared-types test && pnpm run build:shared-types",
+    "verify:tier:api-e2e": "pnpm --filter @nova/server exec jest --config ./test/jest-e2e.json --runInBand --json --outputFile=../.verify/jest-e2e-report.json",
+    "verify:tier:browser-smoke": "pnpm exec playwright test -c e2e/playwright.config.ts",
+    "verify:scan-pages": "node scripts/verify-page-scan.mjs",
     "postinstall": "pnpm run build:shared-types",
     "predev": "pnpm run build:shared-types && rm -f server/*.tsbuildinfo && pnpm --filter @nova/server build",
     "predev:all": "pnpm run predev",
@@ -17,12 +24,14 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
+    "@playwright/test": "^1.51.0",
     "concurrently": "^9.1.2",
     "eslint": "^9.17.0",
     "globals": "^15.14.0",
     "prettier": "^3.4.2",
     "typescript": "^5.7.2",
-    "typescript-eslint": "^8.9.0"
+    "typescript-eslint": "^8.9.0",
+    "yaml": "^2.7.0"
   },
   "engines": {
     "node": ">=20"

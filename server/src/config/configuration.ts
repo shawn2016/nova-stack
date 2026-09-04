@@ -39,3 +39,14 @@ export const uploadConfig = registerAs('upload', () => ({
   uploadMaxSize: parseInt(process.env.UPLOAD_MAX_SIZE ?? '5242880', 10),
   uploadsDir: process.env.UPLOADS_DIR ?? `${process.cwd()}/uploads`,
 }));
+
+export const ipBlacklistConfig = registerAs('ipBlacklist', () => ({
+  windowSec: parseInt(process.env.IP_BLACKLIST_WINDOW_SEC ?? '300', 10),
+  failThreshold: parseInt(process.env.IP_BLACKLIST_FAIL_THRESHOLD ?? '10', 10),
+  banSec: parseInt(process.env.IP_BLACKLIST_BAN_SEC ?? '1800', 10),
+  whitelist: (process.env.IP_BLACKLIST_WHITELIST ?? '127.0.0.1,::1')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean),
+  trustProxy: process.env.TRUST_PROXY === 'true',
+}));

@@ -3,3 +3,4 @@ packages:
   - 'uni-app'
   - 'server'
   - 'packages/*'
+  - 'tools/*'

@@ -10,6 +10,23 @@ dist/
 .env.local
 .env.*.local
 
+# Test / verify runtime artifacts (screenshots, traces, reports)
+test-results/
+playwright-report/
+blob-report/
+.verify/reports/
+.verify/admin-auth.json
+.verify/playwright-report.json
+.verify/jest-e2e-report.json
+tools/verify-hub/data/
+
+# Local uploads (dev + e2e 上传产物)
+uploads/
+server/uploads/
+
+# macOS
+.DS_Store
+
 # >>> Comet managed project state >>>
 !/.comet/
 /.comet/*

@@ -159,6 +159,20 @@ export async function initE2eSchema(dataSource: DataSource): Promise<void> {
   `);
 
   await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS sys_ip_blacklist (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      ip VARCHAR(64) NOT NULL UNIQUE,
+      source VARCHAR(16) NOT NULL,
+      status TINYINT NOT NULL DEFAULT 1,
+      expires_at DATETIME,
+      remark VARCHAR(255),
+      created_by BIGINT,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await dataSource.query(`
     CREATE TABLE IF NOT EXISTS sys_oper_log (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id BIGINT NOT NULL,

@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -27,6 +28,7 @@ import {
 } from '../../database/entities';
 import { RedisService } from '../../redis/redis.service';
 import { LoginLogService } from '../audit/login-log.service';
+import { IpBlacklistService } from '../ip-blacklist/ip-blacklist.service';
 import { OnlineSessionService } from '../online-session/online-session.service';
 import { LoginDto } from './dto/login.dto';
 
@@ -54,6 +56,7 @@ export class AuthService {
     private readonly redisService: RedisService,
     private readonly configService: ConfigService,
     private readonly loginLogService: LoginLogService,
+    private readonly ipBlacklistService: IpBlacklistService,
     private readonly onlineSessionService: OnlineSessionService,
   ) {}
 
@@ -62,11 +65,18 @@ export class AuthService {
     context: LoginContext = { ip: '' },
   ): Promise<AdminLoginResponse> {
     const { ip, userAgent } = context;
+
+    const blocked = await this.ipBlacklistService.isBlocked(ip);
+    if (blocked.blocked) {
+      throw new ForbiddenException('Access denied');
+    }
+
     const user = await this.userRepo.findOne({
       where: { username: dto.username },
     });
 
     if (!user || user.status !== 1) {
+      await this.ipBlacklistService.recordLoginFailure(ip);
       await this.loginLogService.recordLoginAttempt({
         username: dto.username,
         ip,
@@ -79,6 +89,7 @@ export class AuthService {
 
     const passwordValid = await bcrypt.compare(dto.password, user.passwordHash);
     if (!passwordValid) {
+      await this.ipBlacklistService.recordLoginFailure(ip);
       await this.loginLogService.recordLoginAttempt({
         username: dto.username,
         userId: user.id,

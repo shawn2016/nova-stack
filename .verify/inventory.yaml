@@ -1,0 +1,121 @@
+# 项目模块与测试覆盖清单（累计缺口分析用）
+# expectedLayers: api-e2e | browser-e2e
+modules:
+  - id: scaffold
+    name: 脚手架 / 健康检查
+    apiSuites: [app]
+    expectedLayers: [api-e2e]
+
+  - id: auth
+    name: 认证
+    apiSuites: [auth, member-auth]
+    browserTags: ['@module:auth']
+    adminPages:
+      - { path: /auth/login, name: 登录页 }
+    expectedLayers: [api-e2e, browser-e2e]
+
+  - id: rbac
+    name: RBAC（用户/角色/菜单）
+    apiSuites: [rbac]
+    adminPages:
+      - { path: /system/user, name: 用户管理 }
+      - { path: /system/role, name: 角色管理 }
+      - { path: /system/menu, name: 菜单管理 }
+    expectedLayers: [api-e2e, browser-e2e]
+
+  - id: article
+    name: 文章
+    apiSuites: [article]
+    adminPages:
+      - { path: /content/articles, name: 文章管理 }
+    expectedLayers: [api-e2e, browser-e2e]
+
+  - id: audit
+    name: 审计日志
+    apiSuites: [audit]
+    adminPages:
+      - { path: /system/audit-logs, name: 审计日志 }
+    expectedLayers: [api-e2e, browser-e2e]
+
+  - id: dept
+    name: 部门
+    apiSuites: [dept]
+    adminPages:
+      - { path: /system/dept, name: 部门管理 }
+    expectedLayers: [api-e2e, browser-e2e]
+
+  - id: dict
+    name: 字典
+    apiSuites: [dict]
+    adminPages:
+      - { path: /system/dict, name: 字典管理 }
+    expectedLayers: [api-e2e, browser-e2e]
+
+  - id: region
+    name: 地区
+    apiSuites: [region]
+    adminPages:
+      - { path: /system/region, name: 地区管理 }
+    expectedLayers: [api-e2e, browser-e2e]
+
+  - id: notice
+    name: 通知公告 / 消息
+    apiSuites: [notice]
+    adminPages:
+      - { path: /system/notice, name: 通知公告 }
+      - { path: /system/message, name: 消息中心 }
+    expectedLayers: [api-e2e, browser-e2e]
+
+  - id: online-session
+    name: 在线用户
+    apiSuites: [online-session]
+    adminPages:
+      - { path: /system/online-session, name: 在线用户 }
+    expectedLayers: [api-e2e, browser-e2e]
+
+  - id: ip-blacklist
+    name: IP 黑名单
+    apiSuites: [ip-blacklist]
+    adminPages:
+      - { path: /system/ip-blacklist, name: IP 黑名单 }
+    expectedLayers: [api-e2e, browser-e2e]
+
+  - id: data-scope
+    name: 数据权限
+    apiSuites: [data-scope]
+    expectedLayers: [api-e2e]
+
+  - id: upload
+    name: 文件管理
+    apiSuites: [upload]
+    adminPages:
+      - { path: /system/file, name: 文件管理 }
+    expectedLayers: [api-e2e, browser-e2e]
+
+  - id: site-config
+    name: 站点配置
+    apiSuites: [site-config]
+    adminPages:
+      - { path: /system/site-config, name: 站点配置 }
+    expectedLayers: [api-e2e, browser-e2e]
+
+  - id: job
+    name: 定时任务
+    apiSuites: [job]
+    adminPages:
+      - { path: /infra/job, name: 定时任务 }
+    expectedLayers: [api-e2e, browser-e2e]
+
+  - id: sms
+    name: 短信
+    apiSuites: [sms]
+    adminPages:
+      - { path: /infra/sms, name: 短信管理 }
+    expectedLayers: [api-e2e, browser-e2e]
+
+  - id: email
+    name: 邮件
+    apiSuites: [email]
+    adminPages:
+      - { path: /infra/email, name: 邮件管理 }
+    expectedLayers: [api-e2e, browser-e2e]
