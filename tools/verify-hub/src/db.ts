@@ -97,6 +97,82 @@ export function getRun(id: string): RunRow | undefined {
   return getDb().prepare('SELECT * FROM runs WHERE id = ?').get(id) as RunRow | undefined;
 }
 
+/** 删除单次运行 */
+export function deleteRun(id: string): boolean {
+  const result = getDb().prepare('DELETE FROM runs WHERE id = ?').run(id);
+  return result.changes > 0;
+}
+
+/** 删除全部运行记录 */
+export function deleteAllRuns(): number {
+  const result = getDb().prepare('DELETE FROM runs').run();
+  return result.changes;
+}
+
+/** 仅保留最近 N 条 */
+export function keepLatestRuns(keep = 10): number {
+  const database = getDb();
+  const rows = database
+    .prepare('SELECT id FROM runs ORDER BY started_at DESC LIMIT -1 OFFSET ?')
+    .all(keep) as Array<{ id: string }>;
+  if (!rows.length) return 0;
+  const placeholders = rows.map(() => '?').join(',');
+  const result = database.prepare(`DELETE FROM runs WHERE id IN (${placeholders})`).run(...rows.map((r) => r.id));
+  return result.changes;
+}
+
+/** 累计覆盖矩阵：合并最近 N 次 run 的模块状态 */
+export function getCumulativeMatrix(limit = 50) {
+  const rows = listRuns(limit);
+  const moduleMap = new Map<
+    string,
+    {
+      id: string;
+      name: string;
+      everPassed: boolean;
+      everFailed: boolean;
+      lastStatus: string;
+      runCount: number;
+      hasApiSuiteOnDisk?: boolean;
+      hasBrowserSpecOnDisk?: boolean;
+      missingLayers?: string[];
+    }
+  >();
+
+  for (const row of [...rows].reverse()) {
+    const report = JSON.parse(row.report_json) as {
+      coverage?: {
+        modules?: { items?: Array<Record<string, unknown>> };
+        gaps?: Record<string, unknown>;
+      };
+    };
+    for (const mod of report.coverage?.modules?.items ?? []) {
+      const id = mod.id as string;
+      const prev = moduleMap.get(id) ?? {
+        id,
+        name: mod.name as string,
+        everPassed: false,
+        everFailed: false,
+        lastStatus: 'not-run',
+        runCount: 0,
+      };
+      prev.runCount += 1;
+      prev.lastStatus = mod.status as string;
+      if (mod.status === 'pass') prev.everPassed = true;
+      if (mod.status === 'fail') prev.everFailed = true;
+      prev.hasApiSuiteOnDisk = mod.hasApiSuiteOnDisk as boolean;
+      prev.hasBrowserSpecOnDisk = mod.hasBrowserSpecOnDisk as boolean;
+      prev.missingLayers = mod.missingLayers as string[];
+      moduleMap.set(id, prev);
+    }
+  }
+
+  return {
+    runSampleSize: rows.length,
+    modules: [...moduleMap.values()],
+  };
+}
+
 /** 汇总统计 */
 export function getStats() {
   const database = getDb();

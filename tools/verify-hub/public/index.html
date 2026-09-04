@@ -16,6 +16,7 @@
         --fail: #ff6b6b;
         --skip: #f0b429;
         --accent: #5b9cff;
+        --warn: #f0b429;
       }
       * { box-sizing: border-box; }
       body {
@@ -26,7 +27,7 @@
         line-height: 1.5;
       }
       header {
-        padding: 20px 24px;
+        padding: 16px 24px;
         border-bottom: 1px solid var(--border);
         display: flex;
         justify-content: space-between;
@@ -35,6 +36,8 @@
         flex-wrap: wrap;
       }
       h1 { margin: 0; font-size: 20px; }
+      h2 { font-size: 18px; }
+      h3 { font-size: 15px; margin: 20px 0 10px; }
       .stats {
         display: flex;
         gap: 16px;
@@ -43,51 +46,89 @@
         font-size: 13px;
       }
       .stats strong { color: var(--text); }
-      main { display: grid; grid-template-columns: 360px 1fr; min-height: calc(100vh - 73px); }
-      @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+      .toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
+      main { display: grid; grid-template-columns: 380px 1fr; min-height: calc(100vh - 73px); }
+      @media (max-width: 960px) { main { grid-template-columns: 1fr; } }
       .panel { border-right: 1px solid var(--border); overflow: auto; }
       .panel:last-child { border-right: none; }
-      .panel-head { padding: 16px 20px; border-bottom: 1px solid var(--border); font-weight: 600; }
-      .run-item {
+      .panel-head {
         padding: 14px 20px;
         border-bottom: 1px solid var(--border);
+        font-weight: 600;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+      }
+      .run-item {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border);
         cursor: pointer;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+        align-items: start;
       }
       .run-item:hover, .run-item.active { background: rgba(91, 156, 255, 0.08); }
+      .run-actions { display: flex; gap: 4px; opacity: 0.6; }
+      .run-item:hover .run-actions { opacity: 1; }
       .badge {
         display: inline-block;
         padding: 2px 8px;
         border-radius: 999px;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 600;
       }
       .badge.pass { background: rgba(61, 214, 140, 0.15); color: var(--pass); }
       .badge.fail { background: rgba(255, 107, 107, 0.15); color: var(--fail); }
-      .detail { padding: 20px 24px; }
+      .badge.skip, .badge.partial, .badge.not-run { background: rgba(240, 180, 41, 0.12); color: var(--skip); }
+      .detail { padding: 20px 24px 40px; }
+      .detail-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+      }
       .tier {
         border: 1px solid var(--border);
         border-radius: 10px;
         padding: 12px 14px;
         margin-bottom: 10px;
         background: var(--card);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
       }
-      .case {
+      .case-row {
         border: 1px solid var(--border);
         border-radius: 10px;
-        padding: 12px 14px;
-        margin-bottom: 10px;
+        padding: 10px 12px;
+        margin-bottom: 8px;
         background: rgba(255, 255, 255, 0.02);
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+        align-items: center;
       }
-      button {
+      .case-row.fail { border-color: rgba(255, 107, 107, 0.35); }
+      .case-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+      button, .btn {
         background: var(--accent);
         color: #fff;
         border: none;
         border-radius: 8px;
-        padding: 8px 12px;
+        padding: 6px 10px;
         cursor: pointer;
-        font-size: 13px;
+        font-size: 12px;
+        line-height: 1.2;
       }
-      button.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
+      button.secondary, .btn.secondary { background: transparent; border: 1px solid var(--border); color: var(--text); }
+      button.danger, .btn.danger { background: rgba(255, 107, 107, 0.2); color: var(--fail); border: 1px solid rgba(255, 107, 107, 0.35); }
+      button.ghost, .btn.ghost { background: transparent; border: none; color: var(--muted); padding: 4px 6px; }
+      button.ghost:hover { color: var(--text); }
       pre {
         background: #0b1017;
         border: 1px solid var(--border);
@@ -96,13 +137,14 @@
         overflow: auto;
         font-size: 12px;
         white-space: pre-wrap;
+        max-height: 320px;
       }
       .empty { padding: 40px 24px; color: var(--muted); }
       .coverage-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
         gap: 10px;
-        margin-bottom: 20px;
+        margin-bottom: 16px;
       }
       .coverage-card {
         border: 1px solid var(--border);
@@ -112,38 +154,162 @@
       }
       .coverage-card .label { color: var(--muted); font-size: 12px; }
       .coverage-card .value { font-size: 22px; font-weight: 700; margin-top: 4px; }
+      .coverage-card .sub { color: var(--muted); font-size: 11px; margin-top: 4px; }
       .table-wrap {
         border: 1px solid var(--border);
         border-radius: 10px;
-        overflow: hidden;
-        margin-bottom: 16px;
+        overflow: auto;
+        margin-bottom: 12px;
       }
       table { width: 100%; border-collapse: collapse; font-size: 13px; }
-      th, td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: left; }
-      th { background: rgba(255,255,255,0.03); color: var(--muted); font-weight: 600; }
+      th, td { padding: 9px 12px; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+      th { background: rgba(255,255,255,0.03); color: var(--muted); font-weight: 600; position: sticky; top: 0; }
       tr:last-child td { border-bottom: none; }
       .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
-      details { margin-bottom: 16px; }
-      details summary { cursor: pointer; color: var(--accent); margin-bottom: 8px; }
+      .section {
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        margin-bottom: 14px;
+        background: rgba(255,255,255,0.02);
+        overflow: hidden;
+      }
+      .section > summary {
+        cursor: pointer;
+        padding: 12px 16px;
+        font-weight: 600;
+        list-style: none;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+      }
+      .section > summary::-webkit-details-marker { display: none; }
+      .section > summary::after { content: '▸'; color: var(--muted); transition: transform 0.15s; }
+      .section[open] > summary::after { transform: rotate(90deg); }
+      .section-body { padding: 0 16px 16px; }
+      .gap-banner {
+        border: 1px dashed rgba(240, 180, 41, 0.4);
+        background: rgba(240, 180, 41, 0.06);
+        border-radius: 10px;
+        padding: 12px 14px;
+        margin-bottom: 14px;
+        font-size: 13px;
+      }
+      .tag {
+        display: inline-block;
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-size: 11px;
+        background: rgba(91, 156, 255, 0.12);
+        color: var(--accent);
+        margin-right: 4px;
+      }
+      .tag.missing { background: rgba(255, 107, 107, 0.12); color: var(--fail); }
+      .tag.ok { background: rgba(61, 214, 140, 0.12); color: var(--pass); }
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.55);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+        padding: 20px;
+      }
+      .modal-backdrop.open { display: flex; }
+      .modal {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        width: min(860px, 100%);
+        max-height: 90vh;
+        overflow: auto;
+        padding: 20px 24px;
+      }
+      .modal-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+      .toast {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        padding: 10px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        opacity: 0;
+        transition: opacity 0.2s;
+        z-index: 200;
+      }
+      .toast.show { opacity: 1; }
     </style>
   </head>
   <body>
     <header>
-      <h1>Verify Hub</h1>
-      <div class="stats" id="stats">加载统计中…</div>
+      <div>
+        <h1>Verify Hub</h1>
+        <div class="stats" id="stats">加载统计中…</div>
+      </div>
+      <div class="toolbar">
+        <button class="secondary" id="btn-refresh">刷新</button>
+        <button class="secondary" id="btn-keep-latest">清理旧报告（保留 10 条）</button>
+        <button class="danger" id="btn-delete-all">清空全部报告</button>
+      </div>
     </header>
     <main>
       <section class="panel">
-        <div class="panel-head">最近运行</div>
+        <div class="panel-head">
+          <span>最近运行</span>
+          <span style="color:var(--muted);font-size:12px;font-weight:400;" id="run-count"></span>
+        </div>
         <div id="run-list" class="empty">加载中…</div>
       </section>
       <section class="panel detail" id="detail">
         <div class="empty">选择左侧一次运行查看详情</div>
       </section>
     </main>
+
+    <div class="modal-backdrop" id="modal">
+      <div class="modal">
+        <div class="modal-head">
+          <div>
+            <h2 style="margin:0;font-size:16px;" id="modal-title">用例详情</h2>
+            <div style="color:var(--muted);font-size:12px;margin-top:4px;" id="modal-sub"></div>
+          </div>
+          <button class="ghost" id="modal-close">✕</button>
+        </div>
+        <div id="modal-body"></div>
+        <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;" id="modal-actions"></div>
+      </div>
+    </div>
+    <div class="toast" id="toast"></div>
+
     <script>
       const params = new URLSearchParams(location.search);
       let selectedId = params.get('run');
+      let hubConfig = { token: 'dev-local-token', allowRetest: true };
+      let currentRun = null;
+      let cumulativeMatrix = null;
+
+      function toast(msg) {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.classList.add('show');
+        setTimeout(() => el.classList.remove('show'), 2200);
+      }
+
+      function authHeaders(extra = {}) {
+        return { 'x-verify-token': hubConfig.token, ...extra };
+      }
+
+      async function copyText(text) {
+        await navigator.clipboard.writeText(text);
+        toast('已复制到剪贴板');
+      }
+
+      async function loadConfig() {
+        const res = await fetch('/api/config');
+        hubConfig = await res.json();
+      }
 
       async function loadStats() {
         const res = await fetch('/api/stats');
@@ -155,10 +321,76 @@
         `;
       }
 
+      async function loadCumulative() {
+        const res = await fetch('/api/coverage/cumulative?limit=50');
+        cumulativeMatrix = await res.json();
+      }
+
+      async function deleteRun(id, ev) {
+        ev?.stopPropagation();
+        if (!confirm('确定删除这条报告？')) return;
+        await fetch(`/api/runs/${id}`, { method: 'DELETE', headers: authHeaders() });
+        if (selectedId === id) {
+          selectedId = null;
+          history.replaceState({}, '', location.pathname);
+          document.getElementById('detail').innerHTML = '<div class="empty">选择左侧一次运行查看详情</div>';
+        }
+        toast('已删除');
+        loadRuns();
+        loadStats();
+      }
+
+      async function cleanupRuns(mode) {
+        const msg = mode === 'all' ? '确定清空全部报告？' : '保留最近 10 条，删除其余报告？';
+        if (!confirm(msg)) return;
+        const body = mode === 'all' ? { all: true } : { keepLatest: 10 };
+        const res = await fetch('/api/runs', {
+          method: 'DELETE',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        toast(`已删除 ${data.deleted} 条`);
+        selectedId = null;
+        history.replaceState({}, '', location.pathname);
+        document.getElementById('detail').innerHTML = '<div class="empty">选择左侧一次运行查看详情</div>';
+        loadRuns();
+        loadStats();
+        loadCumulative();
+      }
+
+      async function retest({ tier, command }) {
+        const res = await fetch('/api/retest', {
+          method: 'POST',
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
+          body: JSON.stringify({ tier, command }),
+        });
+        const data = await res.json();
+        if (data.started) {
+          toast(`已后台启动：${data.command}`);
+        } else {
+          await copyText(data.command);
+          toast(data.hint ?? '命令已复制');
+        }
+      }
+
+      function openModal(title, sub, bodyHtml, actionsHtml) {
+        document.getElementById('modal-title').textContent = title;
+        document.getElementById('modal-sub').textContent = sub;
+        document.getElementById('modal-body').innerHTML = bodyHtml;
+        document.getElementById('modal-actions').innerHTML = actionsHtml;
+        document.getElementById('modal').classList.add('open');
+      }
+
+      function closeModal() {
+        document.getElementById('modal').classList.remove('open');
+      }
+
       async function loadRuns() {
         const res = await fetch('/api/runs?limit=30');
         const data = await res.json();
         const list = document.getElementById('run-list');
+        document.getElementById('run-count').textContent = `${data.items?.length ?? 0} 条`;
         if (!data.items?.length) {
           list.className = 'empty';
           list.textContent = '暂无运行记录。请先执行 pnpm verify';
@@ -169,18 +401,38 @@
           .map(
             (run) => `
           <div class="run-item ${run.id === selectedId ? 'active' : ''}" data-id="${run.id}">
-            <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;">
-              <span class="badge ${run.status}">${run.status === 'pass' ? '通过' : '失败'}</span>
-              <span style="color:var(--muted);font-size:12px;">${(run.durationMs / 1000).toFixed(1)}s</span>
+            <div>
+              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                <span class="badge ${run.status}">${run.status === 'pass' ? '通过' : '失败'}</span>
+                ${run.failedCases ? `<span class="badge fail">${run.failedCases} 失败</span>` : ''}
+                <span style="color:var(--muted);font-size:12px;">${(run.durationMs / 1000).toFixed(1)}s</span>
+              </div>
+              <div style="margin-top:6px;font-size:13px;">${run.project}</div>
+              <div style="color:var(--muted);font-size:12px;">${run.startedAt}</div>
+              <div style="font-size:12px;margin-top:4px;">
+                模块 ${run.modulesTested ?? 0}/${run.modulesTotal ?? 0}
+                · ${run.summary.passed}/${run.summary.total} 通过
+                ${run.gapCount ? ` · <span style="color:var(--warn)">${run.gapCount} 缺 browser</span>` : ''}
+              </div>
             </div>
-            <div style="margin-top:6px;font-size:13px;">${run.project}</div>
-            <div style="color:var(--muted);font-size:12px;">${run.startedAt}</div>
-            <div style="font-size:12px;margin-top:4px;">${run.summary.passed}/${run.summary.total} 通过</div>
+            <div class="run-actions">
+              <button class="ghost" data-action="view" title="查看">👁</button>
+              <button class="ghost" data-action="delete" title="删除">🗑</button>
+            </div>
           </div>`,
           )
           .join('');
+
         list.querySelectorAll('.run-item').forEach((el) => {
           el.addEventListener('click', () => {
+            selectedId = el.dataset.id;
+            history.replaceState({}, '', `?run=${selectedId}`);
+            loadRuns();
+            loadDetail(selectedId);
+          });
+          el.querySelector('[data-action="delete"]')?.addEventListener('click', (ev) => deleteRun(el.dataset.id, ev));
+          el.querySelector('[data-action="view"]')?.addEventListener('click', (ev) => {
+            ev.stopPropagation();
             selectedId = el.dataset.id;
             history.replaceState({}, '', `?run=${selectedId}`);
             loadRuns();
@@ -190,21 +442,223 @@
         if (selectedId) loadDetail(selectedId);
       }
 
-      async function copyText(text) {
-        await navigator.clipboard.writeText(text);
-        alert('已复制到剪贴板');
+      function buildBrowserGapMarkdown(run, gaps) {
+        const missingBrowser = gaps?.modulesMissingBrowserSpec ?? [];
+        const admin = gaps?.adminPages ?? {};
+        if (!missingBrowser.length) {
+          return '# Browser E2E 缺口\n\n当前无缺口，所有期望模块均已有 browser spec。';
+        }
+
+        const moduleList = missingBrowser
+          .map((m, i) => {
+            const pages = (m.adminPages ?? [])
+              .map((p) => `  - ${p.name ?? p.path}（\`${p.path}\`）`)
+              .join('\n');
+            return `${i + 1}. **${m.name}**（\`@module:${m.id}\`）
+${pages || '  - （无 adminPages 声明，见 inventory）'}`;
+          })
+          .join('\n\n');
+
+        return `# Browser E2E 缺口补全任务
+
+## 背景
+- 项目：${run.project ?? 'nova-stack'}
+- Run ID：\`${run.runId}\`
+- Git：${run.git?.branch ?? '?'} @ \`${(run.git?.commit ?? '').slice(0, 8)}\`
+- Admin 页面共 ${admin.total ?? '?'} 个，仍缺 browser 场景 **${admin.untested ?? missingBrowser.length}** 个
+- 已有 browser spec 模块：${(gaps.browserModulesOnDisk ?? []).map((id) => `\`${id}\``).join(', ') || '无'}
+
+## 缺 Browser E2E 的模块（${missingBrowser.length}）
+
+${moduleList}
+
+## 实现要求
+1. 在 \`e2e/specs/\` 下为上述模块编写 Playwright spec，文件内声明 \`@module:<模块id>\` 标签
+2. 登录复用 \`e2e/helpers/admin-login.ts\`；参考标杆 \`e2e/specs/smoke/login.spec.ts\`
+3. 每个 Admin 页面至少覆盖：**进入页 → 列表/主内容加载 → 一个关键交互或只读断言**
+4. 模块清单与期望页面见 \`.verify/inventory.yaml\`
+5. 完成后执行 \`pnpm verify --tier browser-smoke\`，Hub 缺口应减少
+
+## 项目规范
+请先阅读 \`AGENTS.md\` 与 \`docs/standards/ai-checklist.md\`，保持最小 diff，匹配现有 e2e 风格。
+`;
+      }
+
+      function renderGaps(gaps, mod) {
+        if (!gaps) return '';
+        const missingBrowser = gaps.modulesMissingBrowserSpec ?? [];
+        const missingLayers = gaps.modulesMissingLayersThisRun ?? [];
+        const admin = gaps.adminPages ?? {};
+
+        const browserRows = missingBrowser
+          .map(
+            (m) => `
+          <tr>
+            <td>${m.name}</td>
+            <td class="mono">${m.id}</td>
+            <td>${(m.adminPages ?? []).map((p) => `<span class="tag missing">${p.name ?? p.path}</span>`).join('') || '-'}</td>
+          </tr>`,
+          )
+          .join('');
+
+        const layerRows = missingLayers
+          .map(
+            (m) => `
+          <tr>
+            <td>${m.name}</td>
+            <td>${(m.missingLayers ?? []).map((l) => `<span class="tag missing">${l}</span>`).join('')}</td>
+          </tr>`,
+          )
+          .join('');
+
+        return `
+          <details class="section" open>
+            <summary>
+              <span>累计缺口（期望 vs 实际）</span>
+              <span style="color:var(--muted);font-size:12px;font-weight:400;">
+                参考 ReportPortal：inventory 定义期望，run 记录实际
+              </span>
+            </summary>
+            <div class="section-body">
+              <div class="gap-banner">
+                磁盘上已有 API 套件 <strong>${gaps.apiSuitesOnDisk?.length ?? 0}</strong> 个 ·
+                Browser spec 模块 <strong>${gaps.browserModulesOnDisk?.length ?? 0}</strong> 个 ·
+                Admin 页面共 <strong>${admin.total ?? 0}</strong> 个，
+                已有 browser 场景 <strong>${admin.withBrowserSpec ?? 0}</strong>，
+                仍缺 <strong style="color:var(--warn)">${admin.untested ?? 0}</strong> 个
+              </div>
+              <p style="color:var(--muted);font-size:12px;margin:0 0 10px;">
+                本次：模块覆盖 ${mod.tested ?? 0}/${mod.total ?? 0} ·
+                有 API e2e 目录 ${mod.withApiE2eOnDisk ?? 0} ·
+                有 browser spec ${mod.withBrowserSpecOnDisk ?? 0}
+              </p>
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin:12px 0 8px;flex-wrap:wrap;">
+                <h4 style="margin:0;font-size:13px;">缺 Browser E2E 的模块（${missingBrowser.length}）</h4>
+                ${missingBrowser.length ? `<button class="secondary" type="button" id="btn-copy-browser-gaps">一键复制（发给 AI）</button>` : ''}
+              </div>
+              <p style="color:var(--muted);font-size:11px;margin:0 0 8px;">仓库里尚未编写 \`e2e/specs\` + \`@module:xxx\`（资产缺口，与本次是否跑 tier 无关）</p>
+              <div class="table-wrap" style="max-height:220px;">
+                <table>
+                  <thead><tr><th>模块</th><th>ID</th><th>Admin 页面</th></tr></thead>
+                  <tbody>${browserRows || '<tr><td colspan="3">暂无缺口 🎉</td></tr>'}</tbody>
+                </table>
+              </div>
+              <h4 style="margin:12px 0 8px;font-size:13px;">本次 Tier 未覆盖（${missingLayers.length}）</h4>
+              <p style="color:var(--muted);font-size:11px;margin:0 0 8px;">磁盘已有测试资产，但本 run 跳过了对应 tier（如 \`VERIFY_SKIP_BROWSER=1\` 或 \`--tier api-e2e\`）</p>
+              <div class="table-wrap" style="max-height:180px;">
+                <table>
+                  <thead><tr><th>模块</th><th>未执行层</th></tr></thead>
+                  <tbody>${layerRows || '<tr><td colspan="2">本 run 已执行全部已声明 tier ✓</td></tr>'}</tbody>
+                </table>
+              </div>
+            </div>
+          </details>`;
+      }
+
+      function renderCumulative() {
+        if (!cumulativeMatrix?.modules?.length) return '';
+        const rows = cumulativeMatrix.modules
+          .map((m) => {
+            const api = m.hasApiSuiteOnDisk ? '<span class="tag ok">API</span>' : '<span class="tag missing">无 API</span>';
+            const browser = m.hasBrowserSpecOnDisk
+              ? '<span class="tag ok">Browser</span>'
+              : '<span class="tag missing">无 Browser</span>';
+            const hist = m.everPassed
+              ? m.everFailed
+                ? '<span class="tag">曾失败</span>'
+                : '<span class="tag ok">曾全过</span>'
+              : m.everFailed
+                ? '<span class="tag missing">仅失败</span>'
+                : '<span class="tag">未跑过</span>';
+            return `
+            <tr>
+              <td>${m.name}</td>
+              <td>${api} ${browser}</td>
+              <td>${hist}</td>
+              <td><span class="badge ${m.lastStatus === 'pass' ? 'pass' : m.lastStatus === 'fail' ? 'fail' : 'skip'}">${m.lastStatus}</span></td>
+              <td>${m.runCount}</td>
+            </tr>`;
+          })
+          .join('');
+
+        return `
+          <details class="section">
+            <summary>
+              <span>历史累计矩阵（近 ${cumulativeMatrix.runSampleSize} 次 run）</span>
+              <span style="color:var(--muted);font-size:12px;font-weight:400;">跨 run 聚合，体现「越测越全」</span>
+            </summary>
+            <div class="section-body">
+              <div class="table-wrap" style="max-height:280px;">
+                <table>
+                  <thead><tr><th>模块</th><th>磁盘资产</th><th>历史</th><th>最近</th><th>出现次数</th></tr></thead>
+                  <tbody>${rows}</tbody>
+                </table>
+              </div>
+            </div>
+          </details>`;
+      }
+
+      function bindCaseActions(run, bundles) {
+        document.querySelectorAll('[data-case-view]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const caseId = btn.dataset.caseView;
+            const c = (run.cases ?? []).find((x) => x.id === caseId);
+            const bundle = bundles.find((b) => b.caseId === caseId);
+            if (!c) return;
+            openModal(
+              c.title ?? c.id,
+              `${c.tierId} · ${c.module ?? '-'} · ${c.durationMs ?? 0}ms`,
+              `
+                <div style="margin-bottom:10px;"><span class="badge ${c.status}">${c.status}</span></div>
+                ${c.error?.message ? `<pre>${escapeHtml(c.error.message)}</pre>` : '<p style="color:var(--muted)">无错误信息</p>'}
+                ${c.error?.stack ? `<details><summary style="cursor:pointer;color:var(--accent);margin:8px 0;">Stack</summary><pre>${escapeHtml(c.error.stack)}</pre></details>` : ''}
+              `,
+              `
+                ${c.status === 'fail' && bundle ? `<button data-modal-copy>复制 AI 上下文</button>` : ''}
+                <button class="secondary" data-modal-retest>复测 ${c.tierId ?? 'tier'}</button>
+                <button class="secondary" id="modal-close-btn">关闭</button>
+              `,
+            );
+            document.querySelector('[data-modal-copy]')?.addEventListener('click', () => copyText(bundle.markdown));
+            document.querySelector('[data-modal-retest]')?.addEventListener('click', () =>
+              retest({ tier: c.tierId, command: c.retestCommand }),
+            );
+            document.getElementById('modal-close-btn')?.addEventListener('click', closeModal);
+          });
+        });
+
+        document.querySelectorAll('[data-case-copy]').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const bundle = bundles.find((b) => b.caseId === btn.dataset.caseCopy);
+            copyText(bundle?.markdown ?? btn.dataset.cmd ?? '');
+          });
+        });
+
+        document.querySelectorAll('[data-case-retest]').forEach((btn) => {
+          btn.addEventListener('click', () => retest({ tier: btn.dataset.tier, command: btn.dataset.cmd }));
+        });
+      }
+
+      function escapeHtml(s) {
+        return String(s)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
       }
 
       async function loadDetail(id) {
         const res = await fetch(`/api/runs/${id}`);
         if (!res.ok) return;
         const run = await res.json();
+        currentRun = run;
         const bundles = run.aiFixBundles ?? [];
         const cov = run.coverage ?? {};
         const mod = cov.modules ?? {};
         const apis = cov.apis ?? {};
         const tc = cov.testCases ?? {};
+        const gaps = cov.gaps ?? {};
         const detail = document.getElementById('detail');
+        const failedTiers = [...new Set((run.cases ?? []).filter((c) => c.status === 'fail').map((c) => c.tierId))];
 
         const moduleRows = (mod.items ?? [])
           .map(
@@ -213,7 +667,9 @@
             <td>${m.name}</td>
             <td><span class="badge ${m.status === 'pass' ? 'pass' : m.status === 'fail' ? 'fail' : 'skip'}">${m.status}</span></td>
             <td>${m.testCount}</td>
+            <td>${m.hasApiSuiteOnDisk ? '<span class="tag ok">API✓</span>' : ''}${m.hasBrowserSpecOnDisk ? '<span class="tag ok">Browser✓</span>' : '<span class="tag missing">Browser✗</span>'}</td>
             <td>${(m.layers ?? []).join(', ') || '-'}</td>
+            <td>${(m.missingLayers ?? []).map((l) => `<span class="tag missing">${l}</span>`).join('') || '-'}</td>
           </tr>`,
           )
           .join('');
@@ -224,7 +680,7 @@
           .join('');
 
         const apiEndpointRows = (apis.items ?? [])
-          .slice(0, 80)
+          .slice(0, 120)
           .map(
             (api) => `
           <tr>
@@ -243,116 +699,175 @@
         }
 
         detail.innerHTML = `
-          <h2 style="margin:0 0 8px;">Run ${run.runId}</h2>
-          <p style="color:var(--muted);margin:0 0 16px;">
-            ${run.git?.branch ?? ''} @ ${(run.git?.commit ?? '').slice(0, 8)} · ${run.startedAt}
-          </p>
+          <div class="detail-head">
+            <div>
+              <h2 style="margin:0 0 6px;font-size:18px;">Run ${run.runId.slice(0, 8)}…</h2>
+              <p style="color:var(--muted);margin:0;font-size:13px;">
+                ${run.git?.branch ?? ''} @ ${(run.git?.commit ?? '').slice(0, 8)} · ${run.startedAt}
+              </p>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              ${failedTiers.map((t) => `<button class="secondary" data-retest-tier="${t}">复测 ${t}</button>`).join('')}
+              <button class="secondary" data-retest-all>复测全部</button>
+              ${bundles.length ? `<button data-copy-all-fail>复制全部失败上下文</button>` : ''}
+              <button class="danger" data-delete-run>删除此报告</button>
+            </div>
+          </div>
 
-          <h3>覆盖概览</h3>
           <div class="coverage-grid">
             <div class="coverage-card">
               <div class="label">业务模块</div>
               <div class="value">${mod.tested ?? 0}/${mod.total ?? 0}</div>
+              <div class="sub">通过 ${mod.passed ?? 0} · 失败 ${mod.failed ?? 0}</div>
             </div>
             <div class="coverage-card">
               <div class="label">API 用例</div>
               <div class="value">${apis.testCases ?? 0}</div>
+              <div class="sub">目录 ${apis.totalInCatalog ?? 0} 接口</div>
             </div>
             <div class="coverage-card">
-              <div class="label">接口目录</div>
-              <div class="value">${apis.totalInCatalog ?? 0}</div>
+              <div class="label">Browser 缺口</div>
+              <div class="value" style="color:var(--warn)">${(gaps.modulesMissingBrowserSpec ?? []).length}</div>
+              <div class="sub">Admin 缺 ${gaps.adminPages?.untested ?? 0} 页</div>
             </div>
             <div class="coverage-card">
               <div class="label">总用例</div>
               <div class="value">${tc.total ?? run.summary?.total ?? 0}</div>
+              <div class="sub">失败 ${tc.failed ?? run.summary?.failed ?? 0}</div>
             </div>
           </div>
 
-          <h3>模块覆盖</h3>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>模块</th><th>状态</th><th>用例数</th><th>覆盖层</th></tr></thead>
-              <tbody>${moduleRows || '<tr><td colspan="4">暂无数据</td></tr>'}</tbody>
-            </table>
-          </div>
+          ${renderGaps(gaps, mod)}
+          ${renderCumulative()}
 
-          <h3>API 接口</h3>
-          <p style="color:var(--muted);font-size:13px;margin:0 0 8px;">
-            目录中共 ${apis.totalInCatalog ?? 0} 个唯一接口；本次 API E2E 执行 ${apis.testCases ?? 0} 条用例。
-          </p>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>API 套件</th><th>接口数</th></tr></thead>
-              <tbody>${apiModuleRows || '<tr><td colspan="2">暂无</td></tr>'}</tbody>
-            </table>
-          </div>
-          <details>
-            <summary>展开全部接口目录（${apis.totalInCatalog ?? 0}）</summary>
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th>方法</th><th>路径</th><th>模块</th></tr></thead>
-                <tbody>${apiEndpointRows}</tbody>
-              </table>
+          <details class="section">
+            <summary>
+              <span>模块覆盖（${mod.total ?? 0}）</span>
+              <span style="color:var(--muted);font-size:12px;font-weight:400;">点击展开</span>
+            </summary>
+            <div class="section-body">
+              <div class="table-wrap" style="max-height:320px;">
+                <table>
+                  <thead><tr><th>模块</th><th>状态</th><th>用例</th><th>资产</th><th>层</th><th>缺口</th></tr></thead>
+                  <tbody>${moduleRows || '<tr><td colspan="6">暂无</td></tr>'}</tbody>
+                </table>
+              </div>
             </div>
           </details>
 
-          <h3>Tier</h3>
-          ${(run.tiers ?? [])
-            .map(
-              (t) => `
-            <div class="tier">
-              <strong>${t.id}</strong>
-              <span class="badge ${t.status}">${t.status}</span>
-              <span style="color:var(--muted);font-size:12px;margin-left:8px;">${(t.durationMs / 1000).toFixed(1)}s</span>
-              <span style="color:var(--muted);font-size:12px;margin-left:8px;">${(caseGroups[t.id] ?? []).length} 用例</span>
-            </div>`,
-            )
-            .join('')}
+          <details class="section">
+            <summary>
+              <span>API 接口目录（${apis.totalInCatalog ?? 0}）</span>
+              <span style="color:var(--muted);font-size:12px;font-weight:400;">按模块聚合 + 全量列表</span>
+            </summary>
+            <div class="section-body">
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>API 套件</th><th>接口数</th></tr></thead>
+                  <tbody>${apiModuleRows || '<tr><td colspan="2">暂无</td></tr>'}</tbody>
+                </table>
+              </div>
+              <div class="table-wrap" style="max-height:280px;margin-top:10px;">
+                <table>
+                  <thead><tr><th>方法</th><th>路径</th><th>模块</th></tr></thead>
+                  <tbody>${apiEndpointRows}</tbody>
+                </table>
+              </div>
+            </div>
+          </details>
 
-          <h3>用例明细</h3>
-          ${Object.entries(caseGroups)
-            .map(
-              ([tierId, items]) => `
-            <details ${items.some((c) => c.status === 'fail') ? 'open' : ''}>
-              <summary>${tierId}（${items.length}）</summary>
-              ${items
-                .map((c, idx) => {
-                  const bundle = bundles.find((b) => b.caseId === c.id);
+          <details class="section" ${Object.values(caseGroups).some((items) => items.some((c) => c.status === 'fail')) ? 'open' : ''}>
+            <summary>
+              <span>Tier 与用例明细</span>
+              <span style="color:var(--muted);font-size:12px;font-weight:400;">失败 tier 默认展开</span>
+            </summary>
+            <div class="section-body">
+              ${(run.tiers ?? [])
+                .map(
+                  (t) => `
+                <div class="tier">
+                  <strong>${t.id}</strong>
+                  <span class="badge ${t.status}">${t.status}</span>
+                  <span style="color:var(--muted);font-size:12px;">${(t.durationMs / 1000).toFixed(1)}s</span>
+                  <span style="color:var(--muted);font-size:12px;">${(caseGroups[t.id] ?? []).length} 用例</span>
+                  <button class="secondary" style="margin-left:auto;" data-retest-tier="${t.id}">复测</button>
+                </div>`,
+                )
+                .join('')}
+
+              ${Object.entries(caseGroups)
+                .map(([tierId, items]) => {
+                  const fails = items.filter((c) => c.status === 'fail').length;
                   return `
-                <div class="case">
-                  <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;">
-                    <div>
-                      <span class="badge ${c.status}">${c.status}</span>
-                      <strong style="margin-left:8px;">${c.title ?? c.id}</strong>
-                    </div>
-                    ${
-                      c.status === 'fail' && bundle
-                        ? `<button data-case-id="${c.id}">复制 AI 修复上下文</button>`
-                        : ''
-                    }
+                <details class="section" ${fails ? 'open' : ''} style="margin-top:10px;">
+                  <summary>
+                    <span>${tierId}（${items.length}）${fails ? ` · ${fails} 失败` : ''}</span>
+                  </summary>
+                  <div class="section-body">
+                    ${items
+                      .map((c) => {
+                        const bundle = bundles.find((b) => b.caseId === c.id);
+                        return `
+                      <div class="case-row ${c.status}">
+                        <div>
+                          <span class="badge ${c.status}">${c.status}</span>
+                          <strong style="margin-left:6px;font-size:13px;">${c.title ?? c.id}</strong>
+                          <div style="color:var(--muted);font-size:11px;margin-top:4px;">${c.module ?? '-'} · ${c.durationMs ?? 0}ms</div>
+                          ${c.status === 'fail' && c.error?.message ? `<pre style="margin-top:8px;max-height:80px;">${escapeHtml(c.error.message.slice(0, 400))}${c.error.message.length > 400 ? '…' : ''}</pre>` : ''}
+                        </div>
+                        <div class="case-actions">
+                          <button class="secondary" data-case-view="${c.id}">查看</button>
+                          ${c.status === 'fail' && bundle ? `<button data-case-copy="${c.id}">复制</button>` : ''}
+                          <button class="secondary" data-case-retest data-tier="${c.tierId}" data-cmd="${c.retestCommand ?? 'pnpm verify'}">复测</button>
+                        </div>
+                      </div>`;
+                      })
+                      .join('')}
                   </div>
-                  <div style="color:var(--muted);font-size:12px;margin-top:6px;">module: ${c.module ?? '-'} · ${c.durationMs ?? 0}ms</div>
-                  ${c.error?.message ? `<pre>${c.error.message.slice(0, 1500)}</pre>` : ''}
-                </div>`;
+                </details>`;
                 })
                 .join('')}
-            </details>`,
-            )
-            .join('')}
+            </div>
+          </details>
         `;
 
-        detail.querySelectorAll('button[data-case-id]').forEach((btn) => {
-          btn.addEventListener('click', () => {
-            const bundle = bundles.find((b) => b.caseId === btn.dataset.caseId);
-            copyText(bundle?.markdown ?? '');
-          });
+        detail.querySelector('[data-delete-run]')?.addEventListener('click', () => deleteRun(id));
+        detail.querySelector('[data-retest-all]')?.addEventListener('click', () => retest({ command: 'pnpm verify' }));
+        detail.querySelectorAll('[data-retest-tier]').forEach((btn) => {
+          btn.addEventListener('click', () => retest({ tier: btn.dataset.retestTier }));
         });
+        detail.querySelector('[data-copy-all-fail]')?.addEventListener('click', () => {
+          copyText(bundles.map((b) => b.markdown).join('\n\n---\n\n'));
+        });
+        detail.querySelector('#btn-copy-browser-gaps')?.addEventListener('click', () => {
+          copyText(buildBrowserGapMarkdown(run, gaps));
+        });
+
+        bindCaseActions(run, bundles);
       }
 
-      loadStats();
-      loadRuns();
-      setInterval(loadStats, 15000);
-      setInterval(loadRuns, 15000);
+      document.getElementById('modal-close').addEventListener('click', closeModal);
+      document.getElementById('modal').addEventListener('click', (e) => {
+        if (e.target.id === 'modal') closeModal();
+      });
+      document.getElementById('btn-refresh').addEventListener('click', () => {
+        loadStats();
+        loadRuns();
+        loadCumulative();
+        if (selectedId) loadDetail(selectedId);
+        toast('已刷新');
+      });
+      document.getElementById('btn-keep-latest').addEventListener('click', () => cleanupRuns('keep'));
+      document.getElementById('btn-delete-all').addEventListener('click', () => cleanupRuns('all'));
+
+      (async () => {
+        await loadConfig();
+        await loadCumulative();
+        loadStats();
+        loadRuns();
+        setInterval(loadStats, 20000);
+        setInterval(loadRuns, 20000);
+      })();
     </script>
   </body>
 </html>

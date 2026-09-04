@@ -124,9 +124,43 @@ export function parsePlaywrightReport(reportPath) {
   return { cases, testCount: cases.length };
 }
 
-/** 根据 case 结果汇总模块与 API 覆盖 */
+/** 扫描 e2e 目录中已声明的 @module 标签 */
+export function scanBrowserModuleTags() {
+  const e2eRoot = join(rootDir, 'e2e', 'specs');
+  if (!existsSync(e2eRoot)) return [];
+  const tags = new Set();
+  function walk(dir) {
+    for (const entry of readdirSync(dir)) {
+      const full = join(dir, entry);
+      if (statSync(full).isDirectory()) {
+        walk(full);
+        continue;
+      }
+      if (!entry.endsWith('.spec.ts')) continue;
+      const content = readFileSync(full, 'utf8');
+      const re = /@module:(\w+)/g;
+      let match;
+      while ((match = re.exec(content)) !== null) tags.add(match[1]);
+    }
+  }
+  walk(e2eRoot);
+  return [...tags];
+}
+
+/** 扫描 server/test 下存在的 API 套件目录 */
+export function scanApiSuitesOnDisk() {
+  const testRoot = join(rootDir, 'server', 'test');
+  return readdirSync(testRoot).filter((name) => {
+    const full = join(testRoot, name);
+    return statSync(full).isDirectory();
+  });
+}
+
+/** 根据 case 结果汇总模块与 API 覆盖，并计算缺口（ReportPortal 式 期望 vs 实际） */
 export function buildCoverage(inventory, allCases, apiCatalog, executedTierIds) {
   const modules = inventory.modules ?? [];
+  const browserModulesOnDisk = scanBrowserModuleTags();
+  const apiSuitesOnDisk = scanApiSuitesOnDisk();
 
   const moduleItems = modules.map((mod) => {
     const relatedCases = allCases.filter((c) => {
@@ -146,11 +180,34 @@ export function buildCoverage(inventory, allCases, apiCatalog, executedTierIds) 
     let status = 'not-run';
     if (executed) status = failed ? 'fail' : passed ? 'pass' : 'partial';
 
+    const hasApiSuiteOnDisk = (mod.apiSuites ?? []).some((s) => apiSuitesOnDisk.includes(s));
+    const hasBrowserSpecOnDisk = browserModulesOnDisk.includes(mod.id);
+    const apiExecutedThisRun =
+      executedTierIds.includes('api-e2e') &&
+      relatedCases.some((c) => c.tierId === 'api-e2e' && c.status !== 'skip');
+    const browserExecutedThisRun =
+      executedTierIds.includes('browser-smoke') &&
+      relatedCases.some((c) => c.tierId === 'browser-smoke' && c.status !== 'skip');
+
+    const expectedLayers = mod.expectedLayers ?? ['api-e2e'];
+    const expectsBrowser = Boolean(mod.adminPages?.length || mod.browserTags?.length);
+    // 本次 run 未覆盖的层（与「磁盘缺 spec」分开：仅已有资产但未执行）
+    const missingLayers = expectedLayers.filter((layer) => {
+      if (layer === 'api-e2e') return hasApiSuiteOnDisk && !apiExecutedThisRun;
+      if (layer === 'browser-e2e') return expectsBrowser && hasBrowserSpecOnDisk && !browserExecutedThisRun;
+      return false;
+    });
+
     return {
       id: mod.id,
       name: mod.name,
       apiSuites: mod.apiSuites ?? [],
       browserTags: mod.browserTags ?? [],
+      adminPages: mod.adminPages ?? [],
+      expectedLayers,
+      missingLayers,
+      hasApiSuiteOnDisk,
+      hasBrowserSpecOnDisk,
       testCount: relatedCases.length,
       passed: relatedCases.filter((c) => c.status === 'pass').length,
       failed: relatedCases.filter((c) => c.status === 'fail').length,
@@ -163,12 +220,20 @@ export function buildCoverage(inventory, allCases, apiCatalog, executedTierIds) 
     (m) => m.layers.length > 0 && m.layers.some((l) => executedTierIds.includes(l)),
   );
 
+  const adminPagesTotal = moduleItems.reduce((n, m) => n + (m.adminPages?.length ?? 0), 0);
+  const adminPagesWithBrowserSpec = moduleItems.filter((m) => m.hasBrowserSpecOnDisk).reduce(
+    (n, m) => n + (m.adminPages?.length ?? 0),
+    0,
+  );
+
   return {
     modules: {
       total: modules.length,
       tested: testedModules.length,
       passed: testedModules.filter((m) => m.status === 'pass').length,
       failed: testedModules.filter((m) => m.status === 'fail').length,
+      withApiE2eOnDisk: moduleItems.filter((m) => m.hasApiSuiteOnDisk).length,
+      withBrowserSpecOnDisk: moduleItems.filter((m) => m.hasBrowserSpecOnDisk).length,
       items: moduleItems,
     },
     apis: {
@@ -194,6 +259,24 @@ export function buildCoverage(inventory, allCases, apiCatalog, executedTierIds) 
         acc[tierId] = allCases.filter((c) => c.tierId === tierId).length;
         return acc;
       }, {}),
+    },
+    gaps: {
+      modulesMissingApiSuite: moduleItems.filter((m) => (m.apiSuites?.length ?? 0) > 0 && !m.hasApiSuiteOnDisk).map((m) => ({ id: m.id, name: m.name })),
+      modulesMissingBrowserSpec: moduleItems.filter(
+        (m) => (m.adminPages?.length || m.browserTags?.length) && !m.hasBrowserSpecOnDisk,
+      ).map((m) => ({ id: m.id, name: m.name, adminPages: m.adminPages })),
+      modulesMissingLayersThisRun: moduleItems.filter((m) => m.missingLayers.length > 0).map((m) => ({
+        id: m.id,
+        name: m.name,
+        missingLayers: m.missingLayers,
+      })),
+      adminPages: {
+        total: adminPagesTotal,
+        withBrowserSpec: adminPagesWithBrowserSpec,
+        untested: adminPagesTotal - adminPagesWithBrowserSpec,
+      },
+      browserModulesOnDisk,
+      apiSuitesOnDisk,
     },
   };
 }
