@@ -2,6 +2,7 @@
 change: ip-blacklist
 design-doc: docs/superpowers/specs/2026-09-04-ip-blacklist-design.md
 base-ref: cff02908fc090a65eb885a01362fc3620ee209e3
+archived-with: 2026-09-05-ip-blacklist
 ---
 
 # ip-blacklist 实施计划

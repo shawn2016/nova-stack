@@ -2,6 +2,8 @@
 comet_change: ip-blacklist
 role: technical-design
 canonical_spec: openspec
+archived-with: 2026-09-05-ip-blacklist
+status: final
 ---
 
 # ip-blacklist 深度技术设计
