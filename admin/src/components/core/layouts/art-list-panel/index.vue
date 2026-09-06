@@ -2,8 +2,12 @@
 <template>
   <div class="art-list-panel art-full-height">
     <ElCard class="art-list-panel__card art-table-card">
-      <nav v-if="tabs.length" class="art-list-panel__tabs-bar" role="presentation">
-        <div class="art-list-panel__tabs" role="tablist">
+      <header
+        v-if="tabs.length"
+        class="art-list-panel__head art-list-panel__head--tabs"
+        :class="`is-size-${componentSize}`"
+      >
+        <nav class="art-list-panel__tabs" role="tablist">
           <button
             v-for="tab in tabs"
             :key="tab.name"
@@ -16,11 +20,11 @@
           >
             {{ tab.label }}
           </button>
-        </div>
+        </nav>
         <div v-if="$slots['head-actions']" class="art-list-panel__head-actions">
           <slot name="head-actions" />
         </div>
-      </nav>
+      </header>
 
       <header v-else-if="title" class="art-list-panel__head" :class="`is-size-${componentSize}`">
         <h2 class="art-list-panel__title">{{ title }}</h2>
@@ -166,15 +170,6 @@
       }
     }
 
-    &__tabs-bar {
-      display: flex;
-      flex-shrink: 0;
-      align-items: stretch;
-      justify-content: space-between;
-      background: var(--el-fill-color-lighter);
-      border-bottom: 1px solid var(--el-border-color-lighter);
-    }
-
     &__tabs {
       display: flex;
       flex: 1;
@@ -194,6 +189,12 @@
       min-height: 48px;
       background: var(--el-fill-color-lighter);
       border-bottom: 1px solid var(--el-border-color-lighter);
+
+      &--tabs {
+        .art-list-panel__head-actions {
+          align-self: center;
+        }
+      }
 
       &.is-size-small {
         min-height: 56px;

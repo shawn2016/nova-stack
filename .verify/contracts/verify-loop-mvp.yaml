@@ -1,0 +1,31 @@
+version: 1
+change: verify-loop-mvp
+items:
+  - id: AC-STATIC
+    description: 共享类型、Runner 与 Hub 的静态检查和测试通过
+    required: true
+    evidence:
+      - type: tier
+        tierId: static
+
+  - id: AC-API-E2E
+    description: Server API E2E 全量回归通过
+    required: true
+    evidence:
+      - type: tier
+        tierId: api-e2e
+
+  - id: AC-BROWSER-E2E
+    description: Admin Browser Smoke 场景全量通过
+    required: true
+    evidence:
+      - type: tier
+        tierId: browser-smoke
+
+  - id: AC-LOGIN-JOURNEY
+    description: Admin 登录认证用户路径通过
+    required: true
+    evidence:
+      - type: scenario
+        page: /auth/login
+        scenario: auth

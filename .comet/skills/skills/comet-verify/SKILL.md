@@ -173,6 +173,23 @@ comet state transition <change-name> verify-fail
   - 选项 B：用户选择 B 后，运行 `comet state transition <change-name> verify-fail`，然后调用 `/comet-build`；由 `/comet-build` 的 Spec 增量更新规则加载 Superpowers `brainstorming` 更新 Design Doc + delta spec
   - 选项 C：确认偏差可接受，继续验证（归档时 design doc 将标记为 `superseded-by-main-spec`）
 
+### 2c. Verify Hub 独立证据（项目启用时）
+
+若项目根目录存在 `.verify/config.yaml` 且根 `package.json` 提供 `verify` 脚本：
+
+1. **full verify 必须执行一次 Verifier run**，不得复用 Build 阶段的 Builder run：
+
+   ```bash
+   VERIFY_RUN_ROLE=verifier VERIFY_CHANGE=<change-name> pnpm verify
+   ```
+
+2. 不得通过 `VERIFY_SKIP_BROWSER` 等变量跳过合同中的 required tier。报告 `conclusion` 必须为 `pass`；`fail` 或 `incomplete` 均按验证失败进入 Step 1b。
+3. 核对报告中的 `provenance.changeId`、`provenance.runRole=verifier`、Git branch/commit 与当前 change 一致。dirty 报告只能作为诊断证据，不能作为最终 Archive 证据。
+4. 在验证报告增加 `## Verify Hub Evidence`，记录完整 runId、Dashboard 深链、commit、conclusion 和 required acceptance 结果。可从 Hub 的「复制 Comet 证据」直接获取。
+5. light verify 可按影响范围运行单 tier，但其 `conclusion: incomplete` 只表示局部证据，不能冒充 full Green。
+
+Hub 未启动时 Runner 的本地 `.verify/reports/<runId>.json` 仍可作为证据；必须记录上报失败，并在进入 Archive 前补录 Hub 深链或明确说明本地证据路径。
+
 ### 3. 收尾（Superpowers）
 
 **立即执行：** 使用 Skill 工具加载 Superpowers `finishing-a-development-branch` 技能。禁止跳过此步骤。
@@ -194,6 +211,8 @@ comet state transition <change-name> verify-fail
 ### 4. 记录验证证据
 
 验证报告必须落盘，并在 `.comet.yaml` 中记录；分支处理完成后也必须写入状态字段。不要手动设置 `verify_result: pass`，由阶段守卫 `--apply` 推进。
+
+当项目启用 Verify Hub 时，报告必须包含 Step 2c 的 `## Verify Hub Evidence`；仅记录命令文本、Builder 自测或旧 commit 的 run 不满足退出条件。
 
 ```bash
 mkdir -p docs/superpowers/reports
