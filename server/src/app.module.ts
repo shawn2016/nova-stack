@@ -32,6 +32,7 @@ import { DeptModule } from './modules/dept/dept.module';
 import { DataScopeModule } from './modules/data-scope/data-scope.module';
 import { OnlineSessionModule } from './modules/online-session/online-session.module';
 import { JobModule } from './modules/job/job.module';
+import { SmsModule } from './modules/sms/sms.module';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { JobModule } from './modules/job/job.module';
     DataScopeModule,
     OnlineSessionModule,
     JobModule,
+    SmsModule,
   ],
   providers: [
     {
