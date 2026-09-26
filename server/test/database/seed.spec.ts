@@ -8,6 +8,8 @@ import {
   SysDictDataEntity,
   SysDictTypeEntity,
   SysMenuEntity,
+  SysMessageEntity,
+  SysNoticeEntity,
   SysPermissionEntity,
   SysRegionEntity,
   SysRoleEntity,
@@ -37,6 +39,8 @@ interface SeedStores {
   dictData: SysDictDataEntity[];
   siteConfigs: SysConfigEntity[];
   regions: SysRegionEntity[];
+  notices: SysNoticeEntity[];
+  messages: SysMessageEntity[];
 }
 
 function matchesWhere<T extends ObjectLiteral>(
@@ -93,6 +97,8 @@ function createMockDataSource(stores: SeedStores): DataSource {
   const dictDataRepo = createInMemoryRepo(stores.dictData);
   const siteConfigRepo = createInMemoryRepo(stores.siteConfigs);
   const regionRepo = createInMemoryRepo(stores.regions);
+  const noticeRepo = createInMemoryRepo(stores.notices);
+  const messageRepo = createInMemoryRepo(stores.messages);
 
   return {
     getRepository: jest.fn((entity) => {
@@ -121,6 +127,10 @@ function createMockDataSource(stores: SeedStores): DataSource {
           return siteConfigRepo;
         case SysRegionEntity:
           return regionRepo;
+        case SysNoticeEntity:
+          return noticeRepo;
+        case SysMessageEntity:
+          return messageRepo;
         default:
           throw new Error(`Unexpected entity: ${String(entity)}`);
       }
@@ -142,6 +152,8 @@ function emptyStores(): SeedStores {
     dictData: [],
     siteConfigs: [],
     regions: [],
+    notices: [],
+    messages: [],
   };
 }
 
@@ -183,7 +195,7 @@ describe('runInitSeed', () => {
 
     await runInitSeed(dataSource);
 
-    expect(stores.permissions.length).toBe(37);
+    expect(stores.permissions.length).toBe(45);
     expect(stores.permissions.some((p) => p.code === 'system:user:list')).toBe(true);
     expect(stores.permissions.some((p) => p.code === 'content:article:list')).toBe(true);
     expect(stores.permissions.some((p) => p.code === 'system:dict:type:list')).toBe(true);
@@ -192,7 +204,8 @@ describe('runInitSeed', () => {
     expect(stores.permissions.some((p) => p.code === 'system:config:delete')).toBe(true);
     expect(stores.permissions.some((p) => p.code === 'system:audit:login:list')).toBe(true);
     expect(stores.permissions.some((p) => p.code === 'system:audit:oper:list')).toBe(true);
-    expect(stores.permissions.some((p) => p.code === 'system:region:list')).toBe(true);
+    expect(stores.permissions.some((p) => p.code === 'system:notice:list')).toBe(true);
+    expect(stores.permissions.some((p) => p.code === 'system:message:send')).toBe(true);
     expect(stores.permissions.some((p) => p.code === 'system:region:delete')).toBe(true);
     expect(stores.menus.some((m) => m.name === '系统管理')).toBe(true);
     expect(stores.menus.some((m) => m.name === '用户管理')).toBe(true);
@@ -226,14 +239,20 @@ describe('runInitSeed', () => {
     expect(stores.menus.find((m) => m.name === '审计日志')?.permissionCode).toBe(
       'system:audit:login:list',
     );
-    expect(stores.menus.find((m) => m.name === '审计日志')?.sort).toBe(7);
+    expect(
+      stores.menus.some((m) => m.name === '通知公告' && m.path === '/system/notice'),
+    ).toBe(true);
+    expect(
+      stores.menus.some((m) => m.name === '消息中心' && m.path === '/system/message'),
+    ).toBe(true);
+    expect(stores.menus.find((m) => m.name === '审计日志')?.sort).toBe(9);
     expect(stores.menus.some((m) => m.name === '内容管理')).toBe(true);
     expect(stores.menus.some((m) => m.name === '文章管理' && m.path === '/content/articles')).toBe(
       true,
     );
     expect(stores.menus.find((m) => m.name === '系统管理')?.icon).toBe('ri:settings-3-line');
     expect(stores.menus.find((m) => m.name === '用户管理')?.icon).toBe('ri:user-line');
-    expect(stores.rolePermissions.length).toBe(37);
+    expect(stores.rolePermissions.length).toBe(45);
   });
 
   it('does not duplicate role-permission links on second run', async () => {
@@ -244,8 +263,8 @@ describe('runInitSeed', () => {
     await runInitSeed(dataSource);
     await runInitSeed(dataSource);
 
-    expect(stores.permissions.length).toBe(37);
-    expect(stores.rolePermissions.length).toBe(37);
+    expect(stores.permissions.length).toBe(45);
+    expect(stores.rolePermissions.length).toBe(45);
   });
 
   it('seeds dev sample articles in non-production', async () => {
@@ -394,6 +413,6 @@ describe('runInitSeed', () => {
     expect(bcrypt.hash).not.toHaveBeenCalled();
 
     expect(stores.roles.some((role) => role.code === 'super_admin')).toBe(true);
-    expect(stores.permissions.length).toBe(37);
+    expect(stores.permissions.length).toBe(45);
   });
 });

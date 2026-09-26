@@ -12,6 +12,9 @@ import { SysRolePermissionEntity } from './sys-role-permission.entity';
 import { SysUserEntity } from './sys-user.entity';
 import { SysUserRoleEntity } from './sys-user-role.entity';
 import { SysRegionEntity } from './sys-region.entity';
+import { SysNoticeEntity } from './sys-notice.entity';
+import { SysNoticeReadEntity } from './sys-notice-read.entity';
+import { SysMessageEntity } from './sys-message.entity';
 
 export { ArticleEntity } from './article.entity';
 export { MemberUserEntity } from './member-user.entity';
@@ -27,6 +30,9 @@ export { SysRolePermissionEntity } from './sys-role-permission.entity';
 export { SysUserEntity } from './sys-user.entity';
 export { SysUserRoleEntity } from './sys-user-role.entity';
 export { SysRegionEntity } from './sys-region.entity';
+export { SysNoticeEntity } from './sys-notice.entity';
+export { SysNoticeReadEntity } from './sys-notice-read.entity';
+export { SysMessageEntity } from './sys-message.entity';
 
 /** 全部 RBAC / Member / Dict 实体，供 TypeORM 与测试加载 */
 export const entities = [
@@ -44,4 +50,7 @@ export const entities = [
   SysLoginLogEntity,
   SysOperLogEntity,
   SysRegionEntity,
+  SysNoticeEntity,
+  SysNoticeReadEntity,
+  SysMessageEntity,
 ];

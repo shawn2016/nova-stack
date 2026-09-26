@@ -100,3 +100,13 @@ export type {
   RegionTreeNode,
   UpdateRegionDto,
 } from './region.js';
+
+export type {
+  CreateMessageDto,
+  CreateNoticeDto,
+  MessageListItem,
+  NoticeListItem,
+  NoticeMyListItem,
+  UnreadCountResult,
+  UpdateNoticeDto,
+} from './notice.js';

@@ -27,6 +27,7 @@ import { DictModule } from './modules/dict/dict.module';
 import { SiteConfigModule } from './modules/site-config/site-config.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { RegionModule } from './modules/region/region.module';
+import { NoticeModule } from './modules/notice/notice.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { RegionModule } from './modules/region/region.module';
     SiteConfigModule,
     AuditModule,
     RegionModule,
+    NoticeModule,
   ],
   providers: [
     {

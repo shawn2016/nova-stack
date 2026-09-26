@@ -187,4 +187,40 @@ export async function initE2eSchema(dataSource: DataSource): Promise<void> {
       updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+  await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS sys_notice (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title VARCHAR(128) NOT NULL,
+      content TEXT NOT NULL,
+      type TINYINT NOT NULL,
+      status TINYINT NOT NULL DEFAULT 0,
+      publisher_id BIGINT NOT NULL,
+      published_at DATETIME,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS sys_notice_read (
+      notice_id BIGINT NOT NULL,
+      user_id BIGINT NOT NULL,
+      read_at DATETIME NOT NULL,
+      PRIMARY KEY (notice_id, user_id)
+    )
+  `);
+
+  await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS sys_message (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      sender_id BIGINT NOT NULL,
+      receiver_id BIGINT NOT NULL,
+      title VARCHAR(128) NOT NULL,
+      content TEXT NOT NULL,
+      is_read TINYINT NOT NULL DEFAULT 0,
+      read_at DATETIME,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
 }

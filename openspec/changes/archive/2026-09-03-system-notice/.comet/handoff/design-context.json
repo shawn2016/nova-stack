@@ -1,0 +1,16 @@
+{
+  "change": "system-notice",
+  "phase": "design",
+  "mode": "compact",
+  "canonical_spec": "openspec",
+  "generated_by": "comet-handoff.sh",
+  "context_hash": "5cde2a6bda08414048cf7999079f443d7da3a9022bb036bc103414d57dea5cf4",
+  "files": [
+    { "path": "openspec/changes/system-notice/proposal.md", "sha256": "bd3c0ca15825ca8290e0c1e524a68ad6dfea936a07486e9ea9f2473441ca676a" },
+    { "path": "openspec/changes/system-notice/design.md", "sha256": "53a0af78ff25b670ab8a90ef6e0600fa56da20218af8f64a1eac1bdd35ca0739" },
+    { "path": "openspec/changes/system-notice/tasks.md", "sha256": "faa97c7fa3103dce0648c2891bffb218aafefba5df34b299a0237ccd7718d4ee" },
+    { "path": "openspec/changes/system-notice/specs/notice-admin-ui/spec.md", "sha256": "cf74ebedee9985d6c6f67c1dffdd7b384460734547d68794d4cdc891d1fc845e" },
+    { "path": "openspec/changes/system-notice/specs/notice-api/spec.md", "sha256": "b20dae5ded593b7016ed97a51e9c109f3a1a981bd8384e23235df5468018a572" },
+    { "path": "openspec/changes/system-notice/specs/notice-message-api/spec.md", "sha256": "0754cf65f8fac6a0dadc52eabe9cf63d8b07c642d7bd9c9504a9bb360b680ac1" }
+  ]
+}

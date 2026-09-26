@@ -10,6 +10,9 @@ import {
   SysOperLogEntity,
   SysPermissionEntity,
   SysRegionEntity,
+  SysNoticeEntity,
+  SysNoticeReadEntity,
+  SysMessageEntity,
   SysRoleEntity,
   SysRolePermissionEntity,
   SysUserEntity,
@@ -58,7 +61,7 @@ describe('RBAC database entities', () => {
     }
   });
 
-  it('loads all 14 entities with expected table names', () => {
+  it('loads all 17 entities with expected table names', () => {
     const tableNames = dataSource.entityMetadatas
       .map((meta) => meta.tableName)
       .sort();
@@ -71,6 +74,9 @@ describe('RBAC database entities', () => {
       'sys_dict_type',
       'sys_login_log',
       'sys_menu',
+      'sys_message',
+      'sys_notice',
+      'sys_notice_read',
       'sys_oper_log',
       'sys_permission',
       'sys_region',
@@ -201,6 +207,35 @@ describe('RBAC database entities', () => {
     expect(hasUniqueConstraint(meta, 'code')).toBe(true);
     expect(meta.findColumnWithPropertyName('parentId')?.databaseName).toBe('parent_id');
     expect(meta.findColumnWithPropertyName('level')?.type).toBe('tinyint');
+    expect(meta.relations).toHaveLength(0);
+  });
+
+  it('maps sys_message with sender and receiver', () => {
+    const meta = dataSource.getMetadata(SysMessageEntity);
+
+    expect(meta.tableName).toBe('sys_message');
+    expect(meta.findColumnWithPropertyName('senderId')?.databaseName).toBe('sender_id');
+    expect(meta.findColumnWithPropertyName('receiverId')?.databaseName).toBe('receiver_id');
+    expect(meta.findColumnWithPropertyName('isRead')?.databaseName).toBe('is_read');
+    expect(meta.relations).toHaveLength(0);
+  });
+
+  it('maps sys_notice_read composite primary key', () => {
+    const meta = dataSource.getMetadata(SysNoticeReadEntity);
+
+    expect(meta.tableName).toBe('sys_notice_read');
+    expect(meta.primaryColumns.map((c) => c.propertyName).sort()).toEqual([
+      'noticeId',
+      'userId',
+    ]);
+  });
+
+  it('maps sys_notice with status and publisher', () => {
+    const meta = dataSource.getMetadata(SysNoticeEntity);
+
+    expect(meta.tableName).toBe('sys_notice');
+    expect(meta.findColumnWithPropertyName('publisherId')?.databaseName).toBe('publisher_id');
+    expect(meta.findColumnWithPropertyName('publishedAt')?.databaseName).toBe('published_at');
     expect(meta.relations).toHaveLength(0);
   });
 
