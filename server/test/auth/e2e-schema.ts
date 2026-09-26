@@ -320,4 +320,47 @@ export async function initE2eSchema(dataSource: DataSource): Promise<void> {
       created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+  await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS sys_email_channel (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name VARCHAR(64) NOT NULL,
+      provider VARCHAR(32) NOT NULL,
+      config TEXT NOT NULL,
+      status TINYINT NOT NULL DEFAULT 1,
+      remark VARCHAR(255),
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS sys_email_template (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      code VARCHAR(64) NOT NULL UNIQUE,
+      name VARCHAR(64) NOT NULL,
+      subject VARCHAR(255) NOT NULL,
+      content TEXT NOT NULL,
+      channel_id BIGINT NOT NULL,
+      status TINYINT NOT NULL DEFAULT 1,
+      remark VARCHAR(255),
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  await dataSource.query(`
+    CREATE TABLE IF NOT EXISTS sys_email_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      channel_id BIGINT NOT NULL,
+      template_code VARCHAR(64) NOT NULL,
+      "to" VARCHAR(128) NOT NULL,
+      subject VARCHAR(255) NOT NULL,
+      content TEXT NOT NULL,
+      status TINYINT NOT NULL,
+      provider_message VARCHAR(500),
+      sent_at DATETIME NOT NULL,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
 }

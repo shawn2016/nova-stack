@@ -1,0 +1,9 @@
+{
+  "openspec_proposal": "openspec/changes/infra-email/proposal.md",
+  "openspec_design": "openspec/changes/infra-email/design.md",
+  "openspec_tasks": "openspec/changes/infra-email/tasks.md",
+  "openspec_delta_spec": "openspec/changes/infra-email/specs/email-admin-ui/spec.md",
+  "handoff_context": "openspec/changes/archive/2026-09-03-infra-email/.comet/handoff/design-context.json",
+  "handoff_markdown": "openspec/changes/archive/2026-09-03-infra-email/.comet/handoff/design-context.md",
+  "archive_directory": "openspec/changes/archive/2026-09-03-infra-email"
+}

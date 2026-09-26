@@ -22,6 +22,9 @@ import {
   SysSmsChannelEntity,
   SysSmsTemplateEntity,
   SysSmsLogEntity,
+  SysEmailChannelEntity,
+  SysEmailTemplateEntity,
+  SysEmailLogEntity,
   SysUserEntity,
   SysUserRoleEntity,
   entities,
@@ -68,7 +71,7 @@ describe('RBAC database entities', () => {
     }
   });
 
-  it('loads all 24 entities with expected table names', () => {
+  it('loads all 27 entities with expected table names', () => {
     const tableNames = dataSource.entityMetadatas
       .map((meta) => meta.tableName)
       .sort();
@@ -80,6 +83,9 @@ describe('RBAC database entities', () => {
       'sys_dept',
       'sys_dict_data',
       'sys_dict_type',
+      'sys_email_channel',
+      'sys_email_log',
+      'sys_email_template',
       'sys_job',
       'sys_job_log',
       'sys_login_log',
