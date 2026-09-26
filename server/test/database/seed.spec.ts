@@ -186,6 +186,7 @@ describe('runInitSeed', () => {
 
     const superAdminRole = stores.roles.find((role) => role.code === 'super_admin');
     expect(superAdminRole).toBeDefined();
+    expect(superAdminRole?.dataScope).toBe(1);
     expect(
       stores.userRoles.some(
         (link) =>
@@ -355,7 +356,7 @@ describe('runInitSeed', () => {
 
     await runInitSeed(dataSource);
 
-    expect(stores.siteConfigs).toHaveLength(5);
+    expect(stores.siteConfigs).toHaveLength(6);
     expect(stores.siteConfigs.some((c) => c.configKey === 'site.name')).toBe(true);
     expect(stores.siteConfigs.find((c) => c.configKey === 'site.name')?.configValue).toBe(
       'Nova Stack',
@@ -368,6 +369,9 @@ describe('runInitSeed', () => {
     expect(stores.siteConfigs.find((c) => c.configKey === 'site.icp')?.configValue).toBe(
       '京ICP备00000000号',
     );
+    expect(stores.siteConfigs.some((c) => c.configKey === 'data_scope.module.enabled')).toBe(
+      true,
+    );
   });
 
   it('does not duplicate sample site configs on second run', async () => {
@@ -378,7 +382,7 @@ describe('runInitSeed', () => {
     await runInitSeed(dataSource);
     await runInitSeed(dataSource);
 
-    expect(stores.siteConfigs).toHaveLength(5);
+    expect(stores.siteConfigs).toHaveLength(6);
   });
 
   it('seeds china regions from flat json', async () => {
@@ -417,7 +421,7 @@ describe('runInitSeed', () => {
     expect(stores.articles).toHaveLength(0);
     expect(stores.dictTypes).toHaveLength(0);
     expect(stores.dictData).toHaveLength(0);
-    expect(stores.siteConfigs).toHaveLength(2);
+    expect(stores.siteConfigs).toHaveLength(3);
     expect(stores.regions.length).toBeGreaterThan(3000);
     expect(bcrypt.hash).not.toHaveBeenCalled();
 

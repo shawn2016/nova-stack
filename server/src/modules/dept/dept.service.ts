@@ -201,6 +201,22 @@ export class DeptService {
     return new Map(depts.map((dept) => [toApiId(dept.id), dept.name]));
   }
 
+  async collectDescendantIds(rootId: string): Promise<string[]> {
+    const depts = await this.deptRepo.find({ where: { status: 1 } });
+    const ids = new Set<string>([rootId]);
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const dept of depts) {
+        if (ids.has(dept.parentId) && !ids.has(dept.id)) {
+          ids.add(dept.id);
+          changed = true;
+        }
+      }
+    }
+    return [...ids].map((id) => toApiId(id));
+  }
+
   private async assertModuleEnabled(): Promise<void> {
     const settings = await this.readSettings();
     if (!settings.moduleEnabled) {

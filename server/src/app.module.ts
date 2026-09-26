@@ -29,6 +29,7 @@ import { AuditModule } from './modules/audit/audit.module';
 import { RegionModule } from './modules/region/region.module';
 import { NoticeModule } from './modules/notice/notice.module';
 import { DeptModule } from './modules/dept/dept.module';
+import { DataScopeModule } from './modules/data-scope/data-scope.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { DeptModule } from './modules/dept/dept.module';
     RegionModule,
     NoticeModule,
     DeptModule,
+    DataScopeModule,
   ],
   providers: [
     {

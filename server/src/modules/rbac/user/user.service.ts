@@ -15,6 +15,7 @@ import {
 } from '../../../database/entities';
 import { toApiId } from '../../../common/utils/to-api-id';
 import { DeptService } from '../../dept/dept.service';
+import { DataScopeService } from '../../data-scope/data-scope.service';
 import { AssignUserRolesDto } from './dto/assign-user-roles.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ListUsersDto } from './dto/list-users.dto';
@@ -30,9 +31,10 @@ export class UserService {
     @InjectRepository(SysRoleEntity)
     private readonly roleRepo: Repository<SysRoleEntity>,
     private readonly deptService: DeptService,
+    private readonly dataScopeService: DataScopeService,
   ) {}
 
-  async list(query: ListUsersDto): Promise<PaginationResult<SysUserListItem>> {
+  async list(query: ListUsersDto, currentUserId: string): Promise<PaginationResult<SysUserListItem>> {
     const { page = 1, pageSize = 10, keyword } = query;
     const qb = this.userRepo.createQueryBuilder('u').orderBy('u.id', 'ASC');
 
@@ -41,6 +43,9 @@ export class UserService {
         kw: `%${keyword.trim()}%`,
       });
     }
+
+    const filter = await this.dataScopeService.resolveForUser(currentUserId);
+    this.dataScopeService.applyUserFilter(qb, 'u', filter);
 
     const [users, total] = await qb
       .skip((page - 1) * pageSize)

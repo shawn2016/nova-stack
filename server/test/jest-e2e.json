@@ -8,6 +8,6 @@
     "^.+\\.(t|j)s$": "ts-jest"
   },
   "moduleNameMapper": {
-    "^@nova/shared-types$": "<rootDir>/../../packages/shared-types/src/index.ts"
+    "^@nova/shared-types$": "<rootDir>/../../packages/shared-types/dist/index.js"
   }
 }

@@ -16,6 +16,7 @@ import {
   SysDeptEntity,
   SysRoleEntity,
   SysRolePermissionEntity,
+  SysRoleDeptEntity,
   SysUserEntity,
   SysUserRoleEntity,
   entities,
@@ -62,7 +63,7 @@ describe('RBAC database entities', () => {
     }
   });
 
-  it('loads all 18 entities with expected table names', () => {
+  it('loads all 19 entities with expected table names', () => {
     const tableNames = dataSource.entityMetadatas
       .map((meta) => meta.tableName)
       .sort();
@@ -83,6 +84,7 @@ describe('RBAC database entities', () => {
       'sys_permission',
       'sys_region',
       'sys_role',
+      'sys_role_dept',
       'sys_role_permission',
       'sys_user',
       'sys_user_role',
@@ -100,11 +102,12 @@ describe('RBAC database entities', () => {
     expect(meta.findColumnWithPropertyName('deptId')?.isNullable).toBe(true);
   });
 
-  it('maps sys_role with unique code index', () => {
+  it('maps sys_role with unique code index and data_scope', () => {
     const meta = dataSource.getMetadata(SysRoleEntity);
 
     expect(meta.tableName).toBe('sys_role');
     expect(hasUniqueConstraint(meta, 'code')).toBe(true);
+    expect(meta.findColumnWithPropertyName('dataScope')?.databaseName).toBe('data_scope');
   });
 
   it('maps sys_permission with unique code index', () => {
@@ -126,6 +129,7 @@ describe('RBAC database entities', () => {
   it('uses composite primary keys on junction tables', () => {
     const userRoleMeta = dataSource.getMetadata(SysUserRoleEntity);
     const rolePermMeta = dataSource.getMetadata(SysRolePermissionEntity);
+    const roleDeptMeta = dataSource.getMetadata(SysRoleDeptEntity);
 
     expect(userRoleMeta.primaryColumns.map((c) => c.propertyName).sort()).toEqual([
       'roleId',
@@ -133,6 +137,10 @@ describe('RBAC database entities', () => {
     ]);
     expect(rolePermMeta.primaryColumns.map((c) => c.propertyName).sort()).toEqual([
       'permissionId',
+      'roleId',
+    ]);
+    expect(roleDeptMeta.primaryColumns.map((c) => c.propertyName).sort()).toEqual([
+      'deptId',
       'roleId',
     ]);
   });

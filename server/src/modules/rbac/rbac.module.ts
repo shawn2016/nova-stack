@@ -5,10 +5,12 @@ import {
   SysPermissionEntity,
   SysRoleEntity,
   SysRolePermissionEntity,
+  SysRoleDeptEntity,
   SysUserEntity,
   SysUserRoleEntity,
 } from '../../database/entities';
 import { AuthModule } from '../auth/auth.module';
+import { DataScopeModule } from '../data-scope/data-scope.module';
 import { DeptModule } from '../dept/dept.module';
 import { MenuController } from './menu/menu.controller';
 import { MenuService } from './menu/menu.service';
@@ -21,6 +23,7 @@ import { UserService } from './user/user.service';
   imports: [
     AuthModule,
     DeptModule,
+    DataScopeModule,
     TypeOrmModule.forFeature([
       SysUserEntity,
       SysUserRoleEntity,
@@ -28,6 +31,7 @@ import { UserService } from './user/user.service';
       SysRolePermissionEntity,
       SysPermissionEntity,
       SysMenuEntity,
+      SysRoleDeptEntity,
     ]),
   ],
   controllers: [UserController, RoleController, MenuController],

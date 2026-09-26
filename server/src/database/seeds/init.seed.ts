@@ -360,6 +360,15 @@ const DEV_DICT_DATA_SEEDS: DictDataSeed[] = [
   { typeCode: 'article_status', label: '已发布', value: 'published', sort: 2, status: 1 },
 ];
 
+const DEV_DATA_SCOPE_CONFIG_SEEDS: SiteConfigSeed[] = [
+  {
+    configKey: 'data_scope.module.enabled',
+    configName: '数据权限模块开关',
+    configValue: 'true',
+    configGroup: 'data_scope',
+  },
+];
+
 const DEV_DEPT_CONFIG_SEEDS: SiteConfigSeed[] = [
   {
     configKey: 'dept.module.enabled',
@@ -388,6 +397,29 @@ const DEV_DEPT_SEEDS: DeptSeed[] = [
   { name: '研发部', parentName: '总公司', sort: 1 },
   { name: '运营部', parentName: '总公司', sort: 2 },
 ];
+
+async function upsertDevDataScopeConfigs(
+  repo: Repository<SysConfigEntity>,
+): Promise<void> {
+  for (const seed of DEV_DATA_SCOPE_CONFIG_SEEDS) {
+    let config = await repo.findOne({ where: { configKey: seed.configKey } });
+    if (!config) {
+      config = repo.create({
+        configKey: seed.configKey,
+        configName: seed.configName,
+        configValue: seed.configValue,
+        configGroup: seed.configGroup ?? null,
+        remark: seed.remark ?? null,
+      });
+    } else {
+      config.configName = seed.configName;
+      config.configValue = seed.configValue;
+      config.configGroup = seed.configGroup ?? null;
+      config.remark = seed.remark ?? null;
+    }
+    await repo.save(config);
+  }
+}
 
 async function upsertDevDeptConfigs(
   repo: Repository<SysConfigEntity>,
@@ -661,8 +693,12 @@ export async function runInitSeed(dataSource: DataSource): Promise<void> {
         code: SUPER_ADMIN_ROLE_CODE,
         status: 1,
         sort: 0,
+        dataScope: 1,
       }),
     );
+  } else if (superAdminRole.dataScope !== 1) {
+    superAdminRole.dataScope = 1;
+    superAdminRole = await roleRepo.save(superAdminRole);
   }
 
   const permissions: SysPermissionEntity[] = [];
@@ -687,6 +723,7 @@ export async function runInitSeed(dataSource: DataSource): Promise<void> {
   }
 
   await upsertRegions(regionRepo);
+  await upsertDevDataScopeConfigs(configRepo);
   await upsertDevDeptConfigs(configRepo);
   const deptNameToId = await upsertDevDepts(deptRepo);
 

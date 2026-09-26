@@ -25,6 +25,9 @@ export class SysRoleEntity {
   @Column({ type: 'int', default: 0 })
   sort!: number;
 
+  @Column({ type: 'tinyint', name: 'data_scope', default: 1 })
+  dataScope!: number;
+
   @CreateDateColumn({ type: 'datetime', name: 'created_at' })
   createdAt!: Date;
 
